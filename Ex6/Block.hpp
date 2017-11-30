@@ -2,18 +2,19 @@
 
 #include "sre/SDLRenderer.hpp"
 
-class Voxel {
+class Block {
 public:
-	Voxel();
-	~Voxel();
+	Block();
+	~Block();
 
 	void draw(sre::RenderPass& renderpass);
-	void setType(VoxelType type);
+	void setType(BlockType type);
 private:
-	VoxelType type;
+	BlockType type;
+
 };
 
-enum VoxelType {
+enum BlockType {
 	Grass,
 	Rock
 };
