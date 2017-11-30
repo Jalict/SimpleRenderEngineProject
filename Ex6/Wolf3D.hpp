@@ -5,12 +5,16 @@
 #include "WorldMap.hpp"
 #include "FirstPersonController.hpp"
 #include "Physics.hpp"
+#include "sre/SpriteAtlas.hpp"
 
 class Wolf3D {
 public:
     Wolf3D();
 	static Wolf3D* getInstance();
 	Physics physics;
+
+	std::shared_ptr<sre::Material> blockMaterial; // #WIP blockTextures
+	glm::vec4 textureCoordinates(int blockID);
 
 private:
     void init();

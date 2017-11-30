@@ -234,7 +234,16 @@ void Wolf3D::init() {
             .build();
     wallMaterial->setTexture(texture);
 
-    map.loadMap("level0.json");
+	// Load and create walls
+	blockMaterial = Shader::getUnlit()->createMaterial();
+	auto tiles = Texture::create().withFile("tileset.png")
+		.withGenerateMipmaps(false)
+		.withFilterSampling(false)
+		.build();
+	blockMaterial->setTexture(tiles);
+
+	// Load serialized level
+	map.loadMap("level0.json");
 
     std::vector<glm::vec3> vertexPositions;
     std::vector<glm::vec4> textureCoordinates;
@@ -273,6 +282,25 @@ void Wolf3D::init() {
 	ceilTransorm   = glm::translate(vec3(0, 1, 0));
 	floorTransform = glm::rotate(floorTransform, glm::radians(-90.0f), vec3(1, 0, 0));
 	ceilTransorm   = glm::rotate(ceilTransorm, glm::radians(90.0f), vec3(1, 0, 0));
+}
+
+vec4 Wolf3D::textureCoordinates(int blockID){
+	glm::vec2 textureSize(1024, 2048);
+	glm::vec2 tileSize(128, 128);
+
+	float tileWidth = tileSize.x / textureSize.x;
+	float tileHeight = tileSize.y / textureSize.y;
+
+	glm::vec2 min = vec2(0, 16 * tileSize.y) / textureSize;
+	glm::vec2 max = min + tileSize / textureSize;
+
+	min.x += (blockID % 8) * tileWidth * 2;
+	max.x += (blockID % 8) * tileWidth * 2;
+
+	min.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
+	max.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
+
+	return vec4(min.x, min.y, max.x, max.y);
 }
 
 
