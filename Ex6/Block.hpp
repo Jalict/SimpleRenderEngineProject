@@ -2,6 +2,12 @@
 
 #include "sre/SDLRenderer.hpp"
 
+/*
+Created: 31-11-2017
+A block in the world 
+(NOTE) Frans calls them Voxels
+*/
+
 class Block {
 public:
 	Block();
@@ -11,7 +17,6 @@ public:
 	void setType(BlockType type);
 private:
 	BlockType type;
-
 };
 
 enum BlockType {
