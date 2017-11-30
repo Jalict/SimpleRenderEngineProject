@@ -25,6 +25,7 @@ void Physics::init() {
 	//	btGImpactCollisionAlgorithm::registerAlgorithm(dispatcher);
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
 
+
 	// Set gravity for the world
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
 
