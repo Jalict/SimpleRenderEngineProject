@@ -9,14 +9,16 @@ A block in the world
 */
 
 class Block {
+private:
+	enum BlockType {Grass, Rock};
+	BlockType type;
+
 public:
 	Block();
 	~Block();
 
 	void draw(sre::RenderPass& renderpass);
 	void setType(BlockType type);
-private:
-	BlockType type;
 };
 
 enum BlockType {
