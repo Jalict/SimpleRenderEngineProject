@@ -20,8 +20,3 @@ public:
 	void draw(sre::RenderPass& renderpass);
 	void setType(BlockType type);
 };
-
-enum BlockType {
-	Grass,
-	Rock
-};
