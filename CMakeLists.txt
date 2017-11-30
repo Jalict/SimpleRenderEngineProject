@@ -90,6 +90,35 @@ ELSE (APPLE)
     ENDIF(UNIX)
 ENDIF (APPLE)
 
+# add bullet
+#   BULLET_FOUND - Was bullet found
+#   BULLET_INCLUDE_DIRS - the Bullet include directories
+#   BULLET_LIBRARIES - Link to this, by default it includes
+#                      all bullet components (Dynamics,
+#                      Collision, LinearMath, & SoftBody)
+#
+#  For MacOS copy Frameworks in ./thirdparty/macOS/Bullet/ to /Library/Frameworks/
+#  And set
+#    BULLET_INCLUDE_DIR:PATH=/Library/Frameworks/BulletCollision.framework/Headers;/Library/Frameworks/BulletDynamics.framework/Headers;/Library/Frameworks/LinearMath.framework/Headers
+#    BULLET_COLLISION_LIBRARY:FILEPATH=/Library/Frameworks/BulletCollision.framework
+#    etc
+#
+option(USE_BULLET "Include bullet example" OFF)
+IF (USE_BULLET)
+IF (WIN32)
+    SET(BULLET_DYNAMICS_LIBRARY  ${CMAKE_SOURCE_DIR}/thirdparty/Win/Bullet/lib/BulletDynamics.lib CACHE PATH "")
+    SET(BULLET_COLLISION_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/Win/Bullet/lib/BulletCollision.lib CACHE PATH  "")
+    SET(BULLET_MATH_LIBRARY      ${CMAKE_SOURCE_DIR}/thirdparty/Win/Bullet/lib/LinearMath.lib CACHE PATH  "") 
+    SET(BULLET_DYNAMICS_LIBRARY_DEBUG  ${CMAKE_SOURCE_DIR}/thirdparty/Win/Bullet/lib/BulletDynamics_d.lib CACHE PATH  "")
+    SET(BULLET_COLLISION_LIBRARY_DEBUG ${CMAKE_SOURCE_DIR}/thirdparty/Win/Bullet/lib/BulletCollision_d.lib CACHE PATH  "")
+    SET(BULLET_MATH_LIBRARY_DEBUG      ${CMAKE_SOURCE_DIR}/thirdparty/Win/Bullet/lib/LinearMath_d.lib CACHE PATH  "") 
+    SET(BULLET_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/thirdparty/Win/Bullet/include)
+ELSE (WIN32) 
+    find_package(Bullet REQUIRED)
+ENDIF(WIN32)
+    include_directories(${BULLET_INCLUDE_DIRS})
+ENDIF(USE_BULLET)
+
 #### Sol #####
 INCLUDE_DIRECTORIES (thirdparty/Sol/include)
 
@@ -98,7 +127,11 @@ include_directories(include)
 add_subdirectory(src)
 
 # all_libs contains a list of all libraries that should be linked
+# for bullet support add ${BULLET_LIBRARIES}
 set(all_libs ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${SDL2MIXER_LIBRARY} ${LUA_LIBRARIES} SRE debug ${Box2D_LIBRARY_DEBUG} optimized ${Box2D_LIBRARY_REL})
+IF (USE_BULLET)
+	set(all_libs optimized  ${all_libs} optimized  ${BULLET_DYNAMICS_LIBRARY} optimized  ${BULLET_COLLISION_LIBRARY} optimized  ${BULLET_MATH_LIBRARY} debug ${BULLET_DYNAMICS_LIBRARY_DEBUG} debug ${BULLET_COLLISION_LIBRARY_DEBUG} debug ${BULLET_MATH_LIBRARY_DEBUG} )
+ENDIF(USE_BULLET)
 
 # Create DllFileList on Windows
 IF (WIN32)
@@ -111,3 +144,4 @@ ENDIF(WIN32)
 # build targets using sre
 add_subdirectory(examples)
 add_subdirectory(project)
+add_subdirectory(Ex6)

@@ -37,6 +37,7 @@ namespace sre{
 
         auto pushCurrentMesh = [&](){
             spriteMeshes.push_back(Mesh::create()
+                                           .withName(std::string("DynamicSpriteBatch")+std::to_string(spriteMeshes.size()))
                                            .withPositions(vertices)
                                            .withUVs(uvs)
                                            .withIndices(indices)
@@ -51,6 +52,10 @@ namespace sre{
         for (auto & s : sprites){
             if (lastTexture && lastTexture != s.texture){
                 pushCurrentMesh();
+                vertices.clear();
+                colors.clear();
+                uvs.clear();
+                indices.clear();
             }
             lastTexture = s.texture;
 
