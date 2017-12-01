@@ -12,6 +12,7 @@ using namespace glm;
 
 FirstPersonController::FirstPersonController(sre::Camera * camera)
 :camera(camera) {
+	// Setup  Camera projection
     camera->setPerspectiveProjection(45,0.1f,1000);
 
 	// Create Capsule collider
@@ -31,6 +32,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 	// Only allow for rotations around the Y-axis
 	rigidBody->setAngularFactor(btVector3(0, 1, 0));
 
+	// Set initial look rotation to 0, 0
 	lookRotation = vec2(0,0);
 }
 
@@ -50,7 +52,7 @@ void FirstPersonController::update(float deltaTime){
 
 	// Only handle movement if we are grounded
 	if(isGrounded){
-		if(fwd )
+		if(fwd)
 			movement += vec3(0, 0, -1);
 		if(left)
 			movement += vec3(-1, 0, 0);
@@ -64,17 +66,18 @@ void FirstPersonController::update(float deltaTime){
 		if (movement != vec3(0, 0, 0))
 			movement = glm::normalize(movement);
 
+		// Multiply by time that has passed to compensate for FPS
 		movement *= deltaTime;
 
 
-		// TODO use collider rotations
+		// TODO use collider rotations? Is this necessary?
 		// Translate local movement to relative world movement 
 		float x = cos(radians(lookRotation.x)) * movement.x - sin(radians(lookRotation.x)) * movement.z;
 		float z = cos(radians(lookRotation.x)) * movement.z + sin(radians(lookRotation.x)) * movement.x;
 
 		// Apply movmement
 		btVector3 velocity = rigidBody->getLinearVelocity();
-		velocity = btVector3(1, 0, 0) * x * MOVEMENT_SPEED + btVector3(0, velocity.getY(), 0) + btVector3(0, 0, 1) * z * MOVEMENT_SPEED;
+		velocity = btVector3(x * MOVEMENT_SPEED, velocity.getY(), z * MOVEMENT_SPEED); // Carry falling speed to our current movement
 		rigidBody->setLinearVelocity(velocity);
 	}
 	
@@ -83,8 +86,10 @@ void FirstPersonController::update(float deltaTime){
 	rigidBody->getMotionState()->getWorldTransform(transform);
 	btVector3 position = transform.getOrigin();
 
+	// Check if the controller is grounded
 	checkGrounded(position);
 	
+	// Update our tranform matrix, pass it on to the camera
 	auto transformMatrix = mat4();
 	transformMatrix = translate(transformMatrix, glm::vec3(position.getX(), position.getY(), position.getZ())); 
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.x), vec3(0, -1, 0));
@@ -94,21 +99,23 @@ void FirstPersonController::update(float deltaTime){
 
 
 void FirstPersonController::checkGrounded(btVector3 position) {
-	btVector3 btTo = position + btVector3(0, -100000, 0);
-	btCollisionWorld::ClosestRayResultCallback res(position, btTo);
+	// Cast a ray from our position to a location far below it
+	btVector3 down = position + btVector3(0, -100000, 0);
+	btCollisionWorld::ClosestRayResultCallback res(position, down);
 
-	Wolf3D::getInstance()->physics.raycast(&position, &btTo, &res);
+	Wolf3D::getInstance()->physics.raycast(&position, &down, &res);
 
+	// If we hit something, check the distance to the ground
 	// TODO distance check - expansive calculation, change to something more efficient.
 	if (res.hasHit()) {
-//		std::cout << position.distance(res.m_hitPointWorld) << std::endl;
-		isGrounded = !(position.distance(res.m_hitPointWorld) > 0.6f);
+		isGrounded = !(position.distance(res.m_hitPointWorld) > 0.6f); // 0l.6f is the height of capsule collider
 	}
-//	std::cout << isGrounded << std::endl;
+	else {
+		isGrounded = false;
+	}
 }
 
 
-// TODO handle two keys pressed (diagonal speed increase) -> normalize movement
 void FirstPersonController::onKey(SDL_Event &event) {
 	// Capture Jump
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
