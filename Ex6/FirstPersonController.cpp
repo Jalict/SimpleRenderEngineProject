@@ -57,7 +57,7 @@ void FirstPersonController::update(float deltaTime){
 	if(right)
 		movement += vec3(1, 0, 0);
 
-	movement = glm::normalize(movement);
+//	movement = glm::normalize(movement);
 	movement *= deltaTime;
 
 
