@@ -19,4 +19,3 @@ private:
 	sre::Sprite* sprite;
 	glm::vec3 position;
 };
-
