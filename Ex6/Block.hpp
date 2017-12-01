@@ -10,13 +10,18 @@ A block in the world
 
 class Block {
 private:
-	enum BlockType {Grass, Rock};
+	enum BlockType { Grass, Rock };
 	BlockType type;
 
+	std::shared_ptr<sre::Mesh> mesh;
+	std::shared_ptr<sre::Material> material;
 public:
 	Block();
+	Block(BlockType type);
 	~Block();
 
-	void draw(sre::RenderPass& renderpass);
 	void setType(BlockType type);
+
+	std::shared_ptr<sre::Mesh> getMesh();
+	std::shared_ptr<sre::Material> getMaterial();
 };
