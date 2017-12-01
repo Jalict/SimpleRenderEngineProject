@@ -1,6 +1,8 @@
 #pragma once
 #include "Block.hpp"
+#include "Wolf3D.hpp"
 #include "sre/SDLRenderer.hpp"
+#include <glm\gtx\rotate_vector.hpp>
 
 /*
 Created: 01-12-2017
@@ -22,7 +24,7 @@ private:
 	//(Upper, front, left corner of chunk)
 	glm::mat4 chunkTransform;
 
-	Block* testBlock;
+	//Block* testBlock;
 	Block*** blocksInChunk;
 	const int chunkDimensions = 5;
 };

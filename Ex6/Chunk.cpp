@@ -2,9 +2,8 @@
 
 Chunk::Chunk(glm::mat4 chunkTransform){
 
-	testBlock = new Block();
+	//testBlock = new Block();
 
-	/*
 	//Set the position of the chunk (Upper, front, left corner, hopefully)
 	this->chunkTransform = chunkTransform;
 
@@ -17,11 +16,9 @@ Chunk::Chunk(glm::mat4 chunkTransform){
 			blocksInChunk[i][j] = new Block[chunkDimensions];
 		}
 	}
-	*/
 }
 
 Chunk::~Chunk(){
-	/*
 	// Delete the blocks
 	for (int i = 0; i < chunkDimensions; ++i){
 		for (int j = 0; j < chunkDimensions; ++j){
@@ -30,7 +27,6 @@ Chunk::~Chunk(){
 		delete[] blocksInChunk[i];
 	}
 	delete[] blocksInChunk;
-	*/
 }
 
 void Chunk::update(float dt) {
@@ -41,15 +37,25 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 	//Loop over all cubes, get their information, call render
 	//Offset blocks by a transformation every time
 
-	for (int i = 0; i < chunkDimensions; i++) {
-		for (int j = 0; j < chunkDimensions; j++) {
-			for (int k = 0; k < chunkDimensions; k++) {
+	//glm::translate(vec3(10.0f, 0.0f, -10.0f));
+	//renderpass.draw(floor, floorTransform, floorMat);
 
+	//#IMPORTANT: We asume that the block size is 1.0f
+
+	glm::mat4 chunkTransformX = chunkTransform;
+	glm::mat4 chunkTransformY = chunkTransform;
+	glm::mat4 chunkTransformZ = chunkTransform;
+
+	for (int x = 0; x < chunkDimensions; x++) {
+		for (int y = 0; y < chunkDimensions; y++) {
+			for (int z = 0; z < chunkDimensions; z++) {
+				renderpass.draw(blocksInChunk[x][y][z].getMesh(), chunkTransform, Wolf3D::getInstance()->blockMaterial);
+				chunkTransformZ *= glm::translate(glm::vec3(0.0f, 0.0f, 1.0f));
 			}
+			chunkTransformZ = chunkTransform;
+			chunkTransformY *= glm::translate(glm::vec3(0.0f, 1.0f, 0.0f));
 		}
+		chunkTransformY = chunkTransform;
+		chunkTransformX *= glm::translate(glm::vec3(1.0f, 0.0f, 0.0f));
 	}
-
-
-
-
 }
