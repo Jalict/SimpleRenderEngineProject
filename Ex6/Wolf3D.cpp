@@ -20,14 +20,14 @@ Wolf3D::Wolf3D() {
     renderer.init();
     init();
 
-	// setMouseCursorLocked
-	if (mouseLock) {
-		renderer.setMouseCursorVisible(true);
-		renderer.setMouseCursorLocked(false);
-		SDL_SetWindowGrab(renderer.getSDLWindow(),SDL_TRUE);
-		SDL_SetRelativeMouseMode(SDL_TRUE);
-	}
-	
+	// setMouseCursorLocked state correctly
+	mouseLock = !mouseLock;
+	renderer.setMouseCursorVisible(mouseLock);
+	renderer.setMouseCursorLocked(!mouseLock);
+	SDL_SetWindowGrab(renderer.getSDLWindow(), mouseLock ? SDL_TRUE : SDL_FALSE);
+	SDL_SetRelativeMouseMode(mouseLock ? SDL_TRUE : SDL_FALSE);
+	fpsController->lockRotation = !mouseLock;
+
 	// Run Update
     renderer.frameUpdate = [&](float deltaTime){
 		physics.update();
@@ -61,13 +61,22 @@ Wolf3D::Wolf3D() {
 			debugProfiler = !debugProfiler;
 		}
 
+		// Toggle mouse capture
+		if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE) {
+			mouseLock = !mouseLock;
+			renderer.setMouseCursorVisible(mouseLock);
+			renderer.setMouseCursorLocked(!mouseLock);
+			SDL_SetWindowGrab(renderer.getSDLWindow(), mouseLock? SDL_TRUE : SDL_FALSE);
+			SDL_SetRelativeMouseMode(mouseLock ? SDL_TRUE : SDL_FALSE);
+			fpsController->lockRotation = !mouseLock;
+		}
     };
 
 	// Handle mouse events
     renderer.mouseEvent = [&](SDL_Event& e){
-        if (!lockRotation){
-            fpsController->onMouse(e);
-        }
+//        if (!lockRotation){
+          fpsController->onMouse(e);
+//        }
     };
 
 	// Start the event loop
@@ -135,9 +144,9 @@ void Wolf3D::drawGUI() {
 	ImGui::SetNextWindowPos(ImVec2(Renderer::instance->getWindowSize().x / 2 - 100, .0f), ImGuiSetCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Always);
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
-	ImGui::DragFloat("Rot", &fpsController->rotation);
+//	ImGui::DragFloat("Rot", &fpsController->rotation);
 //	ImGui::DragFloat3("Pos", &(fpsController->position.x), 0.1f);
-	ImGui::Checkbox("LockRotation", &lockRotation);
+//	ImGui::Checkbox("LockRotation", &lockRotation);
 	ImGui::End();
 }
 

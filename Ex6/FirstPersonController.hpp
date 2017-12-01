@@ -21,7 +21,10 @@ public:
 
     void setInitialPosition(glm::vec2 position, float rotation);
 
-    float rotation = 0;
+	const float MAX_X_LOOK_ROTATION = 30.0f;
+
+	glm::vec2 lookRotation;
+	bool lockRotation = false;
 private:
     sre::Camera * camera;
 

@@ -1,16 +1,32 @@
 #include "Block.hpp"
 
 Block::Block() {
-	type = BlockType::Rock;
+	type = BlockType::Rock; // Default block type
+
+	Block(type);
+}
+
+Block::Block(BlockType type) {
+	this->type = type;
+
+	mesh->create().withCube(1.0f);
 }
 
 Block::~Block() {
 
 }
 
-void Block::draw(sre::RenderPass& pass) {
-}
-
 void Block::setType(BlockType type) {
 	this->type = type;
 }
+
+std::shared_ptr<sre::Mesh> Block::getMesh()
+{
+	return mesh;
+}
+
+std::shared_ptr<sre::Material> Block::getMaterial()
+{
+	return material;
+}
+
