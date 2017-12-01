@@ -132,7 +132,7 @@ void Wolf3D::render() {
 }
 
 void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
-	//chunk.render(renderPass);
+	//chunk->draw(renderPass);
 }
 
 void Wolf3D::renderCeiling(RenderPass & renderpass) {

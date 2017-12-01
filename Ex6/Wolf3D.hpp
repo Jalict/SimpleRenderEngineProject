@@ -6,6 +6,7 @@
 #include "FirstPersonController.hpp"
 #include "Physics.hpp"
 #include "sre/SpriteAtlas.hpp"
+#include "Chunk.hpp"
 
 class Wolf3D {
 public:
@@ -55,5 +56,7 @@ private:
 	std::shared_ptr<sre::Mesh> ceil;
 	std::shared_ptr<sre::Material> floorMat;
 	std::shared_ptr<sre::Material> ceilMat;
+	//#TODO this should be a list of chunks.
+	std::shared_ptr<Chunk> chunk;
 };
 
