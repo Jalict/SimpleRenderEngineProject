@@ -13,7 +13,7 @@ using namespace glm;
 FirstPersonController::FirstPersonController(sre::Camera * camera)
 :camera(camera) {
 	// Setup  Camera projection
-    camera->setPerspectiveProjection(45,0.1f,1000);
+    camera->setPerspectiveProjection(FIELD_OF_FIELD, NEAR_PLANE, FAR_PLANE);
 
 	// Create Capsule collider
 	btCollisionShape* controllerShape = new btCapsuleShape(0.1f, 1.0f); // CHECKGROUND is linked to these values 1.2 / 2 = 0.6f;
@@ -65,6 +65,9 @@ void FirstPersonController::update(float deltaTime){
 		// Crashes if we try to normalize (0, 0, 0).
 		if (movement != vec3(0, 0, 0))
 			movement = glm::normalize(movement);
+
+		if(isSprinting)
+			movement *= SPRINT_MOVEMENT_INCREASE;	
 
 		// Multiply by time that has passed to compensate for FPS
 		movement *= deltaTime;
@@ -137,6 +140,13 @@ void FirstPersonController::onKey(SDL_Event &event) {
 			case SDLK_d:
 				right = true;
 				break;
+			case SDLK_LSHIFT:
+				if(!isGrounded)
+					return;
+
+				isSprinting = true;
+				camera->setPerspectiveProjection(FIELD_OF_FIELD * SPRINT_FOV_INCREASE, NEAR_PLANE, FAR_PLANE);
+				break;
 		}
 	}
 	// Capture movement keys released
@@ -154,6 +164,9 @@ void FirstPersonController::onKey(SDL_Event &event) {
 			case SDLK_d:
 				right = false;
 				break;
+			case SDLK_LSHIFT:
+				camera->setPerspectiveProjection(FIELD_OF_FIELD, NEAR_PLANE, FAR_PLANE);
+				isSprinting = false;
 			}
 	}
 }

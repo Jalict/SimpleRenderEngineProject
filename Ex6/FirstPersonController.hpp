@@ -23,6 +23,10 @@ public:
 	bool getIsGrounded();
 
 	const float MAX_X_LOOK_ROTATION = 30.0f;
+	// TODO move this to camera?s
+	const float FIELD_OF_FIELD = 45.0f;
+	const float NEAR_PLANE = 0.1f;
+	const float FAR_PLANE = 1000.0f;
 
 	glm::vec2 lookRotation;
 	bool lockRotation = false;
@@ -34,12 +38,15 @@ private:
 	const float ROTATION_SPEED = 0.3f;
 	const float MOVEMENT_SPEED = 100.0f;
 	const float JUMP_FORCE = 250.0f;
+	const float SPRINT_MOVEMENT_INCREASE = 2.0f;
+	const float SPRINT_FOV_INCREASE = 1.1f;
    
     bool fwd = false;
     bool bwd = false;
     bool left = false;
     bool right = false;
 	bool isGrounded = false;
+	bool isSprinting = false;
 
 	btRigidBody* rigidBody;
 //	btDefaultMotionState* motionState;
