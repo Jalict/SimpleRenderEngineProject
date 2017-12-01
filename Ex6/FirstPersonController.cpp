@@ -36,7 +36,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 
 FirstPersonController::~FirstPersonController(){
-	// #TODO check if done correctly
+	// TODO check if done correctly
 //	delete rigidBody;
 //	delete motionState;
 //	delete controllerShape;
@@ -46,20 +46,21 @@ FirstPersonController::~FirstPersonController(){
 
 void FirstPersonController::update(float deltaTime){
 	// Determine local movement
-	vec3 movement = vec3(0, 0, 0); 
+	btVector3 movement = btVector3(0, 0, 0); 
 
 	if(fwd)
-		movement += vec3(0, 0, -1);
+		movement += btVector3(0, 0, -1);
 	if(left)
-		movement += vec3(-1, 0, 0);
+		movement += btVector3(-1, 0, 0);
 	if(bwd)
-		movement += vec3(0, 0, 1);
+		movement += btVector3(0, 0, 1);
 	if(right)
-		movement += vec3(1, 0, 0);
+		movement += btVector3(1, 0, 0);
 
+	movement.normalize();
 	movement *= deltaTime;
 
-	// #TODO use collider rotations
+	// TODO use collider rotations
 	// Translate local movement to relative world movement 
 	float x = cos(radians(lookRotation.x)) * movement.x - sin(radians(lookRotation.x)) * movement.z;
 	float z = cos(radians(lookRotation.x)) * movement.z + sin(radians(lookRotation.x)) * movement.x;
@@ -90,7 +91,7 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 
 	Wolf3D::getInstance()->physics.raycast(&position, &btTo, &res);
 
-	// #TODO distance check - expansive calculation, change to something more efficient.
+	// TODO distance check - expansive calculation, change to something more efficient.
 	if (res.hasHit()) {
 //		std::cout << position.distance(res.m_hitPointWorld) << std::endl;
 		isGrounded = !(position.distance(res.m_hitPointWorld) > 0.6f);
@@ -99,7 +100,7 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 }
 
 
-// #TODO handle two keys pressed (diagonal speed increase) -> normalize movement
+// TODO handle two keys pressed (diagonal speed increase) -> normalize movement
 void FirstPersonController::onKey(SDL_Event &event) {
 	// Capture Jump
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {

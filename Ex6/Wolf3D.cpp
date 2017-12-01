@@ -11,7 +11,8 @@ using namespace glm;
 
 
 Wolf3D::Wolf3D() {
-	// Singleton-ish #TODO clean this to be proper singleton?
+	// Singleton-ish
+	// TODO clean this to be proper singleton?
 	Wolf3D::instance = this;
 	Wolf3D::instanceFlag = true;
 
@@ -84,7 +85,7 @@ Wolf3D::Wolf3D() {
 }
 
 
-// #TODO clean this to be proper singleton ?
+// TODO clean this to be proper singleton ?
 bool Wolf3D::instanceFlag = false;
 Wolf3D* Wolf3D::instance = NULL;
 Wolf3D* Wolf3D::getInstance(){
@@ -109,11 +110,13 @@ void Wolf3D::render() {
             .withCamera(camera)
             .build();
 
-	// Draw objects #TODO make more generic
+	// Draw objects 
+	// TODO make more generic
 	renderPass.draw(sphere, sphereTransform, sphereMaterial);
 	renderCeiling(renderPass);
 	renderFloor(renderPass);
-	//We're only drawing one chunk. #TODO render a list of chunks.
+	//We're only drawing one chunk.
+	// TODO render a list of chunks.
 	renderChunk(renderPass);
 	renderPass.draw(walls, glm::mat4(1), wallMaterial);
 
@@ -213,7 +216,7 @@ void Wolf3D::addCube(std::vector<glm::vec3>& vertexPositions, std::vector<glm::v
 
 
 void Wolf3D::init() {
-	// #TODO Clean up +  dealloc
+	// TODO Clean up +  dealloc
 
 	// Create a ground plane
 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);

@@ -7,7 +7,7 @@ Physics::Physics() {
 
 
 Physics::~Physics() {
-	// #TODO Check if done correctly
+	// TODO Check if done correctly
 	delete &broadphase;
 	delete &collisionConfiguration;
 	delete &dispatcher;
