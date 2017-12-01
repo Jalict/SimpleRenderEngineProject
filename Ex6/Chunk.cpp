@@ -1,6 +1,9 @@
 #include "Chunk.hpp"
 
-Chunk::Chunk(){
+Chunk::Chunk(glm::mat4 chunkTransform){
+	//Set the position of the chunk (Upper, front, left corner, hopefully)
+	this->chunkTransform = chunkTransform;
+
 	// Create the blocks
 	blocksInChunk = new Block** [chunkDimension];
 	for (int i = 0; i < chunkDimension; i++){
@@ -24,9 +27,10 @@ Chunk::~Chunk(){
 }
 
 void Chunk::update(float dt) {
-
+	//Dunno what to do in here yet
 }
 
 void Chunk::draw(sre::RenderPass& renderpass) {
+	//Loop over all cubes, get their information, call render
 
 }

@@ -214,6 +214,7 @@ void Wolf3D::addCube(std::vector<glm::vec3>& vertexPositions, std::vector<glm::v
 
 void Wolf3D::init() {
 	// #TODO Clean up +  dealloc
+
 	// Create a ground plane
 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1.0f, 0)));
@@ -239,6 +240,10 @@ void Wolf3D::init() {
 	sphere = Mesh::create().withSphere(16, 32, 1.0f).build();
 	sphereMaterial = Shader::getUnlit()->createMaterial();
 	sphereMaterial->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+	//Create an example chunk
+	glm::mat4 chunkTransform = glm::translate(vec3(10.0f, 0.0f, -10.0f));
+	chunk = new Chunk(chunkTransform);
 
 	// Load and create walls
     wallMaterial = Shader::getUnlit()->createMaterial();
