@@ -21,11 +21,11 @@ private:
     void init();
     void update(float deltaTime);
     void render();
-	void renderCeiling(sre::RenderPass & renderPass);
 	void renderFloor(sre::RenderPass & renderPass);
 	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
 	void addCube(std::vector<glm::vec3>& vertexPositions, std::vector<glm::vec4>& textureCoordinates, int x, int z, int type);
+	void handleDebugKeys(SDL_Event& e);
 
 	static bool instanceFlag;
 	static Wolf3D* instance;
@@ -49,13 +49,10 @@ private:
 	btTransform sphereTrans;
 
 	glm::mat4 floorTransform;
-	glm::mat4 ceilTransorm;
 	glm::vec4 floorColor;
-	glm::vec4 ceilColor;
 	std::shared_ptr<sre::Mesh> floor;
-	std::shared_ptr<sre::Mesh> ceil;
 	std::shared_ptr<sre::Material> floorMat;
-	std::shared_ptr<sre::Material> ceilMat;
+
 	// TODO this should be a list of chunks. Also make shared pointer
 	//std::shared_ptr<Chunk> chunk;
 	Chunk* chunk;

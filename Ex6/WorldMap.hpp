@@ -14,13 +14,11 @@ public:
     glm::vec2 getStartingPosition();
     float getStartingRotation();
     glm::vec4 getFloorColor();
-    glm::vec4 getCeilColor();
 private:
     std::vector<std::vector<int>> values;
     glm::vec2 startingPosition;
     float startingRotation;
     glm::vec4 floorColor;
-    glm::vec4 ceilColor;
 };
 
 
