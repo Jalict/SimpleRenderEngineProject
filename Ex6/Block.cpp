@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Block.hpp"
 
 Block::Block() : Block(type) {
@@ -6,7 +7,10 @@ Block::Block() : Block(type) {
 Block::Block(BlockType type) {
 	setType(type);
 
-	//mesh->create().withCube(1.0f).withUVs(texCoords).build();
+	mesh = sre::Mesh::create()
+		.withCube(1.0f)
+		.withUVs(texCoords)
+		.build();
 }
 
 Block::~Block() {
@@ -40,7 +44,7 @@ std::shared_ptr<sre::Mesh> Block::getMesh()
 	return mesh;
 }
 
-//(TODO) Move to somewhere more generic and make it static
+//(TODO) Move to somewhere more generic
 // FPL, 1 December 2017
 glm::vec4 Block::textureCoordinates(int blockID) {
 	glm::vec2 textureSize(1024, 2048);
