@@ -56,7 +56,8 @@ private:
 	std::shared_ptr<sre::Mesh> ceil;
 	std::shared_ptr<sre::Material> floorMat;
 	std::shared_ptr<sre::Material> ceilMat;
-	//#TODO this should be a list of chunks.
-	std::shared_ptr<Chunk> chunk;
+	// TODO this should be a list of chunks. Also make shared pointer
+	//std::shared_ptr<Chunk> chunk;
+	Chunk* chunk;
 };
 

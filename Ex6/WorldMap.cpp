@@ -12,7 +12,7 @@
 using namespace std;
 
 void WorldMap::loadMap(std::string filename) {
-    // todo implement json loading this instead following
+    // TOOD implement json loading this instead following
 /*    values.push_back( { 0, 0, 0,0} ); // -------> x
     values.push_back( { 0,-1,-1,2} ); // |
     values.push_back( { 0,-1,-1,9} ); // |

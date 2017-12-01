@@ -7,7 +7,7 @@ Physics::Physics() {
 
 
 Physics::~Physics() {
-	// #TODO Check if done correctly
+	// TODO Check if done correctly
 	delete &broadphase;
 	delete &collisionConfiguration;
 	delete &dispatcher;
@@ -53,3 +53,10 @@ void Physics::addRigidBody(btRigidBody* rigidbody) {
 void Physics::setDebugDrawMode(btIDebugDraw::DebugDrawModes mode){
 	debugDrawer.setDebugMode(mode);
 }
+
+
+void Physics::raycast(btVector3* from, btVector3* to, btCollisionWorld::ClosestRayResultCallback* result){
+	 dynamicsWorld->rayTest(*from, *to, *result);
+}
+
+

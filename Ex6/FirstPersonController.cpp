@@ -15,7 +15,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
     camera->setPerspectiveProjection(45,0.1f,1000);
 
 	// Create Capsule collider
-	btCollisionShape* controllerShape = new btCapsuleShape(0.1f, 1.0f);
+	btCollisionShape* controllerShape = new btCapsuleShape(0.1f, 1.0f); // CHECKGROUND is linked to these values 1.2 / 2 = 0.6f;
 	btDefaultMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(2, 50, 0)));
 
 	btScalar mass = 1;
@@ -36,7 +36,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 
 FirstPersonController::~FirstPersonController(){
-	// #TODO check if done correctly
+	// TODO check if done correctly
 //	delete rigidBody;
 //	delete motionState;
 //	delete controllerShape;
@@ -46,20 +46,21 @@ FirstPersonController::~FirstPersonController(){
 
 void FirstPersonController::update(float deltaTime){
 	// Determine local movement
-	vec3 movement = vec3(0, 0, 0); 
+	btVector3 movement = btVector3(0, 0, 0); 
 
 	if(fwd)
-		movement += vec3(0, 0, -1);
+		movement += btVector3(0, 0, -1);
 	if(left)
-		movement += vec3(-1, 0, 0);
+		movement += btVector3(-1, 0, 0);
 	if(bwd)
-		movement += vec3(0, 0, 1);
+		movement += btVector3(0, 0, 1);
 	if(right)
-		movement += vec3(1, 0, 0);
+		movement += btVector3(1, 0, 0);
 
+	movement.normalize();
 	movement *= deltaTime;
 
-	// #TODO use collider rotations
+	// TODO use collider rotations
 	// Translate local movement to relative world movement 
 	float x = cos(radians(lookRotation.x)) * movement.x - sin(radians(lookRotation.x)) * movement.z;
 	float z = cos(radians(lookRotation.x)) * movement.z + sin(radians(lookRotation.x)) * movement.x;
@@ -73,6 +74,8 @@ void FirstPersonController::update(float deltaTime){
 	btTransform transform;
 	rigidBody->getMotionState()->getWorldTransform(transform);
 	btVector3 position = transform.getOrigin();
+
+	checkGrounded(position);
 	
 	auto transformMatrix = mat4();
 	transformMatrix = translate(transformMatrix, glm::vec3(position.getX(), position.getY(), position.getZ())); 
@@ -82,8 +85,29 @@ void FirstPersonController::update(float deltaTime){
 }
 
 
-// #TODO handle two keys pressed (diagonal speed increase) -> normalize movement
+void FirstPersonController::checkGrounded(btVector3 position) {
+	btVector3 btTo = position + btVector3(0, -100000, 0);
+	btCollisionWorld::ClosestRayResultCallback res(position, btTo);
+
+	Wolf3D::getInstance()->physics.raycast(&position, &btTo, &res);
+
+	// TODO distance check - expansive calculation, change to something more efficient.
+	if (res.hasHit()) {
+//		std::cout << position.distance(res.m_hitPointWorld) << std::endl;
+		isGrounded = !(position.distance(res.m_hitPointWorld) > 0.6f);
+	}
+//	std::cout << isGrounded << std::endl;
+}
+
+
+// TODO handle two keys pressed (diagonal speed increase) -> normalize movement
 void FirstPersonController::onKey(SDL_Event &event) {
+	// Capture Jump
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
+		rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
+	}
+
+	// Capture movement keys down
     if(event.type == SDL_KEYDOWN ){
 		switch (event.key.keysym.sym){
 			case SDLK_w:
@@ -100,7 +124,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 				break;
 		}
 	}
-
+	// Capture movement keys released
 	if (event.type == SDL_KEYUP) {
 		switch (event.key.keysym.sym) {
 			case SDLK_w:
@@ -135,4 +159,8 @@ void FirstPersonController::setInitialPosition(glm::vec2 position, float rotatio
     this->lookRotation.x = rotation;
 	this->lookRotation.y = 0;
 	rigidBody->translate(btVector3(position.x, 10.0f, position.y));
+}
+
+bool FirstPersonController::getIsGrounded() {
+	return isGrounded;
 }

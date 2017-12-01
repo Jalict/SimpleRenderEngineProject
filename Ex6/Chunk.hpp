@@ -1,5 +1,6 @@
 #pragma once
 #include "Block.hpp"
+#include "sre/SDLRenderer.hpp"
 
 /*
 Created: 01-12-2017
@@ -10,7 +11,7 @@ blocks are active and which are not.
 
 class Chunk {
 public:
-	Chunk();
+	Chunk(glm::mat4 chunkTransform);
 	~Chunk();
 	int getChunkDimensions() { return chunkDimension; }
 
@@ -18,6 +19,9 @@ public:
 	void draw(sre::RenderPass& renderpass);
 	
 private:
+	//(Upper, front, left corner of chunk)
+	glm::mat4 chunkTransform;
+
 	Block*** blocksInChunk;
 	const int chunkDimension = 5;
 };
