@@ -46,19 +46,20 @@ FirstPersonController::~FirstPersonController(){
 
 void FirstPersonController::update(float deltaTime){
 	// Determine local movement
-	btVector3 movement = btVector3(0, 0, 0); 
+	vec3 movement = vec3(0, 0, 0);
 
 	if(fwd)
-		movement += btVector3(0, 0, -1);
+		movement += vec3(0, 0, -1);
 	if(left)
-		movement += btVector3(-1, 0, 0);
+		movement += vec3(-1, 0, 0);
 	if(bwd)
-		movement += btVector3(0, 0, 1);
+		movement += vec3(0, 0, 1);
 	if(right)
-		movement += btVector3(1, 0, 0);
+		movement += vec3(1, 0, 0);
 
-	movement.normalize();
+	movement = glm::normalize(movement);
 	movement *= deltaTime;
+
 
 	// TODO use collider rotations
 	// Translate local movement to relative world movement 
