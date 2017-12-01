@@ -14,6 +14,7 @@ public:
 	void update();
 	void addRigidBody(btRigidBody* rigidbody);
 	void setDebugDrawMode(btIDebugDraw::DebugDrawModes mode);
+	void raycast(btVector3* from, btVector3* to, btCollisionWorld::ClosestRayResultCallback* result);
 private:
 	btBroadphaseInterface*	broadphase;
 	btDefaultCollisionConfiguration* collisionConfiguration;
