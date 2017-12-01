@@ -113,6 +113,8 @@ void Wolf3D::render() {
 	renderPass.draw(sphere, sphereTransform, sphereMaterial);
 	renderCeiling(renderPass);
 	renderFloor(renderPass);
+	//We're only drawing one chunk. #TODO render a list of chunks.
+	renderChunk(renderPass);
 	renderPass.draw(walls, glm::mat4(1), wallMaterial);
 
 	// Allow physics debug drawer to draw
@@ -129,6 +131,9 @@ void Wolf3D::render() {
 	}
 }
 
+void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
+	//chunk->draw(renderPass);
+}
 
 void Wolf3D::renderCeiling(RenderPass & renderpass) {
 	//	renderpass.draw(ceil, ceilTransorm, ceilingMaterial);
@@ -209,6 +214,7 @@ void Wolf3D::addCube(std::vector<glm::vec3>& vertexPositions, std::vector<glm::v
 
 void Wolf3D::init() {
 	// #TODO Clean up +  dealloc
+
 	// Create a ground plane
 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1.0f, 0)));
@@ -234,6 +240,10 @@ void Wolf3D::init() {
 	sphere = Mesh::create().withSphere(16, 32, 1.0f).build();
 	sphereMaterial = Shader::getUnlit()->createMaterial();
 	sphereMaterial->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+	//Create an example chunk
+	glm::mat4 chunkTransform = glm::translate(vec3(10.0f, 0.0f, -10.0f));
+	chunk = new Chunk(chunkTransform);
 
 	// Load and create walls
     wallMaterial = Shader::getUnlit()->createMaterial();

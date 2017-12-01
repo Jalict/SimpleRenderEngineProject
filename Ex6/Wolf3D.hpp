@@ -6,6 +6,7 @@
 #include "FirstPersonController.hpp"
 #include "Physics.hpp"
 #include "sre/SpriteAtlas.hpp"
+#include "Chunk.hpp"
 
 class Wolf3D {
 public:
@@ -22,6 +23,7 @@ private:
     void render();
 	void renderCeiling(sre::RenderPass & renderPass);
 	void renderFloor(sre::RenderPass & renderPass);
+	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
 	void addCube(std::vector<glm::vec3>& vertexPositions, std::vector<glm::vec4>& textureCoordinates, int x, int z, int type);
 
@@ -54,5 +56,8 @@ private:
 	std::shared_ptr<sre::Mesh> ceil;
 	std::shared_ptr<sre::Material> floorMat;
 	std::shared_ptr<sre::Material> ceilMat;
+	//#TODO this should be a list of chunks. Also make shared pointer
+	//std::shared_ptr<Chunk> chunk;
+	Chunk* chunk;
 };
 
