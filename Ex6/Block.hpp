@@ -10,7 +10,7 @@ A block in the world
 
 class Block {
 private:
-	enum BlockType { Grass, Rock };
+	enum BlockType { Rock, Grass };
 	BlockType type;
 
 	std::shared_ptr<sre::Mesh> mesh;

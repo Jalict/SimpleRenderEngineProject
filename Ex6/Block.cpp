@@ -1,7 +1,7 @@
 #include "Block.hpp"
 
 Block::Block() {
-	type = BlockType::Rock;
+	type = BlockType::Rock; // Default block type
 
 	Block(type);
 }
