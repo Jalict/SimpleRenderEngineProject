@@ -48,28 +48,35 @@ void FirstPersonController::update(float deltaTime){
 	// Determine local movement
 	vec3 movement = vec3(0, 0, 0);
 
-	if(fwd)
-		movement += vec3(0, 0, -1);
-	if(left)
-		movement += vec3(-1, 0, 0);
-	if(bwd)
-		movement += vec3(0, 0, 1);
-	if(right)
-		movement += vec3(1, 0, 0);
+	// Only handle movement if we are grounded
+	if(isGrounded){
+		if(fwd )
+			movement += vec3(0, 0, -1);
+		if(left)
+			movement += vec3(-1, 0, 0);
+		if(bwd)
+			movement += vec3(0, 0, 1);
+		if(right)
+			movement += vec3(1, 0, 0);
 
-//	movement = glm::normalize(movement);
-	movement *= deltaTime;
+		// Only normalize if we have some movement.
+		// Crashes if we try to normalize (0, 0, 0).
+		if (movement != vec3(0, 0, 0))
+			movement = glm::normalize(movement);
+
+		movement *= deltaTime;
 
 
-	// TODO use collider rotations
-	// Translate local movement to relative world movement 
-	float x = cos(radians(lookRotation.x)) * movement.x - sin(radians(lookRotation.x)) * movement.z;
-	float z = cos(radians(lookRotation.x)) * movement.z + sin(radians(lookRotation.x)) * movement.x;
+		// TODO use collider rotations
+		// Translate local movement to relative world movement 
+		float x = cos(radians(lookRotation.x)) * movement.x - sin(radians(lookRotation.x)) * movement.z;
+		float z = cos(radians(lookRotation.x)) * movement.z + sin(radians(lookRotation.x)) * movement.x;
 
-	// Apply movmement
-	btVector3 velocity = rigidBody->getLinearVelocity();
-	velocity = btVector3(1,0,0) * x * MOVEMENT_SPEED + btVector3(0, velocity.getY(),0) + btVector3(0,0,1) * z * MOVEMENT_SPEED;
-	rigidBody->setLinearVelocity(velocity);
+		// Apply movmement
+		btVector3 velocity = rigidBody->getLinearVelocity();
+		velocity = btVector3(1, 0, 0) * x * MOVEMENT_SPEED + btVector3(0, velocity.getY(), 0) + btVector3(0, 0, 1) * z * MOVEMENT_SPEED;
+		rigidBody->setLinearVelocity(velocity);
+	}
 	
 	// Get our position from physics
 	btTransform transform;
