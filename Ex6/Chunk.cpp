@@ -4,13 +4,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 Chunk::Chunk(glm::mat4 chunkTransform){
-
-	//testBlock = new Block();
-
-	//Set the position of the chunk (Upper, front, left corner, hopefully)
+	//Set the position of the chunk
 	this->chunkTransform = chunkTransform;
 	
-	//Debugging
+	//For outputting a glm::mat4
 	//const float *pSource = (const float*)glm::value_ptr(chunkTransform);
 	//for (int i = 0; i < 16; ++i) //Output from upper left corner, one collum at a time
 	//	std::cout << pSource[i] << std::endl;
@@ -44,18 +41,12 @@ void Chunk::update(float dt) {
 void Chunk::draw(sre::RenderPass& renderpass) {
 	//Loop over all cubes, get their information, call render
 	//Offset blocks by a transformation every time
-
-	//glm::translate(vec3(10.0f, 0.0f, -10.0f));
-	//renderpass.draw(floor, floorTransform, floorMat);
-
-	//#IMPORTANT: We asume that the block size is 1.0f
-
-	//renderpass.draw(testBlock->getMesh(), chunkTransform, Wolf3D::getInstance()->blockMaterial);
+	//#IMPORTANT: We asume that the block size is 2.0f
 
 	for (int x = 0; x < chunkDimensions; x++) {
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
-				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x * 2, y * 2, z * 2)); // HACK block size is set to two
+				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x * 2, y * 2, z * 2)); //#HACK block size is set to two
 
 				renderpass.draw(blocksInChunk[x][y][z].getMesh(), transformMatrix, Wolf3D::getInstance()->blockMaterial);
 			}

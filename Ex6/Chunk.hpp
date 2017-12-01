@@ -20,10 +20,8 @@ public:
 	void draw(sre::RenderPass& renderpass);
 	
 private:
-	//(Upper, front, left corner of chunk)
 	glm::mat4 chunkTransform;
 
-	//Block* testBlock;
 	Block*** blocksInChunk;
 	const int chunkDimensions = 5;
 };
