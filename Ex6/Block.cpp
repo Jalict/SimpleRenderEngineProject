@@ -20,22 +20,35 @@ Block::~Block() {
 void Block::setType(BlockType type) {
 	this->type = type;
 
-	glm::vec4 coords = textureCoordinates((int)type);
+	const glm::vec4 coords = textureCoordinates((int)1);
+	std::cout << coords.x << " " << coords.y << " " << coords.z << " " << coords.w << std::endl;
 
 	texCoords.clear();
 
 	texCoords.insert(texCoords.end(), {
-		glm::vec4(0,0,0,0), glm::vec4(0,0,0,0), glm::vec4(0,0,0,0),
-		glm::vec4(0,0,0,0), glm::vec4(0,0,0,0), glm::vec4(0,0,0,0),
+		// +z
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 
-		glm::vec4(0,0,0,0), glm::vec4(0,0,0,0), glm::vec4(0,0,0,0),
-		glm::vec4(0,0,0,0), glm::vec4(0,0,0,0), glm::vec4(0,0,0,0),
+		// ?
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 
-		glm::vec4(0,0,0,0), glm::vec4(0,0,0,0), glm::vec4(0,0,0,0),
-		glm::vec4(0,0,0,0), glm::vec4(0,0,0,0), glm::vec4(0,0,0,0),
+		// ?
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 
-		glm::vec4(0,0,0,0), glm::vec4(0,0,0,0), glm::vec4(0,0,0,0),
-		glm::vec4(0,0,0,0), glm::vec4(0,0,0,0), glm::vec4(0,0,0,0)
+		// ?
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// top
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// bottom
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
 }
 
@@ -54,7 +67,7 @@ glm::vec4 Block::textureCoordinates(int blockID) {
 	float tileHeight = tileSize.y / textureSize.y;
 
 	glm::vec2 min = glm::vec2(0, 16 * tileSize.y) / textureSize;
-	glm::vec2 max = min + tileSize / textureSize;
+	glm::vec2 max = min - tileSize / textureSize;
 
 	min.x += (blockID % 8) * tileWidth * 2;
 	max.x += (blockID % 8) * tileWidth * 2;
