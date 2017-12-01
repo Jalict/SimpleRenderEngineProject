@@ -1,15 +1,12 @@
 #include "Block.hpp"
 
-Block::Block() {
-	type = BlockType::Rock; // Default block type
-
-	Block(type);
+Block::Block() : Block(type) {
 }
 
 Block::Block(BlockType type) {
 	setType(type);
 
-	mesh->create().withCube(1.0f).withUVs(texCoords).build();
+	//mesh->create().withCube(1.0f).withUVs(texCoords).build();
 }
 
 Block::~Block() {

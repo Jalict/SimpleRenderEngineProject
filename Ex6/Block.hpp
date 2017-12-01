@@ -11,7 +11,7 @@ A block in the world
 class Block {
 private:
 	enum BlockType { Rock, Grass };				// Types of blocks
-	BlockType type;								// Current type of block
+	BlockType type = BlockType::Rock;			// Current type of block
 
 	std::shared_ptr<sre::Mesh> mesh;			// Mesh of block
 	std::vector<glm::vec4> texCoords;	// texCoords for block
