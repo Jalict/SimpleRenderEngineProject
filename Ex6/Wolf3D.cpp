@@ -113,6 +113,8 @@ void Wolf3D::render() {
 	renderPass.draw(sphere, sphereTransform, sphereMaterial);
 	renderCeiling(renderPass);
 	renderFloor(renderPass);
+	//We're only drawing one chunk. #TODO render a list of chunks.
+	renderChunk(renderPass);
 	renderPass.draw(walls, glm::mat4(1), wallMaterial);
 
 	// Allow physics debug drawer to draw
@@ -129,6 +131,9 @@ void Wolf3D::render() {
 	}
 }
 
+void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
+	//chunk.render(renderPass);
+}
 
 void Wolf3D::renderCeiling(RenderPass & renderpass) {
 	//	renderpass.draw(ceil, ceilTransorm, ceilingMaterial);

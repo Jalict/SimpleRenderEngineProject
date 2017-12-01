@@ -22,6 +22,7 @@ private:
     void render();
 	void renderCeiling(sre::RenderPass & renderPass);
 	void renderFloor(sre::RenderPass & renderPass);
+	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
 	void addCube(std::vector<glm::vec3>& vertexPositions, std::vector<glm::vec4>& textureCoordinates, int x, int z, int type);
 
