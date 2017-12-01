@@ -10,18 +10,19 @@ A block in the world
 
 class Block {
 private:
-	enum BlockType { Rock, Grass };
-	BlockType type;
+	enum BlockType { Rock, Grass };				// Types of blocks
+	BlockType type;								// Current type of block
 
-	std::shared_ptr<sre::Mesh> mesh;
-	std::shared_ptr<sre::Material> material;
+	std::shared_ptr<sre::Mesh> mesh;			// Mesh of block
+	std::vector<glm::vec4> texCoords;	// texCoords for block
+
+	glm::vec4 textureCoordinates(int blockID);
 public:
 	Block();
 	Block(BlockType type);
 	~Block();
 
-	void setType(BlockType type);
+	void setType(BlockType type);				// Change type of block
 
-	std::shared_ptr<sre::Mesh> getMesh();
-	std::shared_ptr<sre::Material> getMaterial();
+	std::shared_ptr<sre::Mesh> getMesh();		// Get Mesh of Block
 };
