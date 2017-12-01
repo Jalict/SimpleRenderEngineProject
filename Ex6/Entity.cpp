@@ -7,3 +7,11 @@ Entity::Entity(sre::Sprite* sprite) {
 Entity::~Entity() {
 
 }
+
+void Entity::update(float dt) {
+
+}
+
+void Entity::draw(sre::RenderPass& renderpass) {
+
+}
