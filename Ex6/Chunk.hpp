@@ -13,7 +13,7 @@ class Chunk {
 public:
 	Chunk(glm::mat4 chunkTransform);
 	~Chunk();
-	int getChunkDimensions() { return chunkDimension; }
+	int getChunkDimensions() { return chunkDimensions; }
 
 	void update(float dt);
 	void draw(sre::RenderPass& renderpass);
@@ -22,6 +22,7 @@ private:
 	//(Upper, front, left corner of chunk)
 	glm::mat4 chunkTransform;
 
+	Block* testBlock;
 	Block*** blocksInChunk;
-	const int chunkDimension = 5;
+	const int chunkDimensions = 5;
 };
