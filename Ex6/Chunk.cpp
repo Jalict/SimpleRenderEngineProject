@@ -52,35 +52,13 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 
 	//renderpass.draw(testBlock->getMesh(), chunkTransform, Wolf3D::getInstance()->blockMaterial);
 
-	
-	//glm::mat4 chunkTransformX = chunkTransform;
-	//glm::mat4 chunkTransformY = chunkTransform;
-	//glm::mat4 chunkTransformZ = chunkTransform;
-
-	glm::vec3 chunkTransformX = glm::vec3(0, 0, 0);
-	glm::vec3 chunkTransformY = glm::vec3(0, 0, 0);
-	glm::vec3 chunkTransformZ = glm::vec3(0, 0, 0);
-
 	for (int x = 0; x < chunkDimensions; x++) {
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
-				//glm::mat4() temp = glm::translate(chunkTransform, chunkTransformX);
-				//chunkTransform = glm::translate(chunkTransform, chunkTransformX);
-				
-				renderpass.draw(blocksInChunk[x][y][z].getMesh(), chunkTransform, Wolf3D::getInstance()->blockMaterial);
-				//std::cout << x << ", " << y << ", " << z << std::endl;
-				chunkTransformZ += glm::vec3(0.0f, 0.0f, 1.0f);
+				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x * 2, y * 2, z * 2)); // HACK block size is set to two
+
+				renderpass.draw(blocksInChunk[x][y][z].getMesh(), transformMatrix, Wolf3D::getInstance()->blockMaterial);
 			}
-			chunkTransformZ = glm::vec3(0, 0, 0);
-			chunkTransformY += glm::vec3(0.0f, 1.0f, 0.0f);
 		}
-		chunkTransformY = glm::vec3(0, 0, 0);
-		chunkTransformX += glm::vec3(1.0f, 0.0f, 0.0f);
 	}
-
-	//const float *pSource = (const float*)glm::value_ptr(chunkTransform);
-	//for (int i = 0; i < 16; ++i) //Output from upper left corner, one collum at a time
-	//	std::cout << pSource[i] << std::endl;
-
-
 }
