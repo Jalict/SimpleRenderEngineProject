@@ -105,7 +105,7 @@ void Wolf3D::render() {
 
 void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
 	chunk->draw(renderPass);
-}
+}	
 
 
 void Wolf3D::renderFloor(RenderPass & renderpass) {
