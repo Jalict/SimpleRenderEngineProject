@@ -1,12 +1,14 @@
 #include "Chunk.hpp"
+#include "Wolf3D.hpp"
 
 Chunk::Chunk(glm::mat4 chunkTransform){
 
-	//testBlock = new Block();
+	testBlock = new Block();
 
 	//Set the position of the chunk (Upper, front, left corner, hopefully)
 	this->chunkTransform = chunkTransform;
 
+	/*
 	// Create the blocks
 	blocksInChunk = new Block** [chunkDimensions];
 	for (int i = 0; i < chunkDimensions; i++){
@@ -16,6 +18,7 @@ Chunk::Chunk(glm::mat4 chunkTransform){
 			blocksInChunk[i][j] = new Block[chunkDimensions];
 		}
 	}
+	*/
 }
 
 Chunk::~Chunk(){
@@ -42,6 +45,9 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 
 	//#IMPORTANT: We asume that the block size is 1.0f
 
+	renderpass.draw(testBlock->getMesh(), chunkTransform, Wolf3D::getInstance()->blockMaterial);
+
+	/*
 	glm::mat4 chunkTransformX = chunkTransform;
 	glm::mat4 chunkTransformY = chunkTransform;
 	glm::mat4 chunkTransformZ = chunkTransform;
@@ -58,4 +64,5 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 		chunkTransformY = chunkTransform;
 		chunkTransformX *= glm::translate(glm::vec3(1.0f, 0.0f, 0.0f));
 	}
+	*/
 }

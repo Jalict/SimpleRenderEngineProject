@@ -57,7 +57,8 @@ private:
 	std::shared_ptr<sre::Material> floorMat;
 	std::shared_ptr<sre::Material> ceilMat;
 	// TODO this should be a list of chunks. Also make shared pointer
-	//std::shared_ptr<Chunk> chunk;
-	Chunk* chunk;
+	std::shared_ptr<Chunk> chunk;
+	//Chunk* chunk = new Chunk(glm::translate(vec3(10.0f, 0.0f, -10.0f)));
+	//Chunk* chunk;
 };
 

@@ -135,7 +135,7 @@ void Wolf3D::render() {
 }
 
 void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
-	//chunk->draw(renderPass);
+	chunk->draw(renderPass);
 }
 
 void Wolf3D::renderCeiling(RenderPass & renderpass) {
@@ -246,7 +246,7 @@ void Wolf3D::init() {
 
 	//Create an example chunk
 	glm::mat4 chunkTransform = glm::translate(vec3(10.0f, 0.0f, -10.0f));
-	chunk = new Chunk(chunkTransform);
+	chunk = std::make_shared<Chunk>(chunkTransform);
 
 	// Load and create walls
     wallMaterial = Shader::getUnlit()->createMaterial();
