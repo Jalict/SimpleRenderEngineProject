@@ -30,6 +30,8 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 	// Only allow for rotations around the Y-axis
 	rigidBody->setAngularFactor(btVector3(0, 1, 0));
+
+	lookRotation = vec2(0,0);
 }
 
 
@@ -59,8 +61,8 @@ void FirstPersonController::update(float deltaTime){
 
 	// #TODO use collider rotations
 	// Translate local movement to relative world movement 
-	float x = cos(radians(rotation)) * movement.x - sin(radians(rotation)) * movement.z;
-	float z = cos(radians(rotation)) * movement.z + sin(radians(rotation)) * movement.x;
+	float x = cos(radians(lookRotation.x)) * movement.x - sin(radians(lookRotation.x)) * movement.z;
+	float z = cos(radians(lookRotation.x)) * movement.z + sin(radians(lookRotation.x)) * movement.x;
 
 	// Apply movmement
 	btVector3 velocity = rigidBody->getLinearVelocity();
@@ -71,10 +73,11 @@ void FirstPersonController::update(float deltaTime){
 	btTransform transform;
 	rigidBody->getMotionState()->getWorldTransform(transform);
 	btVector3 position = transform.getOrigin();
-
+	
 	auto transformMatrix = mat4();
 	transformMatrix = translate(transformMatrix, glm::vec3(position.getX(), position.getY(), position.getZ())); 
-	transformMatrix = rotate(transformMatrix, radians(rotation), vec3(0, -1, 0));
+	transformMatrix = rotate(transformMatrix, radians(lookRotation.x), vec3(0, -1, 0));
+	transformMatrix = rotate(transformMatrix, radians(lookRotation.y), vec3(-1, 0, 0));
 	camera->setViewTransform(glm::inverse(transformMatrix));
 }
 
@@ -119,14 +122,17 @@ void FirstPersonController::onKey(SDL_Event &event) {
 
 // Handle Mouse Events
 void FirstPersonController::onMouse(SDL_Event &event) {
-   if(event.type == SDL_MOUSEMOTION) {
-	   rotation += event.motion.xrel * ROTATION_SPEED;
+   if(event.type == SDL_MOUSEMOTION && !lockRotation) {
+	   lookRotation.x += event.motion.xrel * ROTATION_SPEED;
+	   lookRotation.y += event.motion.yrel * ROTATION_SPEED;
+	   lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_ROTATION, MAX_X_LOOK_ROTATION);
    }
 }
 
 
 // Set Spawn Position
 void FirstPersonController::setInitialPosition(glm::vec2 position, float rotation) {
-    this->rotation = rotation;
+    this->lookRotation.x = rotation;
+	this->lookRotation.y = 0;
 	rigidBody->translate(btVector3(position.x, 10.0f, position.y));
 }

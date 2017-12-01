@@ -36,10 +36,9 @@ private:
     std::shared_ptr<sre::Mesh> walls;
     std::shared_ptr<sre::Material> wallMaterial;
 
-    bool lockRotation = false;
 	bool physicsDebugDraw = false;
 	bool mouseLock = false;
-	bool debugProfiler = true;
+	bool debugProfiler = false;
 	
 	btRigidBody* fallRigidBody;
 	glm::mat4 sphereTransform;
