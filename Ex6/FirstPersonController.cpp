@@ -25,6 +25,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 	btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motionState, controllerShape, fallInertia);
 	rigidBody = new btRigidBody(fallRigidBodyCI);
+	rigidBody->setActivationState(DISABLE_DEACTIVATION);
 
 	// Add rigidbody to world
 	Wolf3D::getInstance()->physics.addRigidBody(rigidBody);
