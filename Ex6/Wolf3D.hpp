@@ -2,7 +2,6 @@
 
 #include "sre/SDLRenderer.hpp"
 #include "sre/Material.hpp"
-#include "WorldMap.hpp"
 #include "FirstPersonController.hpp"
 #include "Physics.hpp"
 #include "sre/SpriteAtlas.hpp"
@@ -34,7 +33,6 @@ private:
     sre::Camera camera;
 	FirstPersonController* fpsController;
 
-    WorldMap map;
     std::shared_ptr<sre::Mesh> walls;
     std::shared_ptr<sre::Material> wallMaterial;
 
@@ -53,9 +51,7 @@ private:
 	std::shared_ptr<sre::Mesh> floor;
 	std::shared_ptr<sre::Material> floorMat;
 
-	// TODO this should be a list of chunks. Also make shared pointer
+	// TODO this should be a list of chunks.
 	std::shared_ptr<Chunk> chunk;
-	//Chunk* chunk = new Chunk(glm::translate(vec3(10.0f, 0.0f, -10.0f)));
-	//Chunk* chunk;
 };
 
