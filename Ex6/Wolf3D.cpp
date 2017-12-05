@@ -183,22 +183,13 @@ void Wolf3D::init() {
 	sphereMaterial = Shader::getUnlit()->createMaterial();
 	sphereMaterial->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-	// Create an example chunk 
-	// TODO FIX THIS BUG
-//	chunk = std::make_shared<Chunk>(vec3(10.0f, 0.0f, -10.0f));
-//	auto achunk = std::make_shared<Chunk>(vec3(10.0f, 0.0f, -10.0f));
-	//Create a bunch of chunk
-	
-	//int chunkDimension = chunk->getChunkDimensions();
-
-//	for (float x = -3.0f; x < 2; x++) {
-	float x = 1;
-	float y = 1;
-//	for (float y = -3.0f; y < 2; y++) {
-		chunkList.push_back(std::make_shared<Chunk>(glm::vec3(x * 5.0f, 0, y * 5.0f)));
-//			chunkList.push_back(achunk);
-		//}
-//	}
+	//Create a bunch of chunks	
+	int chunkDimension = Chunk::getChunkDimensions();
+	for (float x = -3.0f; x < 3.0f; x++) {
+		for (float y = -3.0f; y < 3.0f; y++) {
+			chunkList.push_back(std::make_shared<Chunk>(glm::vec3(x * chunkDimension, 0, y * chunkDimension)));
+		}
+	}
 
 	// Load and create walls
     wallMaterial = Shader::getUnlit()->createMaterial();
