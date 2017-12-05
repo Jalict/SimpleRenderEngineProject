@@ -3,9 +3,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Chunk::Chunk(glm::mat4 chunkTransform){
+Chunk::Chunk(glm::vec3 position){
 	//Set the position of the chunk
-	this->chunkTransform = chunkTransform;
+	this->position = position;
+	chunkTransform = glm::translate(position);
 	
 	//For outputting a glm::mat4
 	//const float *pSource = (const float*)glm::value_ptr(chunkTransform);
@@ -19,6 +20,14 @@ Chunk::Chunk(glm::mat4 chunkTransform){
 		blocksInChunk[i] = new Block* [chunkDimensions];
 		for (int j = 0; j < chunkDimensions; j++){
 			blocksInChunk[i][j] = new Block[chunkDimensions];
+		}
+	}
+
+	for (int x = 0; x < chunkDimensions; x++){
+		for (int y = 0; y < chunkDimensions; y++) {
+			for (int z = 0; z < chunkDimensions; z++) {
+				blocksInChunk[x][y][z] = Block(Block::Dirt, glm::vec3(position.x + x,position.y + y, position.z + z));
+			}
 		}
 	}
 }
@@ -39,9 +48,9 @@ void Chunk::update(float dt) {
 }
 
 void Chunk::draw(sre::RenderPass& renderpass) {
-	//Loop over all cubes, get their information, call render
-	//Offset blocks by a transformation every time
-	//#IMPORTANT: We asume that the block size is 2.0f
+	// Loop over all cubes, get their information, call render
+	// Offset blocks by a transformation every time
+	// #IMPORTANT: We asume that the block size is 1.0f
 
 	for (int x = 0; x < chunkDimensions; x++) {
 		for (int y = 0; y < chunkDimensions; y++) {

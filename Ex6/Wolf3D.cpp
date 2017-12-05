@@ -179,8 +179,8 @@ void Wolf3D::init() {
 	sphereMaterial->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
 	//Create an example chunk
-	glm::mat4 chunkTransform = glm::translate(vec3(10.0f, 0.0f, -10.0f));
-	chunk = std::make_shared<Chunk>(chunkTransform);
+//	glm::mat4 chunkTransform = glm::translate(vec3(10.0f, 0.0f, -10.0f));
+	chunk = std::make_shared<Chunk>(vec3(10.0f, 0.0f, -10.0f));
 
 	// Load and create walls
     wallMaterial = Shader::getUnlit()->createMaterial();
