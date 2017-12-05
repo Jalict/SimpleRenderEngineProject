@@ -17,7 +17,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 	// Create Capsule collider
 	btCollisionShape* controllerShape = new btCapsuleShape(0.1f, 1.0f); // CHECKGROUND is linked to these values 1.2 / 2 = 0.6f;
-	btDefaultMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(2, 50, 0)));
+	btDefaultMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 0)));
 
 	btScalar mass = 1;
 	btVector3 fallInertia(0, 0, 0);

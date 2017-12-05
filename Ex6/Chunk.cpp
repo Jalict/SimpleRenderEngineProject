@@ -52,6 +52,7 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 	//Offset blocks by a transformation every time
 	//#IMPORTANT: We asume that the block size is 1.0f
 
+
 	for (int x = 0; x < chunkDimensions; x++) {
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {

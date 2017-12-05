@@ -23,7 +23,6 @@ private:
 	void renderFloor(sre::RenderPass & renderPass);
 	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
-	void addCube(std::vector<glm::vec3>& vertexPositions, std::vector<glm::vec4>& textureCoordinates, int x, int z, int type);
 	void handleDebugKeys(SDL_Event& e);
 
 	static bool instanceFlag;
@@ -53,6 +52,6 @@ private:
 
 	// TODO this should be a list of chunks.
 	std::vector<std::shared_ptr<Chunk>> chunkList;
-	std::shared_ptr<Chunk> chunk;
+//	std::shared_ptr<Chunk> chunk;
 };
 
