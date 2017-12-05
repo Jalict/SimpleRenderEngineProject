@@ -83,6 +83,12 @@ void Wolf3D::render() {
 	renderPass.draw(sphere, sphereTransform, sphereMaterial);
 	renderFloor(renderPass);
 
+	// TODO TEMP remove
+	std::vector<vec3> rays;
+	rays.push_back(fpsController->fromRay);
+	rays.push_back(fpsController->toRay);
+	renderPass.drawLines(rays);
+
 	//We're only drawing one chunk.
 	// TODO render a list of chunks.
 	renderChunk(renderPass);
@@ -185,8 +191,8 @@ void Wolf3D::init() {
 
 	//Create a bunch of chunks	
 	int chunkDimension = Chunk::getChunkDimensions();
-	for (float x = -3.0f; x < 3.0f; x++) {
-		for (float y = -3.0f; y < 3.0f; y++) {
+	for (float x = 0; x < 1.0f; x++) {
+		for (float y = 0; y < 1.0f; y++) {
 			chunkList.push_back(std::make_shared<Chunk>(glm::vec3(x * chunkDimension, 0, y * chunkDimension)));
 		}
 	}

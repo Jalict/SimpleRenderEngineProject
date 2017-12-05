@@ -59,4 +59,3 @@ void Physics::raycast(btVector3* from, btVector3* to, btCollisionWorld::ClosestR
 	 dynamicsWorld->rayTest(*from, *to, *result);
 }
 
-
