@@ -1,11 +1,13 @@
 #include <iostream>
 #include "Block.hpp"
 
-Block::Block() : Block(type) {
+Block::Block() : Block(type, glm::vec3(0,0,0)) {
 }
 
-Block::Block(BlockType type) {
+Block::Block(BlockType type, glm::vec3 position) {
 	setType(type);
+
+	this->position = position;
 
 	mesh = sre::Mesh::create()
 		.withCube(0.5f)
@@ -77,4 +79,9 @@ glm::vec4 Block::textureCoordinates(int blockID) {
 	max.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
 
 	return glm::vec4(min.x, min.y, max.x, max.y);
+}
+
+glm::vec3 Block::getPosition()
+{
+	return position;
 }
