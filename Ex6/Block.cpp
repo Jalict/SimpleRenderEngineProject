@@ -8,7 +8,7 @@ Block::Block(BlockType type) {
 	setType(type);
 
 	mesh = sre::Mesh::create()
-		.withCube(1.0f)
+		.withCube(0.5f)
 		.withUVs(texCoords)
 		.build();
 }

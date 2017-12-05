@@ -36,7 +36,7 @@ private:
     sre::Camera * camera;
 
 	const float ROTATION_SPEED = 0.3f;
-	const float MOVEMENT_SPEED = 100.0f;
+	const float MOVEMENT_SPEED = 150.0f;
 	const float JUMP_FORCE = 250.0f;
 	const float SPRINT_MOVEMENT_INCREASE = 2.0f;
 	const float SPRINT_FOV_INCREASE = 1.1f;

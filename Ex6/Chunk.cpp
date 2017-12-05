@@ -46,7 +46,7 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 	for (int x = 0; x < chunkDimensions; x++) {
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
-				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x * 2, y * 2, z * 2)); //#HACK block size is set to two
+				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x, y, z)); 
 
 				renderpass.draw(blocksInChunk[x][y][z].getMesh(), transformMatrix, Wolf3D::getInstance()->blockMaterial);
 			}
