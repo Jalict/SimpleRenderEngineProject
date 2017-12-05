@@ -49,6 +49,7 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x, y, z)); 
 
 				renderpass.draw(blocksInChunk[x][y][z].getMesh(), transformMatrix, Wolf3D::getInstance()->blockMaterial);
+
 			}
 		}
 	}
