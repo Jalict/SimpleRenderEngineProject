@@ -22,7 +22,7 @@ private:
 	BlockType type = BlockType::Rock;			// Current type of block
 
 	std::shared_ptr<sre::Mesh> mesh;			// Mesh of block
-	std::vector<glm::vec4> texCoords;	// texCoords for block
+	std::vector<glm::vec4> texCoords;			// texCoords for block
 
 	glm::vec4 textureCoordinates(int blockID);
 };

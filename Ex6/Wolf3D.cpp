@@ -104,6 +104,11 @@ void Wolf3D::render() {
 
 
 void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
+	for (std::vector<std::shared_ptr<Chunk>>::iterator it = chunkList.begin(); it != chunkList.end(); ++it) {
+		std::shared_ptr<Chunk> itChunk = (*it);
+		itChunk->draw(renderPass);
+	}
+
 	chunk->draw(renderPass);
 }	
 
@@ -181,6 +186,14 @@ void Wolf3D::init() {
 	//Create an example chunk
 	glm::mat4 chunkTransform = glm::translate(vec3(10.0f, 0.0f, -10.0f));
 	chunk = std::make_shared<Chunk>(chunkTransform);
+
+	//Create a bunch of chunks
+	for (float x = -5.0f; x < 5; x++) {
+		for (float y = -5.0f; y < 5; y++) {
+			glm::mat4 chunkTransform = glm::translate(vec3(x * chunk->getChunkDimensions(), 0.0f, y * chunk->getChunkDimensions()));
+			chunkList.push_back(std::make_shared<Chunk>(chunkTransform));
+		}
+	}
 
 	// Load and create walls
     wallMaterial = Shader::getUnlit()->createMaterial();
