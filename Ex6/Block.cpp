@@ -22,8 +22,6 @@ Block::~Block() {
 void Block::setType(BlockType type) {
 	this->type = type;
 
-	//(TODO) Look into making it based on type
-	//(TODO) Investigate issue with TexCoordinantes are weird
 	const glm::vec4 coords = textureCoordinates((int)this->type);
 
 	texCoords.clear();
