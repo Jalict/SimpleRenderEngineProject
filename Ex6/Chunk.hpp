@@ -14,13 +14,13 @@ class Chunk {
 public:
 	Chunk(glm::vec3 position);
 	~Chunk();
-	int getChunkDimensions() { return 5; }
+	static int getChunkDimensions() { return chunkDimensions; }
 
 	void update(float dt);
 	void draw(sre::RenderPass& renderpass);
 	
 private:
-	const int chunkDimensions = 5;
+	const static int chunkDimensions = 5;
 
 	glm::vec3 position;
 	glm::mat4 chunkTransform;

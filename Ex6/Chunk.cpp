@@ -50,7 +50,6 @@ void Chunk::update(float dt) {
 void Chunk::draw(sre::RenderPass& renderpass) {
 	//Loop over all cubes, get their information, call render
 	//Offset blocks by a transformation every time
-	//#IMPORTANT: We asume that the block size is 1.0f
 
 
 	for (int x = 0; x < chunkDimensions; x++) {
@@ -58,7 +57,31 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 			for (int z = 0; z < chunkDimensions; z++) {
 				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x, y, z));
 
-				renderpass.draw(blocksInChunk[x][y][z].getMesh(), transformMatrix, Wolf3D::getInstance()->blockMaterial);
+				//If the block is not active we don't render it
+				if (blocksInChunk[x][y][z].getActive() == false){
+					continue;
+				}
+
+				//If the block is at the edge of a chunk we always render it
+				bool onOutsideOfChunk = false;
+				if (!(x > 0) || !(x < chunkDimensions - 1) || !(y > 0) || !(y < chunkDimensions - 1) || !(z > 0) || !(z < chunkDimensions - 1)) {
+					onOutsideOfChunk = true;
+				}
+
+				//If the block is surrounded by active blocks we don't render it
+				bool surrounded = false;
+				if (!onOutsideOfChunk) {
+					surrounded = blocksInChunk[x - 1][y][z].getActive();
+					surrounded = blocksInChunk[x + 1][y][z].getActive();
+					surrounded = blocksInChunk[x][y - 1][z].getActive();
+					surrounded = blocksInChunk[x][y + 1][z].getActive();
+					surrounded = blocksInChunk[x][y][z - 1].getActive();
+					surrounded = blocksInChunk[x][y][z + 1].getActive();
+				}
+
+				if (onOutsideOfChunk && !surrounded) {
+					renderpass.draw(blocksInChunk[x][y][z].getMesh(), transformMatrix, Wolf3D::getInstance()->blockMaterial);
+				}
 			}
 		}
 	}

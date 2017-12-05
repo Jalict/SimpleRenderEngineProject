@@ -21,15 +21,18 @@ public:
 	void setType(BlockType type);				// Change type of block
 	std::shared_ptr<sre::Mesh> getMesh();		// Get Mesh
 
-	glm::vec3 position;
+	glm::vec3 getPosition();
+	bool getActive() { return active; }
 private:
 	btRigidBody* createRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape);
 
 	BlockType type = BlockType::Dirt;			// Current type of block
 
+	bool active = true;
+
 	std::shared_ptr<sre::Mesh> mesh;			// Mesh of block
 	std::vector<glm::vec4> texCoords;			// texCoords for block
 
 	glm::vec4 textureCoordinates(int blockID);
-	glm::vec3 getPosition();
+	glm::vec3 position;
 };

@@ -50,7 +50,6 @@ private:
 	std::shared_ptr<sre::Mesh> floor;
 	std::shared_ptr<sre::Material> floorMat;
 
-	// TODO this should be a list of chunks.
 	std::vector<std::shared_ptr<Chunk>> chunkList;
 //	std::shared_ptr<Chunk> chunk;
 };
