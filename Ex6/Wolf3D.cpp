@@ -211,21 +211,8 @@ void Wolf3D::init() {
 		.build();
 	blockMaterial->setTexture(tiles);
 
-	// Load serialized level
-	map.loadMap("level0.json");
-
     std::vector<glm::vec3> vertexPositions;
     std::vector<glm::vec4> textureCoordinates;
-
-    for (int x=0; x < map.getWidth(); x++){
-        for (int y=0; y < map.getHeight(); y++){
-            int field = map.getTile(x,y);
-
-            if (field != -1){
-//			addCube(vertexPositions,textureCoordinates,x,y,field);
-            }
-        }
-    }
 
 	walls = Mesh::create()
 		.withPositions(vertexPositions)
@@ -235,14 +222,14 @@ void Wolf3D::init() {
 
 	// Setup FPS Controller
 	fpsController = new  FirstPersonController(&camera);
-    fpsController->setInitialPosition(map.getStartingPosition(), map.getStartingRotation());
+    fpsController->setInitialPosition(vec2(5.5f, 5.5f), 0);
 
 
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
 
 	floorMat = Shader::getUnlit()->createMaterial();
-	floorMat->setColor(map.getFloorColor());
+	floorMat->setColor(vec4(.44f, .44f, .44f, 1.0f));
 
 	floorTransform = glm::translate(vec3(0, -1.0f, 0));
 	floorTransform = glm::rotate(floorTransform, glm::radians(-90.0f), vec3(1, 0, 0));
