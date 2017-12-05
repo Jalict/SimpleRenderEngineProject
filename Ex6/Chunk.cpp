@@ -48,14 +48,14 @@ void Chunk::update(float dt) {
 }
 
 void Chunk::draw(sre::RenderPass& renderpass) {
-	// Loop over all cubes, get their information, call render
-	// Offset blocks by a transformation every time
-	// #IMPORTANT: We asume that the block size is 1.0f
+	//Loop over all cubes, get their information, call render
+	//Offset blocks by a transformation every time
+	//#IMPORTANT: We asume that the block size is 1.0f
 
 	for (int x = 0; x < chunkDimensions; x++) {
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
-				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x, y, z)); 
+				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x, y, z));
 
 				renderpass.draw(blocksInChunk[x][y][z].getMesh(), transformMatrix, Wolf3D::getInstance()->blockMaterial);
 			}
