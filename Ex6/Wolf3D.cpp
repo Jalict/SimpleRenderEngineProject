@@ -109,7 +109,7 @@ void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
 		itChunk->draw(renderPass);
 	}
 
-	chunk->draw(renderPass);
+//	chunk->draw(renderPass);
 }	
 
 
@@ -183,17 +183,22 @@ void Wolf3D::init() {
 	sphereMaterial = Shader::getUnlit()->createMaterial();
 	sphereMaterial->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-	//Create an example chunk
-	glm::mat4 chunkTransform = glm::translate(vec3(10.0f, 0.0f, -10.0f));
-	chunk = std::make_shared<Chunk>(chunkTransform);
+	// Create an example chunk 
+	// TODO FIX THIS BUG
+//	chunk = std::make_shared<Chunk>(vec3(10.0f, 0.0f, -10.0f));
+//	auto achunk = std::make_shared<Chunk>(vec3(10.0f, 0.0f, -10.0f));
+	//Create a bunch of chunk
+	
+	//int chunkDimension = chunk->getChunkDimensions();
 
-	//Create a bunch of chunks
-	for (float x = -5.0f; x < 5; x++) {
-		for (float y = -5.0f; y < 5; y++) {
-			glm::mat4 chunkTransform = glm::translate(vec3(x * chunk->getChunkDimensions(), 0.0f, y * chunk->getChunkDimensions()));
-			chunkList.push_back(std::make_shared<Chunk>(chunkTransform));
-		}
-	}
+//	for (float x = -3.0f; x < 2; x++) {
+	float x = 1;
+	float y = 1;
+//	for (float y = -3.0f; y < 2; y++) {
+		chunkList.push_back(std::make_shared<Chunk>(glm::vec3(x * 5.0f, 0, y * 5.0f)));
+//			chunkList.push_back(achunk);
+		//}
+//	}
 
 	// Load and create walls
     wallMaterial = Shader::getUnlit()->createMaterial();
