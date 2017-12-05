@@ -2,7 +2,6 @@
 
 #include "sre/SDLRenderer.hpp"
 #include "sre/Material.hpp"
-#include "WorldMap.hpp"
 #include "FirstPersonController.hpp"
 #include "Physics.hpp"
 #include "sre/SpriteAtlas.hpp"
@@ -34,7 +33,6 @@ private:
     sre::Camera camera;
 	FirstPersonController* fpsController;
 
-    WorldMap map;
     std::shared_ptr<sre::Mesh> walls;
     std::shared_ptr<sre::Material> wallMaterial;
 
