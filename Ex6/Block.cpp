@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Block.hpp"
 
-Block::Block() : Block(type) {
+Block::Block() : Block(Block::Rock) { // HACK if type is being passed on type = -8100000000000 or something (not initialized? mem loc? out of bounds?). Therefore we set default hardcoded here. 
 }
 
 Block::Block(BlockType type) {
@@ -22,7 +22,7 @@ void Block::setType(BlockType type) {
 
 	//(TODO) Look into making it based on type
 	//(TODO) Investigate issue with TexCoordinantes are weird
-	const glm::vec4 coords = textureCoordinates((int)1);
+	const glm::vec4 coords = textureCoordinates((int)this->type);
 
 	texCoords.clear();
 
@@ -67,14 +67,19 @@ glm::vec4 Block::textureCoordinates(int blockID) {
 	float tileWidth = tileSize.x / textureSize.x;
 	float tileHeight = tileSize.y / textureSize.y;
 
-	glm::vec2 min = glm::vec2(0, 16 * tileSize.y) / textureSize;
-	glm::vec2 max = min - tileSize / textureSize;
+	glm::vec2 min = glm::vec2(0, 1.0f);							// Start at top left
+	glm::vec2 max = min + glm::vec2(tileWidth, -tileHeight);	// Move max to bottom right corner of this block
 
-	min.x += (blockID % 8) * tileWidth * 2;
-	max.x += (blockID % 8) * tileWidth * 2;
+	int tilesX = textureSize.x / tileSize.x;
 
-	min.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
-	max.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
+	float xOffset = (blockID % tilesX) * tileWidth;
+	float yOffset = ((blockID - (blockID % tilesX)) / tilesX) * tileHeight;
+
+	min.x += xOffset;
+	max.x += xOffset;
+
+	min.y -= yOffset;
+	max.y -= yOffset;
 
 	return glm::vec4(min.x, min.y, max.x, max.y);
 }
