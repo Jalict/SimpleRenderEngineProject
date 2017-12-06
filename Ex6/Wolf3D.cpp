@@ -182,11 +182,15 @@ void Wolf3D::init() {
 
 	// Create a ground plane
 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
-	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1.0f, 0)));
+	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1.5f, 0))); // #HACK floor needs ot be at -1.5f ?? should be -.5f??
 	btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
 	btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
 
+
 	physics.addRigidBody(groundRigidBody);
+	btTransform transform;
+	groundRigidBody->getMotionState()->getWorldTransform(transform);
+
 
 	// Create falling ball
 	btCollisionShape* fallShape = new btSphereShape(1.0f);
