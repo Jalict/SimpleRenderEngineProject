@@ -60,8 +60,12 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 			for (int z = 0; z < chunkDimensions; z++) {
 				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x, y, z));
 
+				//NOTE: Blocks aren't actually ever set to not being active
+				//std::cout << blocksInChunk[x][y][z].getActive() << std::endl;
+
 				//If the block is not active we don't render it
 				if (blocksInChunk[x][y][z].getActive() == false){
+					//std::cout << "Skipped an inactive block" << std::endl;
 					continue;
 				}
 
@@ -74,12 +78,15 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 				//If the block is surrounded by active blocks we don't render it
 				bool surrounded = false;
 				if (!onOutsideOfChunk) {
-					surrounded = blocksInChunk[x - 1][y][z].getActive();
-					surrounded = blocksInChunk[x + 1][y][z].getActive();
-					surrounded = blocksInChunk[x][y - 1][z].getActive();
-					surrounded = blocksInChunk[x][y + 1][z].getActive();
-					surrounded = blocksInChunk[x][y][z - 1].getActive();
-					surrounded = blocksInChunk[x][y][z + 1].getActive();
+					if (blocksInChunk[x - 1][y][z].getActive() && 
+						blocksInChunk[x + 1][y][z].getActive() &&
+						blocksInChunk[x][y - 1][z].getActive() && 
+						blocksInChunk[x][y + 1][z].getActive() &&
+						blocksInChunk[x][y][z - 1].getActive() && 
+						blocksInChunk[x][y][z + 1].getActive()) {
+
+						surrounded = true;
+					}
 				}
 
 				if (onOutsideOfChunk && !surrounded) {
