@@ -212,6 +212,8 @@ void FirstPersonController::destroyBlock() {
 	if (res.hasHit()) {
 		btVector3 hit = res.m_hitPointWorld;
 		toRay = vec3((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
+		auto block = Wolf3D::getInstance()->locationToBlock(toRay);
+		block->setType(Block::BlockType::Sand);
 	}
 	
 }

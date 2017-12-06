@@ -65,6 +65,8 @@ void Block::setType(BlockType type) {
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
+
+	std::cout << "type set" << std::endl;
 }
 
 std::shared_ptr<sre::Mesh> Block::getMesh()

@@ -254,6 +254,26 @@ vec4 Wolf3D::textureCoordinates(int blockID){
 	return vec4(min.x, min.y, max.x, max.y);
 }
 
+Block* Wolf3D::locationToBlock(glm::vec3 location) {
+	// Floor the locations since blocks are always at whole intergers
+	int x = (int)location.x;
+	int y = (int)location.y;
+	int z = (int)location.z;
+
+	int chunkSize = Chunk::getChunkDimensions();
+
+	// Determine the chunk we need 
+	
+	vec3 blockPos = glm::vec3(fmod(x, chunkSize), y, fmod(z, chunkSize));
+	vec2 chunkPos = glm::vec2(x - blockPos.x, z - blockPos.z);
+
+	// Get it 
+	auto chunk = chunkList.at(0);
+
+	// 
+	return chunk->getBlock(blockPos.x, blockPos.y, blockPos.z);
+}	
+
 
 int main(){
     new Wolf3D();
