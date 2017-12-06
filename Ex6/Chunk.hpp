@@ -12,6 +12,7 @@ blocks are active and which are not.
 
 class Chunk {
 public:
+	Chunk();
 	Chunk(glm::vec3 position);
 	~Chunk();
 	static int getChunkDimensions() { return chunkDimensions; }
