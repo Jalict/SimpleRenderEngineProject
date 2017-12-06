@@ -19,6 +19,7 @@ public:
     void onKey(SDL_Event& event);
     void onMouse(SDL_Event &event);
 
+	glm::vec3 getPosition();
     void setInitialPosition(glm::vec2 position, float rotation);
 	bool getIsGrounded();
 

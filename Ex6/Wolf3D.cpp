@@ -69,6 +69,8 @@ Wolf3D* Wolf3D::getInstance(){
 
 void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
+
+	particleSystem->update(deltaTime);
 }
 
 
@@ -84,6 +86,8 @@ void Wolf3D::render() {
 	// TODO make more generic
 	renderPass.draw(sphere, sphereTransform, sphereMaterial);
 	renderFloor(renderPass);
+
+	particleSystem->draw(renderPass);
 
 	// TODO TEMP remove
 	std::vector<vec3> rays;
@@ -129,8 +133,9 @@ void Wolf3D::drawGUI() {
 	ImGui::SetNextWindowPos(ImVec2(Renderer::instance->getWindowSize().x / 2 - 100, .0f), ImGuiSetCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Always);
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
-//	ImGui::DragFloat("Rot", &fpsController->rotation);
-//	ImGui::DragFloat3("Pos", &(fpsController->position.x), 0.1f);
+//	ImGui::DragFloat("Rot", &fpsController->rotation
+	ImGui::Text("Position: [0:0:0]");
+	ImGui::Text("LookAt: [0:0:0]");
 //	ImGui::Checkbox("LockRotation", &lockRotation);
 	ImGui::End();
 }
@@ -189,6 +194,27 @@ void Wolf3D::init() {
 	sphere = Mesh::create().withSphere(16, 32, 1.0f).build();
 	sphereMaterial = Shader::getStandard()->createMaterial();
 	sphereMaterial->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+	// Create Basic ParticleSystem
+	particleSystem = std::make_shared<ParticleSystem>(10, Texture::getWhiteTexture());
+	particleSystem->gravity = {0,-9.82,0};
+	particleSystem->running = true;
+	particleMaterial = Shader::getStandard()->createMaterial();
+	particleMaterial->setColor({1,1,1,1});
+	particleMaterial->setSpecularity(0);
+
+	particleSystem->updateAppearance = [&](const Particle& p) {
+		p.color = glm::mix(glm::vec4(0, 1, 0, 1), glm::vec4(1, 0, 0, 0), p.normalizedAge);
+		p.size = glm::mix(1, 4, p.normalizedAge);
+	};
+
+	particleSystem->emitter = [&](Particle& p) {
+		p.position = { 0,0,0 };
+		p.velocity = glm::sphericalRand(1);
+		p.rotation = 90;
+		p.angularVelocity = 10;
+		p.size = 50;
+	};
 
 	//Create a bunch of chunks	
 	int chunkDimension = Chunk::getChunkDimensions();
