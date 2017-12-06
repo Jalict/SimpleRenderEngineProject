@@ -134,11 +134,39 @@ void FirstPersonController::onKey(SDL_Event &event) {
 		setPosition(glm::vec3(3, 8, 3), 0);
 	}
 
-
 	// Capture Jump
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
 		rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
 	}
+
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_RIGHT && isGrounded) {
+		switch (blockSelected) {
+			case BlockType::Dirt:
+				blockSelected = BlockType::Sand;
+				break;
+			case BlockType::Sand:
+				blockSelected = BlockType::Wood;
+				break;
+			case BlockType::Wood:
+				blockSelected = BlockType::Dirt;
+				break;
+		}
+	}
+
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_LEFT && isGrounded) {
+		switch (blockSelected) {
+		case BlockType::Dirt:
+			blockSelected = BlockType::Wood;
+			break;
+		case BlockType::Sand:
+			blockSelected = BlockType::Dirt;
+			break;
+		case BlockType::Wood:
+			blockSelected = BlockType::Sand;
+			break;
+		}
+	}
+
 
 	// Capture movement keys down
     if(event.type == SDL_KEYDOWN ){
@@ -222,8 +250,11 @@ void FirstPersonController::placeBlock() {
 
 	auto block = castRayForBlock(0.2f);
 
-	if(block != nullptr)
+	if (block != nullptr) {
+		block->setType(blockSelected);
 		block->setActive(true);
+	}
+	
 }
 
 

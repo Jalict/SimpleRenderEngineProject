@@ -62,6 +62,8 @@ private:
 	bool isGrounded = false;
 	bool isSprinting = false;
 
+	BlockType blockSelected = BlockType::Dirt;
+
 	btRigidBody* rigidBody;
 //	btDefaultMotionState* motionState;
 //	btCollisionShape* controllerShape;
