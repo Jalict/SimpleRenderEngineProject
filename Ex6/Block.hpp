@@ -26,6 +26,8 @@ public:
 	glm::vec3 getPosition();
 	bool getActive();
 	void setActive(bool active);
+	BlockType getType() { return type; }
+
 private:
 	btRigidBody* createRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape);
 	

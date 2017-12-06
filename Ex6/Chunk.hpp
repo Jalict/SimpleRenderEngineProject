@@ -2,6 +2,8 @@
 #include "Block.hpp"
 #include "sre/SDLRenderer.hpp"
 #include <glm\gtx\rotate_vector.hpp>
+#include "sre/SDLRenderer.hpp"
+#include "sre/Material.hpp"
 
 /*
 Created: 01-12-2017
@@ -29,4 +31,11 @@ private:
 	glm::mat4 chunkTransform;
 
 	Block*** blocksInChunk;
+	glm::vec4 textureCoordinates(int blockID);
+
+	//Still experimental
+	std::shared_ptr<sre::Mesh> createCube(bool XNegative, bool XPositive, bool YNegative, bool YPositive, bool ZNegative, bool ZPositive, float x, float y, float z, BlockType type);
+	std::shared_ptr<sre::Mesh> mesh;
+	void createMesh();
+
 };

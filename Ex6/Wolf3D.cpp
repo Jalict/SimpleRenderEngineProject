@@ -237,11 +237,9 @@ void Wolf3D::init() {
 		.build();
 	blockMaterial->setTexture(tiles);
 
-
 	// Setup FPS Controller
 	fpsController = new  FirstPersonController(&camera);
     fpsController->setInitialPosition(vec2(5.5f, 5.5f), 0);
-
 
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
