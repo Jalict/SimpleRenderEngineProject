@@ -65,6 +65,9 @@ btRigidBody* Block::createRigidBody(float mass, const btTransform& startTransfor
 	return body;
 }
 
+bool Block::getActive() {
+	return this->active;
+}
 
 // # TODO test between the different modes
 void Block::setActive(bool active) {

@@ -54,7 +54,6 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 	//Loop over all cubes, get their information, call render
 	//Offset blocks by a transformation every time
 
-
 	for (int x = 0; x < chunkDimensions; x++) {
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
@@ -89,7 +88,7 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 					}
 				}
 
-				if (onOutsideOfChunk && !surrounded) {
+				if (onOutsideOfChunk || !surrounded) {
 					renderpass.draw(blocksInChunk[x][y][z].getMesh(), transformMatrix, Wolf3D::getInstance()->blockMaterial);
 				}
 			}
