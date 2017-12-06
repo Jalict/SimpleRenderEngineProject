@@ -12,17 +12,20 @@ blocks are active and which are not.
 
 class Chunk {
 public:
+	Chunk();
 	Chunk(glm::vec3 position);
 	~Chunk();
 	static int getChunkDimensions() { return chunkDimensions; }
 
 	void update(float dt);
 	void draw(sre::RenderPass& renderpass);
+	glm::vec3 getPosition();
+	Block* getBlock(int x, int y, int z);
 	
 private:
 	const static int chunkDimensions = 5;
-
 	glm::vec3 position;
+	
 	glm::mat4 chunkTransform;
 
 	Block*** blocksInChunk;

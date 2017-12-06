@@ -13,6 +13,7 @@ public:
 	void drawDebug(sre::RenderPass* renderPass);
 	void update();
 	void addRigidBody(btRigidBody* rigidbody);
+	void removeRigidBody(btRigidBody* rigidbody);
 	void setDebugDrawMode(btIDebugDraw::DebugDrawModes mode);
 	void raycast(btVector3* from, btVector3* to, btCollisionWorld::ClosestRayResultCallback* result);
 private:

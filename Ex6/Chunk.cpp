@@ -3,6 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+Chunk::Chunk() : Chunk(glm::vec3(0, 0, 0)) { // HACK: This doesn't actually set anything 
+}
+
 Chunk::Chunk(glm::vec3 position){
 	//Set the position of the chunk
 	this->position = position;
@@ -26,7 +29,7 @@ Chunk::Chunk(glm::vec3 position){
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
-				blocksInChunk[x][y][z] = Block(Block::Dirt, glm::vec3(position.x + x,position.y + y, position.z + z));
+				blocksInChunk[x][y][z] = Block(BlockType::Dirt, glm::vec3(position.x + x,position.y + y, position.z + z));
 			}
 		}
 	}
@@ -85,4 +88,16 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 			}
 		}
 	}
+}
+
+glm::vec3 Chunk::getPosition() {
+	return position;
+}
+
+Block* Chunk::getBlock(int x, int y, int z) {
+	assert(x >= 0 && x < chunkDimensions);
+	assert(y >= 0 && y < chunkDimensions);
+	assert(z >= 0 && z < chunkDimensions);
+
+	return &blocksInChunk[x][y][z];
 }

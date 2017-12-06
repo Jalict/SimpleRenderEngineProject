@@ -12,94 +12,37 @@ Block::Block(BlockType type, glm::vec3 position) {
 
 	//this->position = position;
 
-	// Create Mesh
-	mesh = sre::Mesh::create()
-		.withCube(0.5f)
-		.withUVs(texCoords)
-		.build();
-
 	// # TODO dealloc
 	// Add physics collider
-	btBoxShape* blockShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+	collider = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
 	
 	btTransform startTransform;
 	startTransform.setIdentity();
 	btScalar mass(0);
 	startTransform.setOrigin(btVector3(btScalar(position.x), btScalar(position.y), btScalar(position.z)));
-	createRigidBody(mass, startTransform, blockShape);
+	rigidbody = createRigidBody(mass, startTransform, collider);
 }
 
 Block::~Block() {
+	// TODO destroy physics
+}
 
+void Block::setMesh(BlockType type) {
+	this->mesh = Wolf3D::getInstance()->getMesh(type);
 }
 
 void Block::setType(BlockType type) {
 	this->type = type;
+	setMesh(type);
 
-	const glm::vec4 coords = textureCoordinates((int)this->type);
-
-	texCoords.clear();
-
-	texCoords.insert(texCoords.end(), {
-		// +z
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
-		// ?
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
-		// ?
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
-		// ?
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
-		// top
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
-		// bottom
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-	});
+	std::cout << "type set" << std::endl;
 }
 
-std::shared_ptr<sre::Mesh> Block::getMesh()
-{
+std::shared_ptr<sre::Mesh> Block::getMesh(){
 	return mesh;
 }
 
-//(TODO) Move to somewhere more generic
-// FPL, 1 December 2017
-glm::vec4 Block::textureCoordinates(int blockID) {
-	glm::vec2 textureSize(1024, 2048);
-	glm::vec2 tileSize(128, 128);
-
-	float tileWidth = tileSize.x / textureSize.x;
-	float tileHeight = tileSize.y / textureSize.y;
-
-	glm::vec2 min = glm::vec2(0, 1.0f);							// Start at top left
-	glm::vec2 max = min + glm::vec2(tileWidth, -tileHeight);	// Move max to bottom right corner of this block
-
-	int tilesX = textureSize.x / tileSize.x;
-
-	float xOffset = (blockID % tilesX) * tileWidth;
-	float yOffset = ((blockID - (blockID % tilesX)) / tilesX) * tileHeight;
-
-	min.x += xOffset;
-	max.x += xOffset;
-
-	min.y -= yOffset;
-	max.y -= yOffset;
-
-	return glm::vec4(min.x, min.y, max.x, max.y);
-}
-
-glm::vec3 Block::getPosition()
-{
+glm::vec3 Block::getPosition(){
 	return position;
 }
 
@@ -122,4 +65,16 @@ btRigidBody* Block::createRigidBody(float mass, const btTransform& startTransfor
 //	body->setUserIndex(-1); 
 	Wolf3D::getInstance()->physics.addRigidBody(body);
 	return body;
+}
+
+
+// # TODO test between the different modes
+void Block::setActive(bool active) {
+	this->active = active;
+	if(active)
+		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
+//		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
+	else
+		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
+//		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 }

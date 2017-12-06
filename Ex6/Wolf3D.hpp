@@ -7,15 +7,20 @@
 #include "sre/SpriteAtlas.hpp"
 #include "ParticleSystem.hpp"
 #include "Chunk.hpp"
+#include "Block.hpp"
 
 class Wolf3D {
 public:
     Wolf3D();
 	static Wolf3D* getInstance();
+	Block* locationToBlock(glm::vec3 location);
+
 	Physics physics;
 
 	std::shared_ptr<sre::Material> blockMaterial; // #WIP blockTextures
-	glm::vec4 textureCoordinates(int blockID);
+	//glm::vec4 textureCoordinates(int blockID); //I didn't know if we still used this, so I just commented it out
+
+	std::shared_ptr<sre::Mesh> getMesh(BlockType type);
 
 private:
     void init();
@@ -54,6 +59,22 @@ private:
 	std::shared_ptr<sre::Mesh> floor;
 	std::shared_ptr<sre::Material> floorMat;
 
-	std::vector<std::shared_ptr<Chunk>> chunkList;
-//	std::shared_ptr<Chunk> chunk;
+	std::shared_ptr<Chunk>** chunkArray;
+
+	int chunkArraySize = 3;
+
+	glm::vec4 textureCoordinates(int blockID);
+	std::shared_ptr<sre::Mesh> initializeMesh(BlockType type);
+
+	//Different meshes for different blocks
+	std::shared_ptr<sre::Mesh> stoneMesh;
+	std::shared_ptr<sre::Mesh> brickMesh;
+	std::shared_ptr<sre::Mesh> grassMesh;
+	std::shared_ptr<sre::Mesh> woolBlueMesh;
+	std::shared_ptr<sre::Mesh> sandMesh;
+	std::shared_ptr<sre::Mesh> dirtMesh;
+	std::shared_ptr<sre::Mesh> gravelMesh;
+	std::shared_ptr<sre::Mesh> rockMesh;
+	std::shared_ptr<sre::Mesh> woodMesh;
+	std::shared_ptr<sre::Mesh> planksMesh;
 };

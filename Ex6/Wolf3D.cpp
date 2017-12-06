@@ -8,8 +8,6 @@
 using namespace sre;
 using namespace glm;
 
-
-
 Wolf3D::Wolf3D() {
 	// Singleton-ish
 	// TODO clean this to be proper singleton?
@@ -69,8 +67,6 @@ Wolf3D* Wolf3D::getInstance(){
 
 void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
-
-	particleSystem->update(deltaTime);
 }
 
 
@@ -87,13 +83,16 @@ void Wolf3D::render() {
 	renderPass.draw(sphere, sphereTransform, sphereMaterial);
 	renderFloor(renderPass);
 
-	particleSystem->draw(renderPass);
-
 	// TODO TEMP remove
 	std::vector<vec3> rays;
 	rays.push_back(fpsController->fromRay);
 	rays.push_back(fpsController->toRay);
 	renderPass.drawLines(rays);
+
+	std::vector<vec3> rays1;
+	rays1.push_back(fpsController->fromRay1);
+	rays1.push_back(fpsController->toRay2);
+	renderPass.drawLines(rays1, vec4(1, 0, 0, 1));
 
 	//We're only drawing one chunk.
 	// TODO render a list of chunks.
@@ -115,12 +114,12 @@ void Wolf3D::render() {
 
 
 void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
-	for (std::vector<std::shared_ptr<Chunk>>::iterator it = chunkList.begin(); it != chunkList.end(); ++it) {
-		std::shared_ptr<Chunk> itChunk = (*it);
-		itChunk->draw(renderPass);
-	}
 
-//	chunk->draw(renderPass);
+	for (int i = 0; i < chunkArraySize; i++) {
+		for (int j = 0; j < chunkArraySize; j++) {
+			chunkArray[i][j]->draw(renderPass);
+		}
+	}
 }	
 
 
@@ -133,9 +132,8 @@ void Wolf3D::drawGUI() {
 	ImGui::SetNextWindowPos(ImVec2(Renderer::instance->getWindowSize().x / 2 - 100, .0f), ImGuiSetCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Always);
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
-//	ImGui::DragFloat("Rot", &fpsController->rotation
-	ImGui::Text("Position: [0:0:0]");
-	ImGui::Text("LookAt: [0:0:0]");
+//	ImGui::DragFloat("Rot", &fpsController->rotation);
+//	ImGui::DragFloat3("Pos", &(fpsController->position.x), 0.1f);
 //	ImGui::Checkbox("LockRotation", &lockRotation);
 	ImGui::End();
 }
@@ -169,6 +167,19 @@ void Wolf3D::handleDebugKeys(SDL_Event& e) {
 
 void Wolf3D::init() {
 	// TODO Clean up +  dealloc
+
+	// Initialise all the block meshes
+	stoneMesh = initializeMesh(BlockType::Stone);
+	brickMesh = initializeMesh(BlockType::Brick);
+	grassMesh = initializeMesh(BlockType::Grass);
+	woolBlueMesh = initializeMesh(BlockType::WoolBlue);
+	sandMesh = initializeMesh(BlockType::Sand);
+	dirtMesh = initializeMesh(BlockType::Dirt);
+	gravelMesh = initializeMesh(BlockType::Gravel);
+	rockMesh = initializeMesh(BlockType::Rock);
+	woodMesh = initializeMesh(BlockType::Wood);
+	planksMesh = initializeMesh(BlockType::Planks);
+
 	// Create a ground plane
 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1.0f, 0)));
@@ -195,38 +206,23 @@ void Wolf3D::init() {
 	sphereMaterial = Shader::getStandard()->createMaterial();
 	sphereMaterial->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-	// Create Basic ParticleSystem
-	particleSystem = std::make_shared<ParticleSystem>(10, Texture::getWhiteTexture());
-	particleSystem->gravity = {0,-9.82,0};
-	particleSystem->running = true;
-	particleMaterial = Shader::getStandard()->createMaterial();
-	particleMaterial->setColor({1,1,1,1});
-	particleMaterial->setSpecularity(0);
-
-	particleSystem->updateAppearance = [&](const Particle& p) {
-		p.color = glm::mix(glm::vec4(0, 1, 0, 1), glm::vec4(1, 0, 0, 0), p.normalizedAge);
-		p.size = glm::mix(1, 4, p.normalizedAge);
-	};
-
-	particleSystem->emitter = [&](Particle& p) {
-		p.position = { 0,0,0 };
-		p.velocity = glm::sphericalRand(1);
-		p.rotation = 90;
-		p.angularVelocity = 10;
-		p.size = 50;
-	};
-
 	//Create a bunch of chunks	
 	int chunkDimension = Chunk::getChunkDimensions();
-	for (float x = 0; x < 1.0f; x++) {
-		for (float y = 0; y < 1.0f; y++) {
-			chunkList.push_back(std::make_shared<Chunk>(glm::vec3(x * chunkDimension, 0, y * chunkDimension)));
+		
+	chunkArray = new std::shared_ptr<Chunk>*[chunkArraySize];
+	for (int i = 0; i < chunkArraySize; i++) {
+		chunkArray[i] = new std::shared_ptr<Chunk>[chunkArraySize];
+	}
+
+	for (int x = 0; x < chunkArraySize; x++) {
+		for (int z = 0; z < chunkArraySize; z++) {
+			chunkArray[x][z] = std::make_shared<Chunk>(glm::vec3(x * chunkDimension, 0, z * chunkDimension));
 		}
 	}
 
 	// Directional Light
 	worldLights.addLight(Light::create()
-		.withDirectionalLight(glm::normalize(glm::vec3(1, 1, 0.7f)))
+		.withDirectionalLight(glm::normalize(glm::vec3(0.7f, 0.7f, 0.7f)))
 		.build());
 
 	// Load and create walls
@@ -236,7 +232,6 @@ void Wolf3D::init() {
 		.withFilterSampling(false)
 		.build();
 	blockMaterial->setTexture(tiles);
-
 
 
 	// Setup FPS Controller
@@ -261,24 +256,131 @@ void Wolf3D::init() {
 }
 
 
-vec4 Wolf3D::textureCoordinates(int blockID){
+std::shared_ptr<sre::Mesh> Wolf3D::initializeMesh(BlockType type) {
+	const glm::vec4 coords = textureCoordinates((int)type);
+	std::vector<glm::vec4> texCoords;			// texCoords for block
+	texCoords.clear();
+	texCoords.insert(texCoords.end(), {
+		// +z
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// ?
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// ?
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// ?
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// top
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// bottom
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	});
+	return sre::Mesh::create().withCube(0.5f).withUVs(texCoords).build();
+}
+
+
+glm::vec4 Wolf3D::textureCoordinates(int blockID) {
 	glm::vec2 textureSize(1024, 2048);
 	glm::vec2 tileSize(128, 128);
 
 	float tileWidth = tileSize.x / textureSize.x;
 	float tileHeight = tileSize.y / textureSize.y;
 
-	glm::vec2 min = vec2(0, 16 * tileSize.y) / textureSize;
-	glm::vec2 max = min + tileSize / textureSize;
+	glm::vec2 min = glm::vec2(0, 1.0f);							// Start at top left
+	glm::vec2 max = min + glm::vec2(tileWidth, -tileHeight);	// Move max to bottom right corner of this block
 
-	min.x += (blockID % 8) * tileWidth * 2;
-	max.x += (blockID % 8) * tileWidth * 2;
+	int tilesX = textureSize.x / tileSize.x;
 
-	min.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
-	max.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
+	float xOffset = (blockID % tilesX) * tileWidth;
+	float yOffset = ((blockID - (blockID % tilesX)) / tilesX) * tileHeight;
 
-	return vec4(min.x, min.y, max.x, max.y);
+	min.x += xOffset;
+	max.x += xOffset;
+
+	min.y -= yOffset;
+	max.y -= yOffset;
+
+	return glm::vec4(min.x, min.y, max.x, max.y);
 }
+
+
+std::shared_ptr<sre::Mesh> Wolf3D::getMesh(BlockType type) {
+	switch (type) {
+	case BlockType::Stone:
+		return stoneMesh;
+	case BlockType::Brick:
+		return brickMesh;
+	case BlockType::Grass:
+		return grassMesh;
+	case BlockType::WoolBlue:
+		return woolBlueMesh;
+	case BlockType::Sand:
+		return sandMesh;
+	case BlockType::Dirt:
+		return dirtMesh;
+	case BlockType::Gravel:
+		return gravelMesh;
+	case BlockType::Rock:
+		return rockMesh;
+	case BlockType::Wood:
+		return woodMesh;
+	case BlockType::Planks:
+		return planksMesh;
+	}
+}
+
+
+//I didn't know if we still used this, so I just commented it out
+//vec4 Wolf3D::textureCoordinates(int blockID){
+//	glm::vec2 textureSize(1024, 2048);
+//	glm::vec2 tileSize(128, 128);
+//
+//	float tileWidth = tileSize.x / textureSize.x;
+//	float tileHeight = tileSize.y / textureSize.y;
+//
+//	glm::vec2 min = vec2(0, 16 * tileSize.y) / textureSize;
+//	glm::vec2 max = min + tileSize / textureSize;
+//
+//	min.x += (blockID % 8) * tileWidth * 2;
+//	max.x += (blockID % 8) * tileWidth * 2;
+//
+//	min.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
+//	max.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
+//
+//	return vec4(min.x, min.y, max.x, max.y);
+//}
+
+
+Block* Wolf3D::locationToBlock(glm::vec3 location) {
+	// Floor the locations since blocks are always at whole intergers
+	int x = (int)location.x;
+	int y = (int)location.y;
+	int z = (int)location.z;
+
+	int chunkSize = Chunk::getChunkDimensions();
+
+	// Determine the chunk we need 
+	
+	vec3 blockPos = glm::vec3(fmod(x, chunkSize), y, fmod(z, chunkSize));
+	vec2 chunkPos = glm::vec2(x - blockPos.x, z - blockPos.z);
+
+	// Get it 
+
+	auto chunk = chunkArray[(int)chunkPos.x][(int)chunkPos.y];
+
+	// 
+	return chunk->getBlock(blockPos.x, blockPos.y, blockPos.z);
+}	
 
 
 int main(){

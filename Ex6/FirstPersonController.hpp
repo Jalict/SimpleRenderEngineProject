@@ -36,6 +36,8 @@ public:
 	// TODO TEMP remove
 	glm::vec3 fromRay = glm::vec3(0,0,0);
 	glm::vec3 toRay = glm::vec3(0, 0, 0);
+	glm::vec3 fromRay1 = glm::vec3(0, 0, 0);
+	glm::vec3 toRay2 = glm::vec3(0, 0, 0);
 private:
 	void checkGrounded(btVector3 position);
 	void destroyBlock();
