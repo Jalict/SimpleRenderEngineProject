@@ -16,6 +16,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
     camera->setPerspectiveProjection(FIELD_OF_FIELD, NEAR_PLANE, FAR_PLANE);
 
 	// Create Capsule collider
+	// # TODO PRIORITY fix controller shape size without getting stuck..
 	btCollisionShape* controllerShape = new btCapsuleShape(0.1f, 1.0f); // CHECKGROUND is linked to these values 1.2 / 2 = 0.6f;
 	btDefaultMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 0)));
 
@@ -95,7 +96,7 @@ void FirstPersonController::update(float deltaTime){
 	
 	// Update our tranform matrix, pass it on to the camera
 	auto transformMatrix = mat4();
-	transformMatrix = translate(transformMatrix, glm::vec3(position.getX(), position.getY(), position.getZ())); 
+	transformMatrix = translate(transformMatrix, glm::vec3(position.getX(), position.getY() + Y_CAMERA_OFFSET, position.getZ())); 
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.x), vec3(0, -1, 0));
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.y), vec3(-1, 0, 0));
 	camera->setViewTransform(glm::inverse(transformMatrix));
@@ -112,7 +113,7 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 	// If we hit something, check the distance to the ground
 	// TODO distance check - expansive calculation, change to something more efficient.
 	if (res.hasHit()) {
-		isGrounded = !(position.distance(res.m_hitPointWorld) > 0.6f); // 0l.6f is the height of capsule collider
+		isGrounded = !(position.distance(res.m_hitPointWorld) > 0.9f); // 0l.6f is the height of capsule collider
 	}
 	else {
 		isGrounded = false;
@@ -121,6 +122,12 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 
 
 void FirstPersonController::onKey(SDL_Event &event) {
+	// Reset character position if HOME is pressed
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_HOME) {
+		setPosition(glm::vec3(3, 8, 3), 0);
+	}
+
+
 	// Capture Jump
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
 		rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
@@ -215,6 +222,7 @@ void FirstPersonController::placeBlock() {
 
 Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 	btVector3 start = rigidBody->getWorldTransform().getOrigin();
+	start.setY(start.getY() + Y_CAMERA_OFFSET);
 	btVector3 direction = btVector3(sin(radians(lookRotation.x)), sin(radians(lookRotation.y)) * -1, cos(radians(lookRotation.x)) * -1);
 	btVector3 end = start + direction * 10.0f;
 
@@ -253,10 +261,10 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 
 
 // Set Spawn Position
-void FirstPersonController::setInitialPosition(glm::vec2 position, float rotation) {
+void FirstPersonController::setPosition(glm::vec3 position, float rotation) {
     this->lookRotation.x = rotation;
 	this->lookRotation.y = 0;
-	rigidBody->translate(btVector3(position.x, 10.0f, position.y));
+	rigidBody->translate(btVector3(position.x, position.y, position.z));
 }
 
 

@@ -240,7 +240,7 @@ void Wolf3D::init() {
 
 	// Setup FPS Controller
 	fpsController = new  FirstPersonController(&camera);
-    fpsController->setInitialPosition(vec2(5.5f, 5.5f), 0);
+    fpsController->setPosition(vec3(-1.0f, 10.0f, -1.0f), 0);
 
 
 	// Create floor
@@ -372,7 +372,7 @@ Block* Wolf3D::locationToBlock(int x,  int y,  int z) {
 	vec3 blockPos = glm::vec3(x % chunkSize, y % chunkSize, z % chunkSize);
 	vec2 chunkPos = glm::vec2(x - blockPos.x, z - blockPos.z);
 
-	// If the chunk does not exist, return null pointer
+	// If the chunk does not exist, return null pointerf
 	if(chunkPos.x < 0 || chunkPos.y < 0 || chunkPos.x >= chunkArraySize || chunkPos.y >= chunkArraySize){
 		std::cout << "chunk doesnt exist" << std::endl;
 		return nullptr;

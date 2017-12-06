@@ -20,7 +20,7 @@ public:
     void onKey(SDL_Event& event);
     void onMouse(SDL_Event &event);
 
-    void setInitialPosition(glm::vec2 position, float rotation);
+    void setPosition(glm::vec3 position, float rotation);
 	bool getIsGrounded();
 
 	Block* castRayForBlock(float normalMultiplier); // normalMultiplayer: Allows you to determine whether the normal should be substracted (to get a block), added (to get an empty location) or the border.
@@ -28,7 +28,7 @@ public:
 	const float MAX_X_LOOK_ROTATION = 45.0f;
 	// TODO move this to camera?s
 	const float FIELD_OF_FIELD = 45.0f;
-	const float NEAR_PLANE = 0.1f;
+	const float NEAR_PLANE = 0.05f;
 	const float FAR_PLANE = 1000.0f;
 
 	glm::vec2 lookRotation;
@@ -49,9 +49,10 @@ private:
 
 	const float ROTATION_SPEED = 0.3f;
 	const float MOVEMENT_SPEED = 150.0f;
-	const float JUMP_FORCE = 250.0f;
+	const float JUMP_FORCE = 300.0f;
 	const float SPRINT_MOVEMENT_INCREASE = 2.0f;
 	const float SPRINT_FOV_INCREASE = 1.1f;
+	const float Y_CAMERA_OFFSET = 1.0f;
    
     bool fwd = false;
     bool bwd = false;
