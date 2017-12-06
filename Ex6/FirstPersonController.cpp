@@ -175,11 +175,50 @@ void FirstPersonController::onKey(SDL_Event &event) {
 
 // Handle Mouse Events
 void FirstPersonController::onMouse(SDL_Event &event) {
-   if(event.type == SDL_MOUSEMOTION && !lockRotation) {
-	   lookRotation.x += event.motion.xrel * ROTATION_SPEED;
-	   lookRotation.y += event.motion.yrel * ROTATION_SPEED;
-	   lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_ROTATION, MAX_X_LOOK_ROTATION);
-   }
+	if(event.type == SDL_MOUSEMOTION && !lockRotation) {
+		lookRotation.x += event.motion.xrel * ROTATION_SPEED;
+		lookRotation.y += event.motion.yrel * ROTATION_SPEED;
+		lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_ROTATION, MAX_X_LOOK_ROTATION);
+	}
+	
+	if (event.type == SDL_MOUSEBUTTONDOWN) {
+		if (event.button.button == SDL_BUTTON_LEFT) {
+			destroyBlock();
+		}
+		else if(event.button.button == SDL_BUTTON_RIGHT) {
+			placeBlock();
+		}
+	}
+}
+
+void FirstPersonController::destroyBlock() {
+	std::cout << "destroying" << std::endl;
+
+	// TODO make sure this below is correct
+	Physics* physics = &Wolf3D::getInstance()->physics;
+
+	btVector3 position = rigidBody->getWorldTransform().getOrigin();
+	btVector3 forward = btVector3(sin(radians(lookRotation.x)), sin(radians(lookRotation.y)) * -1, cos(radians(lookRotation.x)) * -1);
+	btVector3 to = position + forward * 10.0f;
+
+	btCollisionWorld::ClosestRayResultCallback res(position, to);
+
+	physics->raycast(&position, &to, &res);
+	
+	// TODO TEMP prob remove below
+	fromRay = vec3(position.getX(), position.getY(), position.getZ());
+	//toRay = vec3(to.getX(), to.getY(), to.getZ());
+
+	if (res.hasHit()) {
+		btVector3 hit = res.m_hitPointWorld;
+		toRay = vec3((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
+	}
+	
+}
+
+
+void FirstPersonController::placeBlock() {
+	std::cout << "placing" << std::endl;
 }
 
 
