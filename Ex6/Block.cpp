@@ -65,6 +65,9 @@ btRigidBody* Block::createRigidBody(float mass, const btTransform& startTransfor
 	return body;
 }
 
+bool Block::getActive() {
+	return this->active;
+}
 
 // # TODO test between the different modes
 void Block::setActive(bool active) {
@@ -75,4 +78,5 @@ void Block::setActive(bool active) {
 	else
 		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
+
 }

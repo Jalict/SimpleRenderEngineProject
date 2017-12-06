@@ -379,25 +379,24 @@ std::shared_ptr<sre::Mesh> Wolf3D::getMesh(BlockType type) {
 //}
 
 
-Block* Wolf3D::locationToBlock(glm::vec3 location) {
-	// Floor the locations since blocks are always at whole intergers
-	int x = (int)location.x;
-	int y = (int)location.y;
-	int z = (int)location.z;
-
+Block* Wolf3D::locationToBlock(int x,  int y,  int z) {
 	int chunkSize = Chunk::getChunkDimensions();
 
 	// Determine the chunk we need 
-	
-	vec3 blockPos = glm::vec3(fmod(x, chunkSize), y, fmod(z, chunkSize));
+	vec3 blockPos = glm::vec3(x % chunkSize, y % chunkSize, z % chunkSize);
 	vec2 chunkPos = glm::vec2(x - blockPos.x, z - blockPos.z);
 
-	// Get it 
-
+	// If the chunk does not exist, return null pointer
+	if(chunkPos.x < 0 || chunkPos.y < 0 || chunkPos.x >= chunkArraySize || chunkPos.y >= chunkArraySize){
+		std::cout << "chunk doesnt exist" << std::endl;
+		return nullptr;
+	}
+		
+	// Else get the right block
 	auto chunk = chunkArray[(int)chunkPos.x][(int)chunkPos.y];
 
-	// 
-	return chunk->getBlock(blockPos.x, blockPos.y, blockPos.z);
+	// Get the block on the chunk
+	return chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
 }	
 
 
