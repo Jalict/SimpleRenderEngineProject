@@ -12,6 +12,8 @@ class Wolf3D {
 public:
     Wolf3D();
 	static Wolf3D* getInstance();
+	Block* locationToBlock(glm::vec3 location);
+
 	Physics physics;
 
 	std::shared_ptr<sre::Material> blockMaterial; // #WIP blockTextures

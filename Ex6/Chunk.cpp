@@ -86,3 +86,15 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 		}
 	}
 }
+
+glm::vec3 Chunk::getPosition() {
+	return position;
+}
+
+Block* Chunk::getBlock(int x, int y, int z) {
+	assert(x >= 0 && x < chunkDimensions);
+	assert(y >= 0 && y < chunkDimensions);
+	assert(z >= 0 && z < chunkDimensions);
+
+	return &blocksInChunk[x][y][z];
+}

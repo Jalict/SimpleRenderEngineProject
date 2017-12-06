@@ -34,6 +34,8 @@ void Block::setMesh(BlockType type) {
 void Block::setType(BlockType type) {
 	this->type = type;
 	setMesh(type);
+
+	std::cout << "type set" << std::endl;
 }
 
 std::shared_ptr<sre::Mesh> Block::getMesh(){
