@@ -3,6 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+Chunk::Chunk() : Chunk(glm::vec3(0, 0, 0)) { // HACK: This doesn't actually set anything 
+}
+
 Chunk::Chunk(glm::vec3 position){
 	//Set the position of the chunk
 	this->position = position;

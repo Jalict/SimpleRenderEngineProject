@@ -55,7 +55,9 @@ private:
 	std::shared_ptr<sre::Mesh> floor;
 	std::shared_ptr<sre::Material> floorMat;
 
-	std::vector<std::shared_ptr<Chunk>> chunkList;
+	std::shared_ptr<Chunk>** chunkArray;
+
+	int chunkArraySize = 3;
 
 	glm::vec4 textureCoordinates(int blockID);
 	std::shared_ptr<sre::Mesh> initializeMesh(BlockType type);

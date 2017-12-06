@@ -8,8 +8,6 @@
 using namespace sre;
 using namespace glm;
 
-
-
 Wolf3D::Wolf3D() {
 	// Singleton-ish
 	// TODO clean this to be proper singleton?
@@ -111,12 +109,12 @@ void Wolf3D::render() {
 
 
 void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
-	for (std::vector<std::shared_ptr<Chunk>>::iterator it = chunkList.begin(); it != chunkList.end(); ++it) {
-		std::shared_ptr<Chunk> itChunk = (*it);
-		itChunk->draw(renderPass);
-	}
 
-//	chunk->draw(renderPass);
+	for (int i = 0; i < chunkArraySize; i++) {
+		for (int j = 0; j < chunkArraySize; j++) {
+			chunkArray[i][j]->draw(renderPass);
+		}
+	}
 }	
 
 
@@ -205,9 +203,15 @@ void Wolf3D::init() {
 
 	//Create a bunch of chunks	
 	int chunkDimension = Chunk::getChunkDimensions();
-	for (float x = 0; x < 1.0f; x++) {
-		for (float y = 0; y < 1.0f; y++) {
-			chunkList.push_back(std::make_shared<Chunk>(glm::vec3(x * chunkDimension, 0, y * chunkDimension)));
+		
+	chunkArray = new std::shared_ptr<Chunk>*[chunkArraySize];
+	for (int i = 0; i < chunkArraySize; i++) {
+		chunkArray[i] = new std::shared_ptr<Chunk>[chunkArraySize];
+	}
+
+	for (int x = 0; x < chunkArraySize; x++) {
+		for (int z = 0; z < chunkArraySize; z++) {
+			chunkArray[x][z] = std::make_shared<Chunk>(glm::vec3(x * chunkDimension, 0, z * chunkDimension));
 		}
 	}
 
@@ -366,7 +370,8 @@ Block* Wolf3D::locationToBlock(glm::vec3 location) {
 	vec2 chunkPos = glm::vec2(x - blockPos.x, z - blockPos.z);
 
 	// Get it 
-	auto chunk = chunkList.at(0);
+
+	auto chunk = chunkArray[(int)chunkPos.x][(int)chunkPos.y];
 
 	// 
 	return chunk->getBlock(blockPos.x, blockPos.y, blockPos.z);
