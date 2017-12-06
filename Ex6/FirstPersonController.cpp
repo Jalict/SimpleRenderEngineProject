@@ -196,56 +196,59 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 // TODO clean up
 void FirstPersonController::destroyBlock() {
 	std::cout << "destroying" << std::endl;
+	auto block = castRayForBlock(-0.2f);
 
-	// TODO make sure this below is correct
-	Physics* physics = &Wolf3D::getInstance()->physics;
+	if(block != nullptr)
+		block->setActive(false);
+}
 
-	btVector3 position = rigidBody->getWorldTransform().getOrigin();
-	btVector3 forward = btVector3(sin(radians(lookRotation.x)), sin(radians(lookRotation.y)) * -1, cos(radians(lookRotation.x)) * -1);
-	btVector3 to = position + forward * 10.0f;
 
-	btCollisionWorld::ClosestRayResultCallback res(position, to);
+void FirstPersonController::placeBlock() {
+	std::cout << "placing" << std::endl;
 
-	physics->raycast(&position, &to, &res);
-	
-	// TODO TEMP prob remove below -- added for debug purposes
-	fromRay = vec3(position.getX(), position.getY(), position.getZ());
-	//toRay = vec3(to.getX(), to.getY(), to.getZ());
+	auto block = castRayForBlock(0.2f);
 
+	if(block != nullptr)
+		block->setActive(true);
+}
+
+
+Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
+	btVector3 start = rigidBody->getWorldTransform().getOrigin();
+	btVector3 direction = btVector3(sin(radians(lookRotation.x)), sin(radians(lookRotation.y)) * -1, cos(radians(lookRotation.x)) * -1);
+	btVector3 end = start + direction * 10.0f;
+
+	btCollisionWorld::ClosestRayResultCallback res(start, end);
+
+	// Cast ray
+	Wolf3D::getInstance()->physics.raycast(&start, &end, &res);
+
+	// If we have an hit handle it, else return null
 	if (res.hasHit()) {
+		// Store hit location
 		btVector3 hit = res.m_hitPointWorld;
 
 		// TODO TEMP prob remove below -- added for debug purposes
 		toRay = vec3(hit.getX(), hit.getY(), hit.getZ());
 		toRay2 = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()); //res.m_hitNormalWorld;
 		fromRay1 = toRay;
+		fromRay = vec3(start.getX(), start.getY(), start.getZ());
 
 		// Compensate for origin of block, collider origin is in center, though for the math we want it to be on a corner
 		hit += btVector3(0.501f, 0.501f, 0.501f);
 
 		// Every block is above or at 0. If we hit the bedrock it could be that we get below 0. So make really sure we always grab blocks on atleast 0
-		if(hit.getY() < 0)
+		if (hit.getY() < 0)
 			hit.setY(0);
 
-		// Substract some of  the hit normal. The raycast always hits the edge of the collider. This increases accuracy since we move into the collider.
-		hit -= res.m_hitNormalWorld * 0.2f;
+		// Add some of  the hit normal. The raycast always hits the edge of the collider. This increases accuracy since we move into the collider or out.
+		hit += res.m_hitNormalWorld * normalMultiplier;
 
-		// Floor the numbers, this is the block we want to get. 
-		auto t = vec3((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
-
-		// TODO remove, for now grab a block inside chunk 0,0
-		t = clamp(t, vec3(0,0,0), vec3(5,5,5));
-
-		// Grab the block, and set it to not active
-		auto block = Wolf3D::getInstance()->locationToBlock(t);
-		block->setActive(false);
+		// Grab the block, and set it to not active - all numbers are floored since blocks take up a whole unit
+		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
+	} else{
+		return nullptr;
 	}
-	
-}
-
-
-void FirstPersonController::placeBlock() {
-	std::cout << "placing" << std::endl;
 }
 
 
@@ -255,6 +258,7 @@ void FirstPersonController::setInitialPosition(glm::vec2 position, float rotatio
 	this->lookRotation.y = 0;
 	rigidBody->translate(btVector3(position.x, 10.0f, position.y));
 }
+
 
 bool FirstPersonController::getIsGrounded() {
 	return isGrounded;

@@ -12,7 +12,7 @@ class Wolf3D {
 public:
     Wolf3D();
 	static Wolf3D* getInstance();
-	Block* locationToBlock(glm::vec3 location);
+	Block* locationToBlock(int x, int y, int z);
 
 	Physics physics;
 

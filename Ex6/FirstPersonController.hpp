@@ -5,6 +5,7 @@
 
 #include <SDL_events.h>
 #include "sre/Camera.hpp"
+#include "Block.hpp"
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 
 
@@ -21,6 +22,8 @@ public:
 
     void setInitialPosition(glm::vec2 position, float rotation);
 	bool getIsGrounded();
+
+	Block* castRayForBlock(float normalMultiplier); // normalMultiplayer: Allows you to determine whether the normal should be substracted (to get a block), added (to get an empty location) or the border.
 
 	const float MAX_X_LOOK_ROTATION = 45.0f;
 	// TODO move this to camera?s
