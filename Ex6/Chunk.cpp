@@ -29,7 +29,7 @@ Chunk::Chunk(glm::vec3 position){
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
-				blocksInChunk[x][y][z] = Block(BlockType::Dirt, glm::vec3(position.x + x,position.y + y, position.z + z));
+				blocksInChunk[x][y][z] = Block(BlockType::Sand, glm::vec3(position.x + x,position.y + y, position.z + z));
 			}
 		}
 	}

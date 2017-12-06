@@ -22,7 +22,7 @@ public:
     void setInitialPosition(glm::vec2 position, float rotation);
 	bool getIsGrounded();
 
-	const float MAX_X_LOOK_ROTATION = 30.0f;
+	const float MAX_X_LOOK_ROTATION = 45.0f;
 	// TODO move this to camera?s
 	const float FIELD_OF_FIELD = 45.0f;
 	const float NEAR_PLANE = 0.1f;

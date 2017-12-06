@@ -191,6 +191,9 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 	}
 }
 
+
+
+// TODO clean up
 void FirstPersonController::destroyBlock() {
 	std::cout << "destroying" << std::endl;
 
@@ -205,21 +208,35 @@ void FirstPersonController::destroyBlock() {
 
 	physics->raycast(&position, &to, &res);
 	
-	// TODO TEMP prob remove below
+	// TODO TEMP prob remove below -- added for debug purposes
 	fromRay = vec3(position.getX(), position.getY(), position.getZ());
 	//toRay = vec3(to.getX(), to.getY(), to.getZ());
 
 	if (res.hasHit()) {
 		btVector3 hit = res.m_hitPointWorld;
 
+		// TODO TEMP prob remove below -- added for debug purposes
 		toRay = vec3(hit.getX(), hit.getY(), hit.getZ());
 		toRay2 = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()); //res.m_hitNormalWorld;
 		fromRay1 = toRay;
 
+		// Compensate for origin of block, collider origin is in center, though for the math we want it to be on a corner
+		hit += btVector3(0.501f, 0.501f, 0.501f);
+
+		// Every block is above or at 0. If we hit the bedrock it could be that we get below 0. So make really sure we always grab blocks on atleast 0
+		if(hit.getY() < 0)
+			hit.setY(0);
+
+		// Substract some of  the hit normal. The raycast always hits the edge of the collider. This increases accuracy since we move into the collider.
 		hit -= res.m_hitNormalWorld * 0.2f;
 
-		std::cout << hit.getX() << " - " << hit.getY() << " - " << hit.getZ() << std::endl;
+		// Floor the numbers, this is the block we want to get. 
 		auto t = vec3((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
+
+		// TODO remove, for now grab a block inside chunk 0,0
+		t = clamp(t, vec3(0,0,0), vec3(5,5,5));
+
+		// Grab the block, and set it to not active
 		auto block = Wolf3D::getInstance()->locationToBlock(t);
 		block->setActive(false);
 	}
