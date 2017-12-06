@@ -24,7 +24,7 @@ public:
 	std::shared_ptr<sre::Mesh> getMesh();		// Get Mesh
 
 	glm::vec3 getPosition();
-	bool getActive() { return active; }
+	bool getActive();
 	void setActive(bool active);
 private:
 	btRigidBody* createRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape);
