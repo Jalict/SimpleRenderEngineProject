@@ -157,6 +157,19 @@ void Wolf3D::handleDebugKeys(SDL_Event& e) {
 
 void Wolf3D::init() {
 	// TODO Clean up +  dealloc
+
+	// Initialise all the block meshes
+	stoneMesh = initializeMesh(BlockType::Stone);
+	brickMesh = initializeMesh(BlockType::Brick);
+	grassMesh = initializeMesh(BlockType::Grass);
+	woolBlueMesh = initializeMesh(BlockType::WoolBlue);
+	sandMesh = initializeMesh(BlockType::Sand);
+	dirtMesh = initializeMesh(BlockType::Dirt);
+	gravelMesh = initializeMesh(BlockType::Gravel);
+	rockMesh = initializeMesh(BlockType::Rock);
+	woodMesh = initializeMesh(BlockType::Wood);
+	planksMesh = initializeMesh(BlockType::Planks);
+
 	// Create a ground plane
 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
 	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1.0f, 0)));
@@ -240,24 +253,109 @@ void Wolf3D::init() {
 }
 
 
-vec4 Wolf3D::textureCoordinates(int blockID){
+std::shared_ptr<sre::Mesh> Wolf3D::initializeMesh(BlockType type) {
+	const glm::vec4 coords = textureCoordinates((int)type);
+	std::vector<glm::vec4> texCoords;			// texCoords for block
+	texCoords.clear();
+	texCoords.insert(texCoords.end(), {
+		// +z
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// ?
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// ?
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// ?
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// top
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+		// bottom
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	});
+	return sre::Mesh::create().withCube(0.5f).withUVs(texCoords).build();
+}
+
+
+glm::vec4 Wolf3D::textureCoordinates(int blockID) {
 	glm::vec2 textureSize(1024, 2048);
 	glm::vec2 tileSize(128, 128);
 
 	float tileWidth = tileSize.x / textureSize.x;
 	float tileHeight = tileSize.y / textureSize.y;
 
-	glm::vec2 min = vec2(0, 16 * tileSize.y) / textureSize;
-	glm::vec2 max = min + tileSize / textureSize;
+	glm::vec2 min = glm::vec2(0, 1.0f);							// Start at top left
+	glm::vec2 max = min + glm::vec2(tileWidth, -tileHeight);	// Move max to bottom right corner of this block
 
-	min.x += (blockID % 8) * tileWidth * 2;
-	max.x += (blockID % 8) * tileWidth * 2;
+	int tilesX = textureSize.x / tileSize.x;
 
-	min.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
-	max.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
+	float xOffset = (blockID % tilesX) * tileWidth;
+	float yOffset = ((blockID - (blockID % tilesX)) / tilesX) * tileHeight;
 
-	return vec4(min.x, min.y, max.x, max.y);
+	min.x += xOffset;
+	max.x += xOffset;
+
+	min.y -= yOffset;
+	max.y -= yOffset;
+
+	return glm::vec4(min.x, min.y, max.x, max.y);
 }
+
+
+std::shared_ptr<sre::Mesh> Wolf3D::getMesh(BlockType type) {
+	switch (type) {
+	case BlockType::Stone:
+		return stoneMesh;
+	case BlockType::Brick:
+		return brickMesh;
+	case BlockType::Grass:
+		return grassMesh;
+	case BlockType::WoolBlue:
+		return woolBlueMesh;
+	case BlockType::Sand:
+		return sandMesh;
+	case BlockType::Dirt:
+		return dirtMesh;
+	case BlockType::Gravel:
+		return gravelMesh;
+	case BlockType::Rock:
+		return rockMesh;
+	case BlockType::Wood:
+		return woodMesh;
+	case BlockType::Planks:
+		return planksMesh;
+	}
+}
+
+
+//I didn't know if we still used this, so I just commented it out
+//vec4 Wolf3D::textureCoordinates(int blockID){
+//	glm::vec2 textureSize(1024, 2048);
+//	glm::vec2 tileSize(128, 128);
+//
+//	float tileWidth = tileSize.x / textureSize.x;
+//	float tileHeight = tileSize.y / textureSize.y;
+//
+//	glm::vec2 min = vec2(0, 16 * tileSize.y) / textureSize;
+//	glm::vec2 max = min + tileSize / textureSize;
+//
+//	min.x += (blockID % 8) * tileWidth * 2;
+//	max.x += (blockID % 8) * tileWidth * 2;
+//
+//	min.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
+//	max.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
+//
+//	return vec4(min.x, min.y, max.x, max.y);
+//}
 
 
 int main(){
