@@ -29,9 +29,16 @@ public:
 	const float FAR_PLANE = 1000.0f;
 
 	glm::vec2 lookRotation;
+
 	bool lockRotation = false;
+
+	// TODO TEMP remove
+	glm::vec3 fromRay = glm::vec3(0,0,0);
+	glm::vec3 toRay = glm::vec3(0, 0, 0);
 private:
 	void checkGrounded(btVector3 position);
+	void destroyBlock();
+	void placeBlock();
 
     sre::Camera * camera;
 

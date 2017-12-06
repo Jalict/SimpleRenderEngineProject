@@ -74,8 +74,10 @@ void Wolf3D::update(float deltaTime) {
 
 void Wolf3D::render() {
 	// Create a render pass
-    auto renderPass = RenderPass::create()
-            .withCamera(camera)
+	auto renderPass = RenderPass::create()
+			.withCamera(camera)
+			.withWorldLights(&worldLights)
+			.withClearColor(true, { 0.73f, 0.83f, 1, 1 })
             .build();
 
 	// Draw objects 
@@ -83,10 +85,15 @@ void Wolf3D::render() {
 	renderPass.draw(sphere, sphereTransform, sphereMaterial);
 	renderFloor(renderPass);
 
+	// TODO TEMP remove
+	std::vector<vec3> rays;
+	rays.push_back(fpsController->fromRay);
+	rays.push_back(fpsController->toRay);
+	renderPass.drawLines(rays);
+
 	//We're only drawing one chunk.
 	// TODO render a list of chunks.
 	renderChunk(renderPass);
-	renderPass.draw(walls, glm::mat4(1), wallMaterial);
 
 	// Allow physics debug drawer to draw
 	physics.drawDebug(&renderPass);
@@ -193,40 +200,30 @@ void Wolf3D::init() {
 
 	// Create ball mesh
 	sphere = Mesh::create().withSphere(16, 32, 1.0f).build();
-	sphereMaterial = Shader::getUnlit()->createMaterial();
+	sphereMaterial = Shader::getStandard()->createMaterial();
 	sphereMaterial->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
 	//Create a bunch of chunks	
 	int chunkDimension = Chunk::getChunkDimensions();
-	for (float x = -3.0f; x < 3.0f; x++) {
-		for (float y = -3.0f; y < 3.0f; y++) {
+	for (float x = 0; x < 1.0f; x++) {
+		for (float y = 0; y < 1.0f; y++) {
 			chunkList.push_back(std::make_shared<Chunk>(glm::vec3(x * chunkDimension, 0, y * chunkDimension)));
 		}
 	}
 
-	// Load and create walls
-    wallMaterial = Shader::getUnlit()->createMaterial();
-    auto texture = Texture::create().withFile("level0.png")
-            .withGenerateMipmaps(false)
-            .withFilterSampling(false)
-            .build();
-    wallMaterial->setTexture(texture);
+	// Directional Light
+	worldLights.addLight(Light::create()
+		.withDirectionalLight(glm::normalize(glm::vec3(0.7f, 0.7f, 0.7f)))
+		.build());
 
 	// Load and create walls
-	blockMaterial = Shader::getUnlit()->createMaterial();
+	blockMaterial = Shader::getStandard()->createMaterial();
 	auto tiles = Texture::create().withFile("tileset.png")
 		.withGenerateMipmaps(false)
 		.withFilterSampling(false)
 		.build();
 	blockMaterial->setTexture(tiles);
 
-    std::vector<glm::vec3> vertexPositions;
-    std::vector<glm::vec4> textureCoordinates;
-
-	walls = Mesh::create()
-		.withPositions(vertexPositions)
-		.withUVs(textureCoordinates)
-		.build();
 
 
 	// Setup FPS Controller
@@ -236,10 +233,8 @@ void Wolf3D::init() {
 
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
-
-	floorMat = Shader::getUnlit()->createMaterial();
+	floorMat = Shader::getStandard()->createMaterial();
 	floorMat->setColor(vec4(.44f, .44f, .44f, 1.0f));
-
 	floorTransform = glm::translate(vec3(0, -1.0f, 0));
 	floorTransform = glm::rotate(floorTransform, glm::radians(-90.0f), vec3(1, 0, 0));
 

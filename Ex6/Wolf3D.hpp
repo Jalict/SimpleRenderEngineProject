@@ -26,7 +26,7 @@ private:
 	void renderFloor(sre::RenderPass & renderPass);
 	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
-	void handleDebugKeys(SDL_Event& e);
+	void handleDebugKeys(SDL_Event& e);	
 
 	static bool instanceFlag;
 	static Wolf3D* instance;
@@ -34,9 +34,9 @@ private:
     sre::SDLRenderer renderer;
     sre::Camera camera;
 	FirstPersonController* fpsController;
+	sre::WorldLights worldLights;
 
     std::shared_ptr<sre::Mesh> walls;
-    std::shared_ptr<sre::Material> wallMaterial;
 
 	bool physicsDebugDraw = false;
 	bool mouseLock = false;
