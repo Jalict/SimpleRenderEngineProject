@@ -20,17 +20,17 @@ Block::Block(BlockType type, glm::vec3 position) {
 
 	// # TODO dealloc
 	// Add physics collider
-	btBoxShape* blockShape = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+	collider = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
 	
 	btTransform startTransform;
 	startTransform.setIdentity();
 	btScalar mass(0);
 	startTransform.setOrigin(btVector3(btScalar(position.x), btScalar(position.y), btScalar(position.z)));
-	createRigidBody(mass, startTransform, blockShape);
+	rigidbody = createRigidBody(mass, startTransform, collider);
 }
 
 Block::~Block() {
-
+	// TODO destroy physics
 }
 
 void Block::setType(BlockType type) {
@@ -124,4 +124,16 @@ btRigidBody* Block::createRigidBody(float mass, const btTransform& startTransfor
 //	body->setUserIndex(-1); 
 	Wolf3D::getInstance()->physics.addRigidBody(body);
 	return body;
+}
+
+
+// # TODO test between the different modes
+void Block::setActive(bool active) {
+	this->active = active;
+	if(active)
+		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
+//		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
+	else
+		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
+//		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 }

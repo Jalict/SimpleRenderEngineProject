@@ -211,9 +211,17 @@ void FirstPersonController::destroyBlock() {
 
 	if (res.hasHit()) {
 		btVector3 hit = res.m_hitPointWorld;
-		toRay = vec3((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
-		auto block = Wolf3D::getInstance()->locationToBlock(toRay);
-		block->setType(Block::BlockType::Sand);
+	
+		toRay = vec3(hit.getX(), hit.getY(), hit.getZ());
+		toRay2 = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()); //res.m_hitNormalWorld;
+		fromRay1 = toRay;
+
+		hit -= res.m_hitNormalWorld * 0.2f;
+
+		std::cout << hit.getX() << " - " << hit.getY() << " - " << hit.getZ() << std::endl;
+		auto t = vec3((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
+		auto block = Wolf3D::getInstance()->locationToBlock(t);
+		block->setActive(false);
 	}
 	
 }

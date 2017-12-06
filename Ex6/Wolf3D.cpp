@@ -91,6 +91,11 @@ void Wolf3D::render() {
 	rays.push_back(fpsController->toRay);
 	renderPass.drawLines(rays);
 
+	std::vector<vec3> rays1;
+	rays1.push_back(fpsController->fromRay1);
+	rays1.push_back(fpsController->toRay2);
+	renderPass.drawLines(rays1, vec4(1, 0, 0, 1));
+
 	//We're only drawing one chunk.
 	// TODO render a list of chunks.
 	renderChunk(renderPass);

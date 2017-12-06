@@ -50,6 +50,11 @@ void Physics::addRigidBody(btRigidBody* rigidbody) {
 }
 
 
+void Physics::removeRigidBody(btRigidBody* rigidbody) {
+	dynamicsWorld->removeRigidBody(rigidbody);
+}
+
+
 void Physics::setDebugDrawMode(btIDebugDraw::DebugDrawModes mode){
 	debugDrawer.setDebugMode(mode);
 }

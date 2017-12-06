@@ -23,8 +23,12 @@ public:
 
 	glm::vec3 getPosition();
 	bool getActive() { return active; }
+	void setActive(bool active);
 private:
 	btRigidBody* createRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape);
+	
+	btRigidBody* rigidbody;
+	btBoxShape* collider;
 
 	BlockType type = BlockType::Dirt;			// Current type of block
 
