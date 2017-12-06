@@ -110,6 +110,21 @@ void Wolf3D::render() {
 		profiler.update();
 		profiler.gui(false);
 	}
+
+	// Pass for Crosshair
+	sre::Camera simpleCamera;
+	auto simplePass = RenderPass::create()
+		.withCamera(simpleCamera)
+		.withClearColor(false, { 0, 0, 0, 1 })
+		.build();
+
+	std::vector<glm::vec3> cross = {
+		glm::vec3(.1,0,0),
+		glm::vec3(-.1,0,0),
+		glm::vec3(0,.1,0),
+		glm::vec3(0,-.1,0)
+	};
+	simplePass.drawLines(cross);
 }
 
 
@@ -236,7 +251,6 @@ void Wolf3D::init() {
 		.withFilterSampling(false)
 		.build();
 	blockMaterial->setTexture(tiles);
-
 
 	// Setup FPS Controller
 	fpsController = new  FirstPersonController(&camera);

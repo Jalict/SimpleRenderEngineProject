@@ -5,6 +5,7 @@
 #include "FirstPersonController.hpp"
 #include "Physics.hpp"
 #include "sre/SpriteAtlas.hpp"
+#include "ParticleSystem.hpp"
 #include "Chunk.hpp"
 #include "Block.hpp"
 
@@ -49,6 +50,9 @@ private:
 	std::shared_ptr<sre::Mesh> sphere;
 	std::shared_ptr<sre::Material> sphereMaterial;
 	btTransform sphereTrans;
+
+	std::shared_ptr<ParticleSystem> particleSystem;
+	std::shared_ptr<sre::Material> particleMaterial;
 
 	glm::mat4 floorTransform;
 	glm::vec4 floorColor;

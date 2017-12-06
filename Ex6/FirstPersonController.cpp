@@ -102,6 +102,13 @@ void FirstPersonController::update(float deltaTime){
 	camera->setViewTransform(glm::inverse(transformMatrix));
 }
 
+glm::vec3 FirstPersonController::getPosition() {
+	btTransform transform;
+	rigidBody->getMotionState()->getWorldTransform(transform);
+	btVector3 position = transform.getOrigin();
+	return glm::vec3(position.getX(), position.getY(), position.getZ());
+}
+
 
 void FirstPersonController::checkGrounded(btVector3 position) {
 	// Cast a ray from our position to a location far below it

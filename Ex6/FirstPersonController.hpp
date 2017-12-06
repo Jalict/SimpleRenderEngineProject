@@ -21,6 +21,7 @@ public:
     void onMouse(SDL_Event &event);
 
     void setPosition(glm::vec3 position, float rotation);
+	glm::vec3 getPosition();
 	bool getIsGrounded();
 
 	Block* castRayForBlock(float normalMultiplier); // normalMultiplayer: Allows you to determine whether the normal should be substracted (to get a block), added (to get an empty location) or the border.
