@@ -194,7 +194,7 @@ void Wolf3D::init() {
 
 	// Directional Light
 	worldLights.addLight(Light::create()
-		.withDirectionalLight(glm::normalize(glm::vec3(0.7f, 0.7f, 0.7f)))
+		.withDirectionalLight(glm::normalize(glm::vec3(1, 1, 0.7f)))
 		.build());
 
 	// Load and create walls
