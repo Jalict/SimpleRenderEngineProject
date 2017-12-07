@@ -299,7 +299,6 @@ void Wolf3D::init() {
 	fpsController = new  FirstPersonController(&camera);
     fpsController->setPosition(vec3(-1.0f, 10.0f, -1.0f), 0);
 
-
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
 	floorMat = Shader::getStandard()->createMaterial();
@@ -438,27 +437,6 @@ void Wolf3D::loadBlocks(std::string fromFile) {
 	}
 	
 }*/
-
-
-//I didn't know if we still used this, so I just commented it out
-//vec4 Wolf3D::textureCoordinates(int blockID){
-//	glm::vec2 textureSize(1024, 2048);
-//	glm::vec2 tileSize(128, 128);
-//
-//	float tileWidth = tileSize.x / textureSize.x;
-//	float tileHeight = tileSize.y / textureSize.y;
-//
-//	glm::vec2 min = vec2(0, 16 * tileSize.y) / textureSize;
-//	glm::vec2 max = min + tileSize / textureSize;
-//
-//	min.x += (blockID % 8) * tileWidth * 2;
-//	max.x += (blockID % 8) * tileWidth * 2;
-//
-//	min.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
-//	max.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
-//
-//	return vec4(min.x, min.y, max.x, max.y);
-//}
 
 
 Block* Wolf3D::locationToBlock(int x,  int y,  int z) {

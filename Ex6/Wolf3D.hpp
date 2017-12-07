@@ -67,7 +67,7 @@ private:
 	std::shared_ptr<sre::Material> floorMat;
 
 	// Array for all chunks
-	const int chunkArraySize = 3;
+	const int chunkArraySize = 2;
 	std::shared_ptr<Chunk>** chunkArray;
 
 	//Different meshes for different blocks
