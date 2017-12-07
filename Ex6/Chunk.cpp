@@ -30,12 +30,28 @@ Chunk::Chunk(glm::vec3 position){
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
-				if(y == chunkDimensions -1)
-					blocksInChunk[x][y][z] = Block(BlockType::Grass, glm::vec3(position.x + x,position.y + y, position.z + z));
-				else if (y == 0)
-					blocksInChunk[x][y][z] = Block(BlockType::Rock, glm::vec3(position.x + x, position.y + y, position.z + z));
-				else
-					blocksInChunk[x][y][z] = Block(BlockType::Dirt, glm::vec3(position.x + x, position.y + y, position.z + z));
+				if (y == 0)
+					blocksInChunk[x][y][z] = Block(BlockType::Bedrock, glm::vec3(position.x + x, position.y + y, position.z + z)); 
+				else if (y <= 2) {
+					int p = rand() % 5;
+
+					if(p == 0)
+						blocksInChunk[x][y][z] = Block(BlockType::IronOre, glm::vec3(position.x + x, position.y + y, position.z + z));
+					else if(p == 1)
+						blocksInChunk[x][y][z] = Block(BlockType::CoalOre, glm::vec3(position.x + x, position.y + y, position.z + z));
+					else
+						blocksInChunk[x][y][z] = Block(BlockType::Rock, glm::vec3(position.x + x, position.y + y, position.z + z));
+				}
+				else if (y == chunkDimensions - 1)
+					blocksInChunk[x][y][z] = Block(BlockType::Grass, glm::vec3(position.x + x, position.y + y, position.z + z));			
+				else {
+					int p = rand() % 3;
+
+					if (p == 0)
+						blocksInChunk[x][y][z] = Block(BlockType::Gravel, glm::vec3(position.x + x, position.y + y, position.z + z));
+					else
+						blocksInChunk[x][y][z] = Block(BlockType::Dirt, glm::vec3(position.x + x, position.y + y, position.z + z));
+				}
 			}
 		}
 	}
@@ -70,10 +86,10 @@ void Chunk::update(float dt) {
 //				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x, y, z));
 //
 //				//NOTE: Blocks aren't actually ever set to not being active
-//				//std::cout << blocksInChunk[x][y][z].getActive() << std::endl;
+//				//std::cout << blocksInChunk[x][y][z].isActive() << std::endl;
 //
 //				//If the block is not active we don't render it
-//				if (blocksInChunk[x][y][z].getActive() == false){
+//				if (blocksInChunk[x][y][z].isActive() == false){
 //					//std::cout << "Skipped an inactive block" << std::endl;
 //					continue;
 //				}
@@ -87,12 +103,12 @@ void Chunk::update(float dt) {
 //				//If the block is surrounded by active blocks we don't render it
 //				bool surrounded = false;
 //				if (!onOutsideOfChunk) {
-//					if (blocksInChunk[x - 1][y][z].getActive() && 
-//						blocksInChunk[x + 1][y][z].getActive() &&
-//						blocksInChunk[x][y - 1][z].getActive() && 
-//						blocksInChunk[x][y + 1][z].getActive() &&
-//						blocksInChunk[x][y][z - 1].getActive() && 
-//						blocksInChunk[x][y][z + 1].getActive()) {
+//					if (blocksInChunk[x - 1][y][z].isActive() && 
+//						blocksInChunk[x + 1][y][z].isActive() &&
+//						blocksInChunk[x][y - 1][z].isActive() && 
+//						blocksInChunk[x][y + 1][z].isActive() &&
+//						blocksInChunk[x][y][z - 1].isActive() && 
+//						blocksInChunk[x][y][z + 1].isActive()) {
 //
 //						surrounded = true;
 //					}
@@ -144,33 +160,33 @@ void Chunk::calculateMesh() {
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++){
 			for (int z = 0; z < chunkDimensions; z++){
-				if (blocksInChunk[x][y][z].getActive() == false){
+				if (blocksInChunk[x][y][z].isActive() == false){
 					continue;
 				}
 
 				bool XNegative = true;
 				if (x > 0)
-					XNegative = !blocksInChunk[x - 1][y][z].getActive();
+					XNegative = !blocksInChunk[x - 1][y][z].isActive();
 
 				bool XPositive = true;
 				if (x < chunkDimensions - 1)
-					XPositive = !blocksInChunk[x + 1][y][z].getActive();
+					XPositive = !blocksInChunk[x + 1][y][z].isActive();
 
 				bool YNegative = true;
 				if (y > 0)
-					YNegative = !blocksInChunk[x][y - 1][z].getActive();
+					YNegative = !blocksInChunk[x][y - 1][z].isActive();
 
 				bool YPositive = true;
 				if (y < chunkDimensions - 1)
-					YPositive = !blocksInChunk[x][y + 1][z].getActive();
+					YPositive = !blocksInChunk[x][y + 1][z].isActive();
 
 				bool ZNegative = true;
 				if (z > 0)
-					ZNegative = !blocksInChunk[x][y][z - 1].getActive();
+					ZNegative = !blocksInChunk[x][y][z - 1].isActive();
 
 				bool ZPositive = true;
 				if (z < chunkDimensions - 1)
-					ZPositive = !blocksInChunk[x][y][z + 1].getActive();
+					ZPositive = !blocksInChunk[x][y][z + 1].isActive();
 
 				addToMesh(XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive, x, y, z, blocksInChunk[x][y][z].getType());
 			}

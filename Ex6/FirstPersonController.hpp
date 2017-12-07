@@ -62,7 +62,7 @@ private:
 	const float NEAR_PLANE = 0.05f;
 	const float FAR_PLANE = 1000.0f;
 	
-	const bool NEEDS_GROUNDED_TO_MOVE = false;
+	const bool NEEDS_GROUNDED_TO_MOVE = false;	// When disabled; allows the controller to move whilst in air
    
     bool fwd = false;
     bool bwd = false;
@@ -74,9 +74,9 @@ private:
 	bool isGrounded = false;
 	bool isSprinting = false;
 
-	bool replaceBlock = true;  // Determines whether you can place blocks on locations that already have blocks
-	bool invisibleMode = false;
-	bool flyMode = false; 
+	bool replaceBlock = false;  // When enabled, replaces block instead of placing new blocks
+	bool ghostMode = false;		// When enabled the controller can walk through collidables
+	bool flyMode = false;		// When enabled the controller is no longer affected by gravity and can fly	
 
 	BlockType blockSelected = BlockType::Dirt;
 	glm::mat4 transformMatrix;

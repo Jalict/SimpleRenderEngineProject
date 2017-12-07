@@ -172,10 +172,10 @@ void FirstPersonController::onKey(SDL_Event &event) {
 
 	// Toggle invisible mode
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_t) {
-		invisibleMode = !invisibleMode;
+		ghostMode = !ghostMode;
 
 		// Ignore contact respones if invisible mode is 
-		if(invisibleMode)
+		if(ghostMode)
 			rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 		else
 			rigidBody->setCollisionFlags(0);
@@ -315,7 +315,7 @@ void FirstPersonController::placeBlock() {
 	// If we are looking at a block, place one
 	if (block != nullptr) {
 		// If theres is already a block and we are not allowed to replace it, don't do anything
-		if(!replaceBlock && block->getActive())
+		if(!replaceBlock && block->isActive())
 			return;
 
 		block->setType(blockSelected);
