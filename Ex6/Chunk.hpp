@@ -25,7 +25,7 @@ public:
 	Block* getBlock(int x, int y, int z);
 	
 private:
-	const static int chunkDimensions = 8;
+	const static int chunkDimensions = 5;
 	glm::vec3 position;
 	
 	glm::mat4 chunkTransform;

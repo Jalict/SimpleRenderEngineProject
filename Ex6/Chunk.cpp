@@ -112,8 +112,6 @@ void Chunk::createMesh() {
 
 
 void Chunk::assembleVertexPositionsAndTexturePoints() {
-	bool Default = true;
-
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++){
 			for (int z = 0; z < chunkDimensions; z++){
@@ -121,30 +119,31 @@ void Chunk::assembleVertexPositionsAndTexturePoints() {
 					continue;
 				}
 
-				bool XNegative = Default;
+				bool XNegative = true;
 				if (x > 0)
-					XNegative = blocksInChunk[x - 1][y][z].getActive();
+					XNegative = !blocksInChunk[x - 1][y][z].getActive();
 
-				bool XPositive = Default;
+				bool XPositive = true;
 				if (x < chunkDimensions - 1)
-					XPositive = blocksInChunk[x + 1][y][z].getActive();
+					XPositive = !blocksInChunk[x + 1][y][z].getActive();
 
-				bool YNegative = Default;
+				bool YNegative = true;
 				if (y > 0)
-					YNegative = blocksInChunk[x][y - 1][z].getActive();
+					YNegative = !blocksInChunk[x][y - 1][z].getActive();
 
-				bool YPositive = Default;
+				bool YPositive = true;
 				if (y < chunkDimensions - 1)
-					YPositive = blocksInChunk[x][y + 1][z].getActive();
+					YPositive = !blocksInChunk[x][y + 1][z].getActive();
 
-				bool ZNegative = Default;
+				bool ZNegative = true;
 				if (z > 0)
-					ZNegative = blocksInChunk[x][y][z - 1].getActive();
+					ZNegative = !blocksInChunk[x][y][z - 1].getActive();
 
-				bool ZPositive = Default;
+				bool ZPositive = true;
 				if (z < chunkDimensions - 1)
-					ZPositive = blocksInChunk[x][y][z + 1].getActive();
+					ZPositive = !blocksInChunk[x][y][z + 1].getActive();
 
+				//addToMesh(true, true, true, true, true, true, x, y, z, blocksInChunk[x][y][z].getType());
 				addToMesh(XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive, x, y, z, blocksInChunk[x][y][z].getType());
 			}
 		}
@@ -153,77 +152,118 @@ void Chunk::assembleVertexPositionsAndTexturePoints() {
 
 
 void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPositive, bool ZNegative, bool ZPositive, float x, float y, float z, BlockType type) {
-
-	if (ZNegative) {
-		vertexPositions.insert(vertexPositions.end(), {
-			glm::vec3(x + -0.5, y + -0.5, z + 0.5), glm::vec3(x + 0.5, y + -0.5, z + 0.5), glm::vec3(x + -0.5, y + 0.5, z + 0.5),
-			glm::vec3(x + 0.5, y + 0.5, z + 0.5), glm::vec3(x + -0.5, y + 0.5, z + 0.5), glm::vec3(x + 0.5, y + -0.5, z + 0.5)
-		});
-	}
-
-	//This is probably placed wrong
-	if (YNegative) {
-		vertexPositions.insert(vertexPositions.end(), {
-			glm::vec3(x + -0.5, y + 0.5, z + -0.5), glm::vec3(x + -0.5, y + 0.5, z + 0.5),  glm::vec3(x + 0.5, y + 0.5, z + -0.5),
-			glm::vec3(x + 0.5, y + 0.5, z + 0.5), glm::vec3(x + 0.5, y + 0.5, z + -0.5),  glm::vec3(x + -0.5, y + 0.5, z + 0.5)
-		});
-	}
-
-	if (XNegative) {
-		vertexPositions.insert(vertexPositions.end(), {
-			glm::vec3(x + 0.5, y + -0.5, z + 0.5), glm::vec3(x + 0.5, y + 0.5, z + -0.5), glm::vec3(x + 0.5, y + 0.5, z + 0.5),
-			glm::vec3(x + 0.5, y + -0.5, z + 0.5), glm::vec3(x + 0.5, y + -0.5, z + -0.5), glm::vec3(x + 0.5, y + 0.5, z + -0.5)
-		});
-	}
-
-	if (ZPositive) {
-		vertexPositions.insert(vertexPositions.end(), {
-			glm::vec3(x + 0.5, y + -0.5, z + -0.5), glm::vec3(x + -0.5, y + -0.5, z + -0.5),  glm::vec3(x + 0.5, y + 0.5, z + -0.5),
-			glm::vec3(x + -0.5, y + 0.5, z + -0.5), glm::vec3(x + 0.5, y + 0.5, z + -0.5), glm::vec3(x + -0.5, y + -0.5, z + -0.5)
-		});
-	}
-
-	//This is probably placed wrong
-	if (YPositive) {
-		vertexPositions.insert(vertexPositions.end(), {
-			glm::vec3(x + -0.5, y + -0.5, z + 0.5), glm::vec3(x + -0.5, y + -0.5, z + -0.5),  glm::vec3(x + 0.5, y + -0.5, z + 0.5),
-			glm::vec3(x + 0.5, y + -0.5, z + -0.5), glm::vec3(x + 0.5, y + -0.5, z + 0.5),  glm::vec3(x + -0.5, y + -0.5, z + -0.5)
-		});
-	}
-
-	if (XPositive) {
-		vertexPositions.insert(vertexPositions.end(), {
-			glm::vec3(x + -0.5, y + 0.5, z + -0.5), glm::vec3(x + -0.5, y + -0.5, z + -0.5),  glm::vec3(x + -0.5, y + 0.5, z + 0.5),
-			glm::vec3(x + -0.5, y + 0.5, z + 0.5), glm::vec3(x + -0.5, y + -0.5, z + -0.5),  glm::vec3(x + -0.5, y + -0.5, z + 0.5)
-		});
-	}
+	glm::vec3 p1 = glm::vec3(x - 0.5, y - 0.5, z + 0.5);
+	glm::vec3 p2 = glm::vec3(x + 0.5, y - 0.5, z + 0.5);
+	glm::vec3 p3 = glm::vec3(x + 0.5, y + 0.5, z + 0.5);
+	glm::vec3 p4 = glm::vec3(x - 0.5, y + 0.5, z + 0.5);
+	glm::vec3 p5 = glm::vec3(x + 0.5, y - 0.5, z - 0.5);
+	glm::vec3 p6 = glm::vec3(x - 0.5, y - 0.5, z - 0.5);
+	glm::vec3 p7 = glm::vec3(x - 0.5, y + 0.5, z - 0.5);
+	glm::vec3 p8 = glm::vec3(x + 0.5, y + 0.5, z - 0.5);
 
 	const glm::vec4 coords = textureCoordinates((int)type);
-	texCoords.insert(texCoords.end(), {
-		// +z
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 
-		// ?
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	//Left
+	if (XNegative) {
+		vertexPositions.insert(vertexPositions.end(), {
+			p6,p1,p4,
+			p6,p4,p7
+		});
 
-		// ?
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+		texCoords.insert(texCoords.end(), { // +z
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+		});
+	}
+	//Right
+	if (XPositive) {
+		vertexPositions.insert(vertexPositions.end(), {
+			p2,p5,p8,
+			p2,p8,p3
+		});
 
-		// ?
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+		texCoords.insert(texCoords.end(), { // +z
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+		});
+	}
 
-		// top
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	//Bottom
+	if (YNegative) {
+		vertexPositions.insert(vertexPositions.end(), {
+			p6,p5,p2,
+			p6,p2,p1
+		});
 
-		// bottom
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-	});
+		texCoords.insert(texCoords.end(), { // +z
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+		});
+	}
+	//Top
+	if (YPositive) {
+		vertexPositions.insert(vertexPositions.end(), {
+			p4,p3,p8,
+			p4,p8,p7
+		});
+
+		texCoords.insert(texCoords.end(), { // +z
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+		});
+	}
+
+	//Back
+	if (ZNegative) {
+		vertexPositions.insert(vertexPositions.end(), {
+			p5, p6, p7,
+			p5, p7, p8
+		});
+
+		texCoords.insert(texCoords.end(), { // +z
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+		});
+	}
+
+	//Front
+	if (ZPositive) {
+		vertexPositions.insert(vertexPositions.end(), {
+			p1,p2,p3,
+			p1,p3,p4
+		});
+
+		texCoords.insert(texCoords.end(), { // +z
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+		});
+	}
+
+	//texCoords.insert(texCoords.end(), {
+	//	// +z
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+	//	// ?
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+	//	// ?
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+	//	// ?
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+	//	// top
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+
+	//	// bottom
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
+	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	//});
 }
 
 
