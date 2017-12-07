@@ -92,8 +92,6 @@ void Wolf3D::render() {
 	renderFloor(renderPass);
 	fpsController->draw(renderPass);
 
-	particleSystem->draw(renderPass);
-
 	// TODO TEMP remove
 	std::vector<vec3> rays;
 	rays.push_back(fpsController->fromRay);
@@ -108,6 +106,8 @@ void Wolf3D::render() {
 	//We're only drawing one chunk.
 	// TODO render a list of chunks.
 	renderChunk(renderPass);
+
+	particleSystem->draw(renderPass);
 
 	// Allow physics debug drawer to draw
 	physics.drawDebug(&renderPass);
@@ -244,7 +244,7 @@ void Wolf3D::init() {
 
 	// Particle System
 	particleTexture = sre::Texture::getWhiteTexture();
-	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
+	particleSystem = std::make_shared<ParticleSystem>(500, particleTexture);
 	particleSystem->gravity = { 0,-.2,0 };
 	particleMaterial = sre::Shader::getStandard()->createMaterial();
 	updateApperance();
