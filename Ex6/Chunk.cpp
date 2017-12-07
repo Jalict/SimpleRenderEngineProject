@@ -98,14 +98,20 @@ void Chunk::update(float dt) {
 
 
 void Chunk::draw(sre::RenderPass& renderpass) {
-
+	assembleVertexPositionsAndTexturePoints();
 	createMesh();
 	renderpass.draw(this->mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
-
+	vertexPositions.clear();
+	texCoords.clear();
 }
 
 
 void Chunk::createMesh() {
+	mesh = sre::Mesh::create().withPositions(vertexPositions).withUVs(texCoords).build();
+}
+
+
+void Chunk::assembleVertexPositionsAndTexturePoints() {
 	bool Default = true;
 
 	for (int x = 0; x < chunkDimensions; x++){
@@ -122,9 +128,11 @@ void Chunk::createMesh() {
 				bool XPositive = Default;
 				if (x < chunkDimensions - 1)
 					XPositive = blocksInChunk[x + 1][y][z].getActive();
+
 				bool YNegative = Default;
 				if (y > 0)
 					YNegative = blocksInChunk[x][y - 1][z].getActive();
+
 				bool YPositive = Default;
 				if (y < chunkDimensions - 1)
 					YPositive = blocksInChunk[x][y + 1][z].getActive();
@@ -137,40 +145,16 @@ void Chunk::createMesh() {
 				if (z < chunkDimensions - 1)
 					ZPositive = blocksInChunk[x][y][z + 1].getActive();
 
-				mesh = createCube(XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive, x, y, z, blocksInChunk[x][y][z].getType());
+				addToMesh(XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive, x, y, z, blocksInChunk[x][y][z].getType());
 			}
 		}
 	}
 }
 
-glm::vec4 Chunk::textureCoordinates(int blockID) {
-	glm::vec2 textureSize(1024, 2048);
-	glm::vec2 tileSize(128, 128);
 
-	float tileWidth = tileSize.x / textureSize.x;
-	float tileHeight = tileSize.y / textureSize.y;
+void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPositive, bool ZNegative, bool ZPositive, float x, float y, float z, BlockType type) {
 
-	glm::vec2 min = glm::vec2(0, 1.0f);							// Start at top left
-	glm::vec2 max = min + glm::vec2(tileWidth, -tileHeight);	// Move max to bottom right corner of this block
-
-	int tilesX = textureSize.x / tileSize.x;
-
-	float xOffset = (blockID % tilesX) * tileWidth;
-	float yOffset = ((blockID - (blockID % tilesX)) / tilesX) * tileHeight;
-
-	min.x += xOffset;
-	max.x += xOffset;
-
-	min.y -= yOffset;
-	max.y -= yOffset;
-
-	return glm::vec4(min.x, min.y, max.x, max.y);
-}
-
-std::shared_ptr<sre::Mesh> Chunk::createCube(bool XNegative, bool XPositive, bool YNegative, bool YPositive, bool ZNegative, bool ZPositive, float x, float y, float z, BlockType type) {
-	std::vector<glm::vec3> vertexPositions;
-
-	if (ZPositive) {
+	if (ZNegative) {
 		vertexPositions.insert(vertexPositions.end(), {
 			glm::vec3(x + -0.5, y + -0.5, z + 0.5), glm::vec3(x + 0.5, y + -0.5, z + 0.5), glm::vec3(x + -0.5, y + 0.5, z + 0.5),
 			glm::vec3(x + 0.5, y + 0.5, z + 0.5), glm::vec3(x + -0.5, y + 0.5, z + 0.5), glm::vec3(x + 0.5, y + -0.5, z + 0.5)
@@ -178,21 +162,21 @@ std::shared_ptr<sre::Mesh> Chunk::createCube(bool XNegative, bool XPositive, boo
 	}
 
 	//This is probably placed wrong
-	if (YPositive) {
+	if (YNegative) {
 		vertexPositions.insert(vertexPositions.end(), {
 			glm::vec3(x + -0.5, y + 0.5, z + -0.5), glm::vec3(x + -0.5, y + 0.5, z + 0.5),  glm::vec3(x + 0.5, y + 0.5, z + -0.5),
 			glm::vec3(x + 0.5, y + 0.5, z + 0.5), glm::vec3(x + 0.5, y + 0.5, z + -0.5),  glm::vec3(x + -0.5, y + 0.5, z + 0.5)
 		});
 	}
 
-	if (XPositive) {
+	if (XNegative) {
 		vertexPositions.insert(vertexPositions.end(), {
 			glm::vec3(x + 0.5, y + -0.5, z + 0.5), glm::vec3(x + 0.5, y + 0.5, z + -0.5), glm::vec3(x + 0.5, y + 0.5, z + 0.5),
 			glm::vec3(x + 0.5, y + -0.5, z + 0.5), glm::vec3(x + 0.5, y + -0.5, z + -0.5), glm::vec3(x + 0.5, y + 0.5, z + -0.5)
 		});
 	}
 
-	if (ZNegative) {
+	if (ZPositive) {
 		vertexPositions.insert(vertexPositions.end(), {
 			glm::vec3(x + 0.5, y + -0.5, z + -0.5), glm::vec3(x + -0.5, y + -0.5, z + -0.5),  glm::vec3(x + 0.5, y + 0.5, z + -0.5),
 			glm::vec3(x + -0.5, y + 0.5, z + -0.5), glm::vec3(x + 0.5, y + 0.5, z + -0.5), glm::vec3(x + -0.5, y + -0.5, z + -0.5)
@@ -200,14 +184,14 @@ std::shared_ptr<sre::Mesh> Chunk::createCube(bool XNegative, bool XPositive, boo
 	}
 
 	//This is probably placed wrong
-	if (YNegative) {
+	if (YPositive) {
 		vertexPositions.insert(vertexPositions.end(), {
 			glm::vec3(x + -0.5, y + -0.5, z + 0.5), glm::vec3(x + -0.5, y + -0.5, z + -0.5),  glm::vec3(x + 0.5, y + -0.5, z + 0.5),
 			glm::vec3(x + 0.5, y + -0.5, z + -0.5), glm::vec3(x + 0.5, y + -0.5, z + 0.5),  glm::vec3(x + -0.5, y + -0.5, z + -0.5)
 		});
 	}
 
-	if (XNegative) {
+	if (XPositive) {
 		vertexPositions.insert(vertexPositions.end(), {
 			glm::vec3(x + -0.5, y + 0.5, z + -0.5), glm::vec3(x + -0.5, y + -0.5, z + -0.5),  glm::vec3(x + -0.5, y + 0.5, z + 0.5),
 			glm::vec3(x + -0.5, y + 0.5, z + 0.5), glm::vec3(x + -0.5, y + -0.5, z + -0.5),  glm::vec3(x + -0.5, y + -0.5, z + 0.5)
@@ -215,8 +199,6 @@ std::shared_ptr<sre::Mesh> Chunk::createCube(bool XNegative, bool XPositive, boo
 	}
 
 	const glm::vec4 coords = textureCoordinates((int)type);
-	std::vector<glm::vec4> texCoords;			// texCoords for block
-	texCoords.clear();
 	texCoords.insert(texCoords.end(), {
 		// +z
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
@@ -242,13 +224,38 @@ std::shared_ptr<sre::Mesh> Chunk::createCube(bool XNegative, bool XPositive, boo
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
-
-	return sre::Mesh::create().withPositions(vertexPositions).withUVs(texCoords).build();
 }
+
+
+glm::vec4 Chunk::textureCoordinates(int blockID) {
+	glm::vec2 textureSize(1024, 2048);
+	glm::vec2 tileSize(128, 128);
+
+	float tileWidth = tileSize.x / textureSize.x;
+	float tileHeight = tileSize.y / textureSize.y;
+
+	glm::vec2 min = glm::vec2(0, 1.0f);							// Start at top left
+	glm::vec2 max = min + glm::vec2(tileWidth, -tileHeight);	// Move max to bottom right corner of this block
+
+	int tilesX = textureSize.x / tileSize.x;
+
+	float xOffset = (blockID % tilesX) * tileWidth;
+	float yOffset = ((blockID - (blockID % tilesX)) / tilesX) * tileHeight;
+
+	min.x += xOffset;
+	max.x += xOffset;
+
+	min.y -= yOffset;
+	max.y -= yOffset;
+
+	return glm::vec4(min.x, min.y, max.x, max.y);
+}
+
 
 glm::vec3 Chunk::getPosition() {
 	return position;
 }
+
 
 Block* Chunk::getBlock(int x, int y, int z) {
 	assert(x >= 0 && x < chunkDimensions);
