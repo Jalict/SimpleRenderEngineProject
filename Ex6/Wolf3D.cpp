@@ -179,6 +179,32 @@ void Wolf3D::handleDebugKeys(SDL_Event& e) {
 	}
 }
 
+void Wolf3D::updateApperance()
+{
+	glm::vec4 colorFrom = { 0,1,0,1 };
+	glm::vec4 colorTo = { 1,0,0,1 };
+	float sizeFrom = 1;
+	float sizeTo = 10;
+	particleSystem->updateAppearance = [&](const Particle& p) {
+		p.color = glm::mix(colorFrom, colorTo, p.normalizedAge);
+		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
+	};
+}
+
+void Wolf3D::updateEmit()
+{
+	glm::vec3 pos = { 0,0,0 };
+	glm::vec3 velocity = { 1,1,1 };
+
+	particleSystem->emitter = [&](Particle& p) {
+		p.position = pos;
+		p.velocity = glm::sphericalRand(velocity);
+		p.rotation = 90;
+		p.angularVelocity = 10;
+		p.size = 50;
+	};
+}
+
 
 void Wolf3D::init() {
 	// TODO Clean up +  dealloc
@@ -206,6 +232,13 @@ void Wolf3D::init() {
 	btTransform transform;
 	groundRigidBody->getMotionState()->getWorldTransform(transform);
 
+	// Particle System
+	particleTexture = Texture::getWhiteTexture();
+	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
+	particleSystem->gravity = { 0,-.2,0 };
+	particleMaterial = Shader::getStandard()->createMaterial();
+	updateApperance();
+	updateEmit();
 
 	// Create falling ball
 	btCollisionShape* fallShape = new btSphereShape(1.0f);

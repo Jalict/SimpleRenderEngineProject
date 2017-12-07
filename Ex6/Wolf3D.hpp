@@ -30,6 +30,8 @@ private:
 	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
 	void handleDebugKeys(SDL_Event& e);	
+	void updateApperance();
+	void updateEmit();
 
 	static bool instanceFlag;
 	static Wolf3D* instance;
@@ -51,6 +53,7 @@ private:
 	std::shared_ptr<sre::Material> sphereMaterial;
 	btTransform sphereTrans;
 
+	std::shared_ptr<Texture> particleTexture;
 	std::shared_ptr<ParticleSystem> particleSystem;
 	std::shared_ptr<sre::Material> particleMaterial;
 
