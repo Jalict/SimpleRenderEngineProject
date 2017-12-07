@@ -103,11 +103,11 @@ void Chunk::update(float dt) {
 
 
 void Chunk::draw(sre::RenderPass& renderpass) {
-	// Assemble Mesh
-	assembleVertexPositionsAndTexturePoints();
-	createMesh();
+	// Generate Mesh
+	if(recalculateMesh)
+		createMesh();
 
-	// Draw Chunk
+	// Draw Mesh Chunk
 	renderpass.draw(this->mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
 
 	// Draw Particles
@@ -115,20 +115,29 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 	for (int i = 0; i < particleSystems.size(); i++) {
 		particleSystems[i]->draw(renderpass);
 	}
-	// Clear Mesh data & Prepare for next pass
-	vertexPositions.clear();
-	texCoords.clear();
-	normals.clear();
 }
 
 
 void Chunk::createMesh() {
-	std::string chunkID = "Chunk at pos: " + std::to_string(position.x) + ' ' + std::to_string(position.y) + ' ' + std::to_string(position.z) + '.';
+	std::cout << "recal" << std::endl; 
+
+	calculateMesh();
+
+	// Create the chunk
+	std::string chunkID = "Chunk_" + std::to_string(position.x) + '_' + std::to_string(position.y) + '_' + std::to_string(position.z);
 	mesh = sre::Mesh::create().withPositions(vertexPositions).withUVs(texCoords).withName(chunkID).withNormals(normals).build();
+
+	// Clean up after we used them
+	vertexPositions.clear();
+	texCoords.clear();
+	normals.clear();
+
+	// Lower the flag for recalculation
+	recalculateMesh = false;
 }
 
 
-void Chunk::assembleVertexPositionsAndTexturePoints() {
+void Chunk::calculateMesh() {
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++){
 			for (int z = 0; z < chunkDimensions; z++){
@@ -160,7 +169,6 @@ void Chunk::assembleVertexPositionsAndTexturePoints() {
 				if (z < chunkDimensions - 1)
 					ZPositive = !blocksInChunk[x][y][z + 1].getActive();
 
-				//addToMesh(true, true, true, true, true, true, x, y, z, blocksInChunk[x][y][z].getType());
 				addToMesh(XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive, x, y, z, blocksInChunk[x][y][z].getType());
 			}
 		}
@@ -189,8 +197,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 
 		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Left));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0),
 		});
 
 		//Normal for this face
@@ -210,8 +218,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 		//Texture coordinates for this face
 		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Right));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0),
 		});
 
 		//Normal for this face
@@ -269,8 +277,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 
 		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Back));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0),
 		});
 
 		//Normal for this face
@@ -289,8 +297,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 
 		glm::vec4 coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Front));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0)
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0)
 		});
 
 		//Normal for this face
@@ -340,6 +348,10 @@ Block* Chunk::getBlock(int x, int y, int z) {
 	}
 
 	placeParticleSystem(glm::vec3(x + position.x, y + position.y, z + position.z));
+	// If an block was requested, changes probably occurred. Therefore recalculate.
+	// Eventhough this is not 100% accurate it saves us from having to loop over each block and check for flags
+	// Or store a reference to the parent chunk in each block
+	recalculateMesh = true;
 
 	// Else return the block
 	return &blocksInChunk[x][y][z];
