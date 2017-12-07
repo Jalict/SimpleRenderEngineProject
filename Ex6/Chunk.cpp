@@ -47,7 +47,11 @@ Chunk::~Chunk(){
 }
 
 void Chunk::update(float dt) {
-	//Dunno what to do in here yet
+
+	// Update particle systems
+	for (int i = 0; i < particleSystems.size(); i++) {
+		particleSystems[i]->update(dt);
+	}
 }
 
 //void Chunk::draw(sre::RenderPass& renderpass) {
@@ -98,9 +102,19 @@ void Chunk::update(float dt) {
 
 
 void Chunk::draw(sre::RenderPass& renderpass) {
+	// Assemble Mesh
 	assembleVertexPositionsAndTexturePoints();
 	createMesh();
+
+	// Draw Chunk
 	renderpass.draw(this->mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
+
+	// Draw Particles
+	// Update particle systems
+	for (int i = 0; i < particleSystems.size(); i++) {
+		particleSystems[i]->draw(renderpass);
+	}
+	// Clear Mesh data & Prepare for next pass
 	vertexPositions.clear();
 	texCoords.clear();
 }
@@ -310,6 +324,37 @@ Block* Chunk::getBlock(int x, int y, int z) {
 		return nullptr;
 	}
 
+	placeParticleSystem(glm::vec3(x + position.x, y + position.y, z + position.z));
+
 	// Else return the block
 	return &blocksInChunk[x][y][z];
+}
+
+void Chunk::placeParticleSystem(glm::vec3 pos) {
+	// Particle System
+	particleTexture = sre::Texture::getWhiteTexture();
+	particleSystems.insert(particleSystems.end(), std::make_shared<ParticleSystem>(500, particleTexture));
+	particleSystems[particleSystems.size() - 1]->gravity = { 0, -9.82, 0 };
+	updateApperance();
+	updateEmit();
+}
+
+void Chunk::updateApperance()
+{
+	particleSystems[particleSystems.size() - 1]->updateAppearance = [&](const Particle& p) {
+		p.color = glm::mix(colorFrom, colorTo, p.normalizedAge);
+		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
+	};
+}
+
+void Chunk::updateEmit()
+{
+	particleSystems[particleSystems.size() - 1]->emitter = [&](Particle& p) {
+		p.position = emitPosition;
+		p.velocity = glm::sphericalRand(emitVelocity);
+		p.rotation = 90;
+		p.angularVelocity = 10;
+		p.size = 50;
+		std::cout << "emit" << std::endl;
+	};
 }

@@ -105,8 +105,6 @@ void Wolf3D::render() {
 	// TODO render a list of chunks.
 	renderChunk(renderPass);
 
-	particleSystem->draw(renderPass);
-
 	// Allow physics debug drawer to draw
 	physics.drawDebug(&renderPass);
 
@@ -192,25 +190,6 @@ void Wolf3D::handleDebugKeys(SDL_Event& e) {
 	}
 }
 
-void Wolf3D::updateApperance()
-{
-	particleSystem->updateAppearance = [&](const Particle& p) {
-		p.color = glm::mix(colorFrom, colorTo, p.normalizedAge);
-		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
-	};
-}
-
-void Wolf3D::updateEmit()
-{
-	particleSystem->emitter = [&](Particle& p) {
-		p.position = emitPosition;
-		p.velocity = glm::sphericalRand(emitVelocity);
-		p.rotation = 90;
-		p.angularVelocity = 10;
-		p.size = 50;
-	};
-}
-
 
 void Wolf3D::init() {
 	// TODO Clean up +  dealloc
@@ -236,14 +215,6 @@ void Wolf3D::init() {
 	physics.addRigidBody(groundRigidBody);
 	btTransform transform;
 	groundRigidBody->getMotionState()->getWorldTransform(transform);
-
-	// Particle System
-	particleTexture = sre::Texture::getWhiteTexture();
-	particleSystem = std::make_shared<ParticleSystem>(500, particleTexture);
-	particleSystem->gravity = { 0,-.2,0 };
-	particleMaterial = sre::Shader::getStandard()->createMaterial();
-	updateApperance();
-	updateEmit();
 
 	// Create falling ball
 	btCollisionShape* fallShape = new btSphereShape(1.0f);
