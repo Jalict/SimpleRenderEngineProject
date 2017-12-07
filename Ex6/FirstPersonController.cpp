@@ -358,7 +358,7 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 		hit += res.m_hitNormalWorld * normalMultiplier;
 
 		// Grab the block, and set it to not active - all numbers are floored since blocks take up a whole unit
-		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
+		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ(), BlockInspectState::Medium);
 	} else{
 		return nullptr;
 	}
