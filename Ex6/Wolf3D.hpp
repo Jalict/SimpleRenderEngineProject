@@ -30,6 +30,10 @@ private:
 	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
 	void handleDebugKeys(SDL_Event& e);	
+//	void loadBlocks(std::string fromFile);
+
+	glm::vec4 textureCoordinates(int blockID);
+	std::shared_ptr<sre::Mesh> initializeMesh(BlockType type);
 
 	static bool instanceFlag;
 	static Wolf3D* instance;
@@ -59,12 +63,9 @@ private:
 	std::shared_ptr<sre::Mesh> floor;
 	std::shared_ptr<sre::Material> floorMat;
 
+	// Array for all chunks
+	const int chunkArraySize = 3;
 	std::shared_ptr<Chunk>** chunkArray;
-
-	int chunkArraySize = 3;
-
-	glm::vec4 textureCoordinates(int blockID);
-	std::shared_ptr<sre::Mesh> initializeMesh(BlockType type);
 
 	//Different meshes for different blocks
 	std::shared_ptr<sre::Mesh> stoneMesh;

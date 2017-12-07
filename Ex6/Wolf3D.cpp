@@ -4,9 +4,15 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include "Wolf3D.hpp"
 #include <sre/Profiler.hpp>
+#include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
+#include <fstream>
+#include <iostream>
+#include <glm/gtc/matrix_access.inl>
 
 using namespace sre;
 using namespace glm;
+
 
 Wolf3D::Wolf3D() {
 	// Singleton-ish
@@ -82,6 +88,7 @@ void Wolf3D::render() {
 	// TODO make more generic
 	renderPass.draw(sphere, sphereTransform, sphereMaterial);
 	renderFloor(renderPass);
+	fpsController->draw(renderPass);
 
 	// TODO TEMP remove
 	std::vector<vec3> rays;
@@ -116,6 +123,7 @@ void Wolf3D::render() {
 	auto simplePass = RenderPass::create()
 		.withCamera(simpleCamera)
 		.withClearColor(false, { 0, 0, 0, 1 })
+		.withGUI(false)
 		.build();
 
 	std::vector<glm::vec3> cross = {
@@ -184,6 +192,8 @@ void Wolf3D::init() {
 	// TODO Clean up +  dealloc
 
 	// Initialise all the block meshes
+//	loadBlocks("blocks.json");
+
 	stoneMesh = initializeMesh(BlockType::Stone);
 	brickMesh = initializeMesh(BlockType::Brick);
 	grassMesh = initializeMesh(BlockType::Grass);
@@ -275,7 +285,7 @@ void Wolf3D::init() {
 
 
 std::shared_ptr<sre::Mesh> Wolf3D::initializeMesh(BlockType type) {
-	const glm::vec4 coords = textureCoordinates((int)type);
+	const glm::vec4 coords = textureCoordinates(Block::getTextureIndex(type));
 	std::vector<glm::vec4> texCoords;			// texCoords for block
 	texCoords.clear();
 	texCoords.insert(texCoords.end(), {
@@ -356,6 +366,25 @@ std::shared_ptr<sre::Mesh> Wolf3D::getMesh(BlockType type) {
 		return planksMesh;
 	}
 }
+
+/*
+void Wolf3D::loadBlocks(std::string fromFile) {
+	using namespace rapidjson;
+	std::ifstream fis(fromFile);
+	IStreamWrapper isw(fis);
+	Document doc;
+	doc.ParseStream(isw);
+	
+
+	auto blocks = doc["blocks"].GetArray();
+	std::cout << blocks[0]["top"].GetInt() << std::endl;
+
+	// Loop over all blocks and load them
+	for (int i = 0; i < BlockType::LENGTH; i++) {
+
+	}
+	
+}*/
 
 
 //I didn't know if we still used this, so I just commented it out

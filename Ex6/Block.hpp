@@ -10,7 +10,9 @@ A block in the world
 (NOTE) Frans calls them Voxels
 */
 
-enum BlockType { Stone = 0, Brick = 1, Grass = 4, WoolBlue = 5, Sand = 8, Dirt = 9, Gravel = 25, Rock = 50, Wood = 74, Planks = 83 }; // Types of blocks
+// enum BlockType { Stone = 0, Brick = 1, Grass = 4, WoolBlue = 5, Sand = 8, Dirt = 9, Gravel = 25, Rock = 50, Wood = 74, Planks = 83 }; // Types of blocks
+enum BlockType { Stone, Brick, Grass, WoolBlue, Sand, Dirt, Gravel, Rock, Wood, Planks, LENGTH }; // Types of blocks
+enum BlockSides {Top, Bottom, Left, Right, Front, Back };
 
 class Wolf3D;
 class Block {
@@ -22,6 +24,8 @@ public:
 
 	void setType(BlockType type);				// Change type of block
 	std::shared_ptr<sre::Mesh> getMesh();		// Get Mesh
+//	static std::string typeToString(BlockType type);
+	static int getTextureIndex(BlockType type, BlockSides side = BlockSides::Top);
 
 	glm::vec3 getPosition();
 	bool getActive();
