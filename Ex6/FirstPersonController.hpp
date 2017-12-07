@@ -68,8 +68,12 @@ private:
     bool bwd = false;
     bool left = false;
     bool right = false;
+	bool up = false;
+	bool down = false;
+
 	bool isGrounded = false;
 	bool isSprinting = false;
+
 	bool replaceBlock = true;  // Determines whether you can place blocks on locations that already have blocks
 	bool invisibleMode = false;
 	bool flyMode = false; 
