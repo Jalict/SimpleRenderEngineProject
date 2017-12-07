@@ -258,9 +258,12 @@ glm::vec3 Chunk::getPosition() {
 
 
 Block* Chunk::getBlock(int x, int y, int z) {
-	assert(x >= 0 && x < chunkDimensions);
-	assert(y >= 0 && y < chunkDimensions);
-	assert(z >= 0 && z < chunkDimensions);
+	// If the block is not within bounds of this chunk, return null pointer
+	if ((x < 0 && x >= chunkDimensions) || (y < 0 && y >= chunkDimensions) || (z < 0 && z >= chunkDimensions)) {
+		std::cout << "block doesnt exist" << std::endl;
+		return nullptr;
+	}
 
+	// Else return the block
 	return &blocksInChunk[x][y][z];
 }

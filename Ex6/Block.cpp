@@ -71,6 +71,10 @@ bool Block::getActive() {
 
 // # TODO test between the different modes
 void Block::setActive(bool active) {
+	// If the block is already in the correct state, we do not have to do anything.
+	if(this->active == active)
+		return;
+
 	this->active = active;
 	if(active)
 		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);

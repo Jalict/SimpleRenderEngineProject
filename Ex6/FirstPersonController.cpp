@@ -16,6 +16,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
     camera->setPerspectiveProjection(FIELD_OF_FIELD, NEAR_PLANE, FAR_PLANE);
 
 	// Create Capsule collider
+	// # TODO PRIORITY fix controller shape size without getting stuck..
 	btCollisionShape* controllerShape = new btCapsuleShape(0.1f, 1.0f); // CHECKGROUND is linked to these values 1.2 / 2 = 0.6f;
 	btDefaultMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 0)));
 
@@ -95,10 +96,17 @@ void FirstPersonController::update(float deltaTime){
 	
 	// Update our tranform matrix, pass it on to the camera
 	auto transformMatrix = mat4();
-	transformMatrix = translate(transformMatrix, glm::vec3(position.getX(), position.getY(), position.getZ())); 
+	transformMatrix = translate(transformMatrix, glm::vec3(position.getX(), position.getY() + Y_CAMERA_OFFSET, position.getZ())); 
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.x), vec3(0, -1, 0));
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.y), vec3(-1, 0, 0));
 	camera->setViewTransform(glm::inverse(transformMatrix));
+}
+
+glm::vec3 FirstPersonController::getPosition() {
+	btTransform transform;
+	rigidBody->getMotionState()->getWorldTransform(transform);
+	btVector3 position = transform.getOrigin();
+	return glm::vec3(position.getX(), position.getY(), position.getZ());
 }
 
 
@@ -112,7 +120,7 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 	// If we hit something, check the distance to the ground
 	// TODO distance check - expansive calculation, change to something more efficient.
 	if (res.hasHit()) {
-		isGrounded = !(position.distance(res.m_hitPointWorld) > 0.6f); // 0l.6f is the height of capsule collider
+		isGrounded = !(position.distance(res.m_hitPointWorld) > 0.9f); // 0l.6f is the height of capsule collider
 	}
 	else {
 		isGrounded = false;
@@ -121,10 +129,44 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 
 
 void FirstPersonController::onKey(SDL_Event &event) {
+	// Reset character position if HOME is pressed
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_HOME) {
+		setPosition(glm::vec3(3, 8, 3), 0);
+	}
+
 	// Capture Jump
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
 		rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
 	}
+
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_RIGHT && isGrounded) {
+		switch (blockSelected) {
+			case BlockType::Dirt:
+				blockSelected = BlockType::Sand;
+				break;
+			case BlockType::Sand:
+				blockSelected = BlockType::Wood;
+				break;
+			case BlockType::Wood:
+				blockSelected = BlockType::Dirt;
+				break;
+		}
+	}
+
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_LEFT && isGrounded) {
+		switch (blockSelected) {
+		case BlockType::Dirt:
+			blockSelected = BlockType::Wood;
+			break;
+		case BlockType::Sand:
+			blockSelected = BlockType::Dirt;
+			break;
+		case BlockType::Wood:
+			blockSelected = BlockType::Sand;
+			break;
+		}
+	}
+
 
 	// Capture movement keys down
     if(event.type == SDL_KEYDOWN ){
@@ -196,65 +238,73 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 // TODO clean up
 void FirstPersonController::destroyBlock() {
 	std::cout << "destroying" << std::endl;
+	auto block = castRayForBlock(-0.2f);
 
-	// TODO make sure this below is correct
-	Physics* physics = &Wolf3D::getInstance()->physics;
+	if(block != nullptr)
+		block->setActive(false);
+}
 
-	btVector3 position = rigidBody->getWorldTransform().getOrigin();
-	btVector3 forward = btVector3(sin(radians(lookRotation.x)), sin(radians(lookRotation.y)) * -1, cos(radians(lookRotation.x)) * -1);
-	btVector3 to = position + forward * 10.0f;
 
-	btCollisionWorld::ClosestRayResultCallback res(position, to);
+void FirstPersonController::placeBlock() {
+	std::cout << "placing" << std::endl;
 
-	physics->raycast(&position, &to, &res);
+	auto block = castRayForBlock(0.2f);
+
+	if (block != nullptr) {
+		block->setType(blockSelected);
+		block->setActive(true);
+	}
 	
-	// TODO TEMP prob remove below -- added for debug purposes
-	fromRay = vec3(position.getX(), position.getY(), position.getZ());
-	//toRay = vec3(to.getX(), to.getY(), to.getZ());
+}
 
+
+Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
+	btVector3 start = rigidBody->getWorldTransform().getOrigin();
+	start.setY(start.getY() + Y_CAMERA_OFFSET);
+	btVector3 direction = btVector3(sin(radians(lookRotation.x)), sin(radians(lookRotation.y)) * -1, cos(radians(lookRotation.x)) * -1);
+	btVector3 end = start + direction * 10.0f;
+
+	btCollisionWorld::ClosestRayResultCallback res(start, end);
+
+	// Cast ray
+	Wolf3D::getInstance()->physics.raycast(&start, &end, &res);
+
+	// If we have an hit handle it, else return null
 	if (res.hasHit()) {
+		// Store hit location
 		btVector3 hit = res.m_hitPointWorld;
 
 		// TODO TEMP prob remove below -- added for debug purposes
 		toRay = vec3(hit.getX(), hit.getY(), hit.getZ());
 		toRay2 = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()); //res.m_hitNormalWorld;
 		fromRay1 = toRay;
+		fromRay = vec3(start.getX(), start.getY(), start.getZ());
 
 		// Compensate for origin of block, collider origin is in center, though for the math we want it to be on a corner
 		hit += btVector3(0.501f, 0.501f, 0.501f);
 
 		// Every block is above or at 0. If we hit the bedrock it could be that we get below 0. So make really sure we always grab blocks on atleast 0
-		if(hit.getY() < 0)
+		if (hit.getY() < 0)
 			hit.setY(0);
 
-		// Substract some of  the hit normal. The raycast always hits the edge of the collider. This increases accuracy since we move into the collider.
-		hit -= res.m_hitNormalWorld * 0.2f;
+		// Add some of  the hit normal. The raycast always hits the edge of the collider. This increases accuracy since we move into the collider or out.
+		hit += res.m_hitNormalWorld * normalMultiplier;
 
-		// Floor the numbers, this is the block we want to get. 
-		auto t = vec3((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
-
-		// TODO remove, for now grab a block inside chunk 0,0
-		t = clamp(t, vec3(0,0,0), vec3(5,5,5));
-
-		// Grab the block, and set it to not active
-		auto block = Wolf3D::getInstance()->locationToBlock(t);
-		block->setActive(false);
+		// Grab the block, and set it to not active - all numbers are floored since blocks take up a whole unit
+		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
+	} else{
+		return nullptr;
 	}
-	
-}
-
-
-void FirstPersonController::placeBlock() {
-	std::cout << "placing" << std::endl;
 }
 
 
 // Set Spawn Position
-void FirstPersonController::setInitialPosition(glm::vec2 position, float rotation) {
+void FirstPersonController::setPosition(glm::vec3 position, float rotation) {
     this->lookRotation.x = rotation;
 	this->lookRotation.y = 0;
-	rigidBody->translate(btVector3(position.x, 10.0f, position.y));
+	rigidBody->translate(btVector3(position.x, position.y, position.z));
 }
+
 
 bool FirstPersonController::getIsGrounded() {
 	return isGrounded;

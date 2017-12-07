@@ -110,6 +110,21 @@ void Wolf3D::render() {
 		profiler.update();
 		profiler.gui(false);
 	}
+
+	// Pass for Crosshair
+	sre::Camera simpleCamera;
+	auto simplePass = RenderPass::create()
+		.withCamera(simpleCamera)
+		.withClearColor(false, { 0, 0, 0, 1 })
+		.build();
+
+	std::vector<glm::vec3> cross = {
+		glm::vec3(.1,0,0),
+		glm::vec3(-.1,0,0),
+		glm::vec3(0,.1,0),
+		glm::vec3(0,-.1,0)
+	};
+	simplePass.drawLines(cross);
 }
 
 
@@ -239,7 +254,7 @@ void Wolf3D::init() {
 
 	// Setup FPS Controller
 	fpsController = new  FirstPersonController(&camera);
-    fpsController->setInitialPosition(vec2(5.5f, 5.5f), 0);
+    fpsController->setPosition(vec3(-1.0f, 10.0f, -1.0f), 0);
 
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
@@ -363,25 +378,24 @@ std::shared_ptr<sre::Mesh> Wolf3D::getMesh(BlockType type) {
 //}
 
 
-Block* Wolf3D::locationToBlock(glm::vec3 location) {
-	// Floor the locations since blocks are always at whole intergers
-	int x = (int)location.x;
-	int y = (int)location.y;
-	int z = (int)location.z;
-
+Block* Wolf3D::locationToBlock(int x,  int y,  int z) {
 	int chunkSize = Chunk::getChunkDimensions();
 
 	// Determine the chunk we need 
-	
-	vec3 blockPos = glm::vec3(fmod(x, chunkSize), y, fmod(z, chunkSize));
-	vec2 chunkPos = glm::vec2(x - blockPos.x, z - blockPos.z);
+	vec3 blockPos = glm::vec3(x % chunkSize, y % chunkSize, z % chunkSize);
+	vec2 chunkPos = glm::vec2((x - blockPos.x)/Chunk::getChunkDimensions(), (z - blockPos.z)/ Chunk::getChunkDimensions());
 
-	// Get it 
-
+	// If the chunk does not exist, return null pointerf
+	if(chunkPos.x < 0 || chunkPos.y < 0 || chunkPos.x >= chunkArraySize || chunkPos.y >= chunkArraySize){
+		std::cout << "chunk doesnt exist" << std::endl;
+		return nullptr;
+	}
+		
+	// Else get the right block
 	auto chunk = chunkArray[(int)chunkPos.x][(int)chunkPos.y];
 
-	// 
-	return chunk->getBlock(blockPos.x, blockPos.y, blockPos.z);
+	// Get the block on the chunk
+	return chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
 }	
 
 
