@@ -55,7 +55,12 @@ private:
 	const float JUMP_FORCE = 300.0f;
 	const float SPRINT_MOVEMENT_INCREASE = 2.0f;
 	const float SPRINT_FOV_INCREASE = 1.1f;
-	const float Y_CAMERA_OFFSET = 1.0f;
+	const float Y_CAMERA_OFFSET = 0.7f;
+	const float COLLIDER_HEIGHT = 1.7f;
+	const float COLLIDER_RADIUS = .1f;
+	const float JUMP_MOVEMENT_MULTIPLIER = 0.8f;
+
+	const bool NEEDS_GROUNDED_TO_MOVE = false;
    
     bool fwd = false;
     bool bwd = false;
