@@ -348,28 +348,16 @@ Block* Chunk::getBlock(int x, int y, int z) {
 void Chunk::placeParticleSystem(glm::vec3 pos) {
 	// Particle System
 	particleTexture = sre::Texture::getWhiteTexture();
-	particleSystems.insert(particleSystems.end(), std::make_shared<ParticleSystem>(500, particleTexture));
+	particleSystems.insert(particleSystems.end(), std::make_shared<ParticleSystem>(10, particleTexture));
 	particleSystems[particleSystems.size() - 1]->gravity = { 0, -9.82, 0 };
-	updateApperance();
-	updateEmit();
-}
-
-void Chunk::updateApperance()
-{
-	particleSystems[particleSystems.size() - 1]->updateAppearance = [&](const Particle& p) {
-		p.color = glm::mix(colorFrom, colorTo, p.normalizedAge);
-		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
-	};
-}
-
-void Chunk::updateEmit()
-{
-	particleSystems[particleSystems.size() - 1]->emitter = [&](Particle& p) {
+	particleSystems[particleSystems.size() - 1]->emitPosition = pos;
+	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
+	
+	particleSystems[particleSystems.size()-1]->emitter = [&](Particle& p) {
 		p.position = emitPosition;
 		p.velocity = glm::sphericalRand(emitVelocity);
-		p.rotation = 90;
-		p.angularVelocity = 10;
+		p.rotation = emitRotation;
+		p.angularVelocity = emitAngularVelocity;
 		p.size = 50;
-		std::cout << "emit" << std::endl;
 	};
 }

@@ -73,6 +73,12 @@ Wolf3D* Wolf3D::getInstance(){
 
 void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
+	
+	for (int i = 0; i < chunkArraySize; i++) {
+		for (int j = 0; j < chunkArraySize; j++) {
+			chunkArray[i][j]->update(deltaTime);
+		}
+	}
 }
 
 

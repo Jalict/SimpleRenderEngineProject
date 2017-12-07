@@ -56,7 +56,7 @@ private:
 	float sizeFrom = 50;
 	float sizeTo = 50;
 
-	glm::vec3 emitPosition = { 0,3,0 };
+	glm::vec3 emitPosition = { 0,0,0 };
 	float emitVelocity = 1;
 	float emitRotation = 10;
 	float emitAngularVelocity = 10;

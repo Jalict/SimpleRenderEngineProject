@@ -27,6 +27,8 @@ public:
     bool visible = true;
     bool emitting = true;
 
+	glm::vec3 emitPosition = glm::vec3( 0,0,0 );
+	glm::vec3 emitVelocity = glm::vec3(1,0,0);
     glm::vec3 gravity = glm::vec3(0,-9.8,0);
 
     std::shared_ptr<sre::Material> material;
