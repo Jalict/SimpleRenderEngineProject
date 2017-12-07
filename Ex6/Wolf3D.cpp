@@ -205,7 +205,6 @@ void Wolf3D::updateApperance()
 void Wolf3D::updateEmit()
 {
 	particleSystem->emitter = [&](Particle& p) {
-		std::cout << "TEST" << std::endl;
 		p.position = emitPosition;
 		p.velocity = glm::sphericalRand(emitVelocity);
 		p.rotation = 90;
