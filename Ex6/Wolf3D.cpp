@@ -73,22 +73,26 @@ Wolf3D* Wolf3D::getInstance(){
 
 void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
+
+	particleSystem->update(deltaTime);
 }
 
 
 void Wolf3D::render() {
 	// Create a render pass
 	auto renderPass = RenderPass::create()
-			.withCamera(camera)
-			.withWorldLights(&worldLights)
-			.withClearColor(true, { 0.73f, 0.83f, 1, 1 })
-            .build();
+		.withCamera(camera)
+		.withWorldLights(&worldLights)
+		.withClearColor(true, { 0.73f, 0.83f, 1, 1 })
+		.build();
 
 	// Draw objects 
 	// TODO make more generic
 	renderPass.draw(sphere, sphereTransform, sphereMaterial);
 	renderFloor(renderPass);
 	fpsController->draw(renderPass);
+
+	particleSystem->draw(renderPass);
 
 	// TODO TEMP remove
 	std::vector<vec3> rays;
@@ -155,9 +159,12 @@ void Wolf3D::drawGUI() {
 	ImGui::SetNextWindowPos(ImVec2(Renderer::instance->getWindowSize().x / 2 - 100, .0f), ImGuiSetCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Always);
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
-//	ImGui::DragFloat("Rot", &fpsController->rotation);
-//	ImGui::DragFloat3("Pos", &(fpsController->position.x), 0.1f);
-//	ImGui::Checkbox("LockRotation", &lockRotation);
+
+	glm::vec3 pos = fpsController->getPosition();
+	glm::vec3 lookPos = fpsController->toRay;
+	ImGui::Text("pos: %.1f %.1f %.1f", pos.x, pos.y, pos.z);
+	ImGui::Text("lookAt: %.1f %.1f %.1f", lookPos.x, lookPos.y, lookPos.z);
+
 	ImGui::End();
 }
 
@@ -185,6 +192,25 @@ void Wolf3D::handleDebugKeys(SDL_Event& e) {
 		SDL_SetRelativeMouseMode(mouseLock ? SDL_TRUE : SDL_FALSE);
 		fpsController->lockRotation = !mouseLock;
 	}
+}
+
+void Wolf3D::updateApperance()
+{
+	particleSystem->updateAppearance = [&](const Particle& p) {
+		p.color = glm::mix(colorFrom, colorTo, p.normalizedAge);
+		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
+	};
+}
+
+void Wolf3D::updateEmit()
+{
+	particleSystem->emitter = [&](Particle& p) {
+		p.position = emitPosition;
+		p.velocity = glm::sphericalRand(emitVelocity);
+		p.rotation = 90;
+		p.angularVelocity = 10;
+		p.size = 50;
+	};
 }
 
 
@@ -216,6 +242,13 @@ void Wolf3D::init() {
 	btTransform transform;
 	groundRigidBody->getMotionState()->getWorldTransform(transform);
 
+	// Particle System
+	particleTexture = sre::Texture::getWhiteTexture();
+	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
+	particleSystem->gravity = { 0,-.2,0 };
+	particleMaterial = sre::Shader::getStandard()->createMaterial();
+	updateApperance();
+	updateEmit();
 
 	// Create falling ball
 	btCollisionShape* fallShape = new btSphereShape(1.0f);
