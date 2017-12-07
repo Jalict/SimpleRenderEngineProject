@@ -36,6 +36,10 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 	// Set initial look rotation to 0, 0
 	lookRotation = vec2(0,0);
+
+	// Set local block matrix to display in hand on camera
+	inventoryBlockMatrix = mat4();
+	inventoryBlockMatrix = translate(inventoryBlockMatrix, vec3(-0.5f, .5f, 1));
 }
 
 
@@ -95,12 +99,28 @@ void FirstPersonController::update(float deltaTime){
 	checkGrounded(position);
 	
 	// Update our tranform matrix, pass it on to the camera
-	auto transformMatrix = mat4();
+	transformMatrix = mat4();
 	transformMatrix = translate(transformMatrix, glm::vec3(position.getX(), position.getY() + Y_CAMERA_OFFSET, position.getZ())); 
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.x), vec3(0, -1, 0));
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.y), vec3(-1, 0, 0));
 	camera->setViewTransform(glm::inverse(transformMatrix));
 }
+
+
+void FirstPersonController::draw(sre::RenderPass& renderpass) {
+	auto rotMatrix = mat4();
+	rotMatrix = rotate(rotMatrix, radians(lookRotation.x), vec3(0, -1, 0));
+	rotMatrix = rotate(rotMatrix, radians(lookRotation.y), vec3(-1, 0, 0));
+
+	auto localMatrix = glm::inverse(inventoryBlockMatrix) * rotMatrix;
+
+	auto matrix = transformMatrix * localMatrix;
+
+	matrix = scale(matrix, vec3(0.5f, 0.5f, 0.5f));
+
+	renderpass.draw(Wolf3D::getInstance()->getMesh(blockSelected), matrix, Wolf3D::getInstance()->blockMaterial);
+}
+
 
 glm::vec3 FirstPersonController::getPosition() {
 	btTransform transform;

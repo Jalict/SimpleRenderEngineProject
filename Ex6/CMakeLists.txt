@@ -21,8 +21,8 @@ add_executable(Exercise6-Wolf3D ${Wolf3D})
 target_link_libraries(Exercise6-Wolf3D ${all_libs})
 
 # copy files to dest
-file(COPY tileset.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
-file(COPY tileset.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
+file(COPY tileset.png blocks.json DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+file(COPY tileset.png blocks.json DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
 
 IF (WIN32)
     # Copy dll files to ${CMAKE_CURRENT_BINARY_DIR}/Debug
