@@ -235,7 +235,7 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 	if(event.type == SDL_MOUSEMOTION && !lockRotation) {
 		lookRotation.x += event.motion.xrel * ROTATION_SPEED;
 		lookRotation.y += event.motion.yrel * ROTATION_SPEED;
-		lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_ROTATION, MAX_X_LOOK_ROTATION);
+		lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_UP_ROTATION, MAX_X_LOOK_DOWN_ROTATION);
 	}
 	
 	if (event.type == SDL_MOUSEBUTTONDOWN) {
