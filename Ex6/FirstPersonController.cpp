@@ -163,7 +163,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 	}
 
 	// Selected block to place
-	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_RIGHT && isGrounded) {
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_e && isGrounded) {
 		// Increase block selected
 		blockSelected = (BlockType)(blockSelected + 1);
 
@@ -172,7 +172,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 			blockSelected = BlockType::Stone;
 	}
 
-	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_LEFT && isGrounded) {
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_q && isGrounded) {
 		// If we are at the end, go back to the start
 		if (blockSelected == BlockType::Stone)
 			blockSelected = BlockType::LENGTH;
