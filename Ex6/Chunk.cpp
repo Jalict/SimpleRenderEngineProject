@@ -350,6 +350,7 @@ Block* Chunk::getBlock(int x, int y, int z) {
 		return nullptr;
 	}
 
+
 	placeParticleSystem(glm::vec3(x + position.x, y + position.y, z + position.z));
 	// If an block was requested, changes probably occurred. Therefore recalculate.
 	// Eventhough this is not 100% accurate it saves us from having to loop over each block and check for flags
@@ -366,13 +367,7 @@ void Chunk::placeParticleSystem(glm::vec3 pos) {
 	particleSystems.insert(particleSystems.end(), std::make_shared<ParticleSystem>(10, particleTexture));
 	particleSystems[particleSystems.size() - 1]->gravity = { 0, -9.82, 0 };
 	particleSystems[particleSystems.size() - 1]->emitPosition = pos;
+	particleSystems[particleSystems.size() - 1]->emit();
+
 	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
-	
-	particleSystems[particleSystems.size()-1]->emitter = [&](Particle& p) {
-		p.position = emitPosition;
-		p.velocity = glm::sphericalRand(emitVelocity);
-		p.rotation = emitRotation;
-		p.angularVelocity = emitAngularVelocity;
-		p.size = 50;
-	};
 }
