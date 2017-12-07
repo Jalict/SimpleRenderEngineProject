@@ -25,7 +25,7 @@ public:
 	Block* getBlock(int x, int y, int z);
 	
 private:
-	const static int chunkDimensions = 5;
+	const static int chunkDimensions = 8;
 	glm::vec3 position;
 	
 	glm::mat4 chunkTransform;
@@ -38,7 +38,7 @@ private:
 
 	void addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPositive, bool ZNegative, bool ZPositive, float x, float y, float z, BlockType type);
 	std::shared_ptr<sre::Mesh> mesh;
-	void assembleVertexPositionsAndTexturePoints();
+	void assembleMeshData();
 	void createMesh();
 
 };

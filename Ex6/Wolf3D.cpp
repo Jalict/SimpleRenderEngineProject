@@ -361,7 +361,7 @@ std::shared_ptr<sre::Mesh> Wolf3D::initializeMesh(BlockType type) {
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
 
-	return sre::Mesh::create().withCube(0.5f).withUVs(texCoords).build();
+	return sre::Mesh::create().withCube(0.5f).withUVs(texCoords).withName("BlockInHandMesh").build();
 }
 
 

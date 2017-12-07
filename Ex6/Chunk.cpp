@@ -34,6 +34,9 @@ Chunk::Chunk(glm::vec3 position){
 			}
 		}
 	}
+
+	//assembleMeshData();
+	//createMesh();
 }
 
 Chunk::~Chunk(){
@@ -99,12 +102,12 @@ void Chunk::update(float dt) {
 
 
 void Chunk::draw(sre::RenderPass& renderpass) {
-	assembleVertexPositionsAndTexturePoints();
-	createMesh();
-	renderpass.draw(this->mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
 	vertexPositions.clear();
 	texCoords.clear();
 	normals.clear();
+	assembleMeshData();
+	createMesh();
+	renderpass.draw(this->mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
 }
 
 
@@ -114,7 +117,7 @@ void Chunk::createMesh() {
 }
 
 
-void Chunk::assembleVertexPositionsAndTexturePoints() {
+void Chunk::assembleMeshData() {
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++){
 			for (int z = 0; z < chunkDimensions; z++){
@@ -123,29 +126,59 @@ void Chunk::assembleVertexPositionsAndTexturePoints() {
 				}
 
 				bool XNegative = true;
-				if (x > 0)
+				if (x > 0) {
 					XNegative = !blocksInChunk[x - 1][y][z].getActive();
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x - 1, position.y + y, position.z + z);
+					if (t != nullptr)
+						XNegative = !t->getActive();
+				}
 
 				bool XPositive = true;
-				if (x < chunkDimensions - 1)
+				if (x < chunkDimensions - 1) {
 					XPositive = !blocksInChunk[x + 1][y][z].getActive();
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x + 1, position.y + y, position.z + z);
+					if (t != nullptr)
+						XPositive = !t->getActive();
+				}
 
 				bool YNegative = true;
-				if (y > 0)
+				if (y > 0) {
 					YNegative = !blocksInChunk[x][y - 1][z].getActive();
-
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y - 1, position.z + z);
+					if (t != nullptr)
+						YNegative = !t->getActive();
+				}
+					
 				bool YPositive = true;
-				if (y < chunkDimensions - 1)
+				if (y < chunkDimensions - 1) {
 					YPositive = !blocksInChunk[x][y + 1][z].getActive();
-
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y + 1, position.z + z);
+					if (t != nullptr)
+						YPositive = !t->getActive();
+				}
+					
 				bool ZNegative = true;
-				if (z > 0)
+				if (z > 0) {
 					ZNegative = !blocksInChunk[x][y][z - 1].getActive();
-
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z - 1);
+					if (t != nullptr)
+						ZNegative = !t->getActive();
+				}
+					
 				bool ZPositive = true;
-				if (z < chunkDimensions - 1)
+				if (z < chunkDimensions - 1) {
 					ZPositive = !blocksInChunk[x][y][z + 1].getActive();
-
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z + 1);
+					if(t != nullptr)
+						ZPositive = !t->getActive();
+				}
+					
 				//addToMesh(true, true, true, true, true, true, x, y, z, blocksInChunk[x][y][z].getType());
 				addToMesh(XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive, x, y, z, blocksInChunk[x][y][z].getType());
 			}
@@ -318,12 +351,16 @@ glm::vec3 Chunk::getPosition() {
 }
 
 
+//Problem: Chunk 
 Block* Chunk::getBlock(int x, int y, int z) {
 	// If the block is not within bounds of this chunk, return null pointer
-	if ((x < 0 && x >= chunkDimensions) || (y < 0 && y >= chunkDimensions) || (z < 0 && z >= chunkDimensions)) {
+	if((x < 0 || x >= chunkDimensions || y < 0 || y >= chunkDimensions || z < 0 || z >= chunkDimensions)){
 		std::cout << "block doesnt exist" << std::endl;
 		return nullptr;
 	}
+
+
+	if(blocksInChunk)
 
 	// Else return the block
 	return &blocksInChunk[x][y][z];
