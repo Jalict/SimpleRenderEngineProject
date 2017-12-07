@@ -30,6 +30,7 @@ private:
 	
 	glm::mat4 chunkTransform;
 	std::vector<glm::vec3> vertexPositions;
+	std::vector<glm::vec3> normals;
 	std::vector<glm::vec4> texCoords;
 
 	Block*** blocksInChunk;
