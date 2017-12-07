@@ -17,7 +17,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 	// Create Capsule collider
 	// # TODO PRIORITY fix controller shape size without getting stuck..
-	btCollisionShape* controllerShape = new btCapsuleShape(0.1f, 1.0f); // CHECKGROUND is linked to these values 1.2 / 2 = 0.6f;
+	btCollisionShape* controllerShape = new btCapsuleShape(COLLIDER_RADIUS, COLLIDER_HEIGHT);
 	btDefaultMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 0)));
 
 	btScalar mass = 1;
@@ -56,7 +56,7 @@ void FirstPersonController::update(float deltaTime){
 	vec3 movement = vec3(0, 0, 0);
 
 	// Only handle movement if we are grounded
-	if(isGrounded){
+	if(isGrounded || !NEEDS_GROUNDED_TO_MOVE){
 		if(fwd)
 			movement += vec3(0, 0, -1);
 		if(left)
@@ -73,6 +73,9 @@ void FirstPersonController::update(float deltaTime){
 
 		if(isSprinting)
 			movement *= SPRINT_MOVEMENT_INCREASE;	
+
+		if(!isGrounded)
+			movement *= JUMP_MOVEMENT_MULTIPLIER;
 
 		// Multiply by time that has passed to compensate for FPS
 		movement *= deltaTime;
@@ -137,7 +140,7 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 	// If we hit something, check the distance to the ground
 	// TODO distance check - expansive calculation, change to something more efficient.
 	if (res.hasHit()) {
-		isGrounded = !(position.distance(res.m_hitPointWorld) > 0.9f); // 0l.6f is the height of capsule collider
+		isGrounded = !(position.distance(res.m_hitPointWorld) > COLLIDER_RADIUS + 0.5f * COLLIDER_HEIGHT + 0.1f); 
 	}
 	else {
 		isGrounded = false;
@@ -163,7 +166,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 	}
 
 	// Selected block to place
-	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_e && isGrounded) {
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_e) {
 		// Increase block selected
 		blockSelected = (BlockType)(blockSelected + 1);
 
@@ -172,7 +175,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 			blockSelected = BlockType::Stone;
 	}
 
-	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_q && isGrounded) {
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_q) {
 		// If we are at the end, go back to the start
 		if (blockSelected == BlockType::Stone)
 			blockSelected = BlockType::LENGTH;
@@ -198,9 +201,6 @@ void FirstPersonController::onKey(SDL_Event &event) {
 				right = true;
 				break;
 			case SDLK_LSHIFT:
-				if(!isGrounded)
-					return;
-
 				isSprinting = true;
 				camera->setPerspectiveProjection(FIELD_OF_FIELD * SPRINT_FOV_INCREASE, NEAR_PLANE, FAR_PLANE);
 				break;
@@ -224,6 +224,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 			case SDLK_LSHIFT:
 				camera->setPerspectiveProjection(FIELD_OF_FIELD, NEAR_PLANE, FAR_PLANE);
 				isSprinting = false;
+				break;
 			}
 	}
 }
