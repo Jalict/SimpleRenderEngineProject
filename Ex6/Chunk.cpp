@@ -2,6 +2,7 @@
 #include "Wolf3D.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <string>
 
 Chunk::Chunk() : Chunk(glm::vec3(0, 0, 0)) { // HACK: This doesn't actually set anything 
 }
@@ -107,7 +108,8 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 
 
 void Chunk::createMesh() {
-	mesh = sre::Mesh::create().withPositions(vertexPositions).withUVs(texCoords).build();
+	std::string chunkID = "Chunk at pos: " + std::to_string(position.x) + ' ' + std::to_string(position.y) + ' ' + std::to_string(position.z) + '.';
+	mesh = sre::Mesh::create().withPositions(vertexPositions).withUVs(texCoords).withName(chunkID).build();
 }
 
 
@@ -244,32 +246,6 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0)
 		});
 	}
-
-	//texCoords.insert(texCoords.end(), {
-	//	// +z
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
-	//	// ?
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
-	//	// ?
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
-	//	// ?
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
-	//	// top
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
-	//	// bottom
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-	//	glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-	//});
 }
 
 
