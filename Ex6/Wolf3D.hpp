@@ -70,18 +70,8 @@ private:
 	const int chunkArraySize = 2;
 	std::shared_ptr<Chunk>** chunkArray;
 
-	//Different meshes for different blocks
-	std::shared_ptr<sre::Mesh> stoneMesh;
-	std::shared_ptr<sre::Mesh> brickMesh;
-	std::shared_ptr<sre::Mesh> grassMesh;
-	std::shared_ptr<sre::Mesh> woolBlueMesh;
-	std::shared_ptr<sre::Mesh> sandMesh;
-	std::shared_ptr<sre::Mesh> dirtMesh;
-	std::shared_ptr<sre::Mesh> gravelMesh;
-	std::shared_ptr<sre::Mesh> rockMesh;
-	std::shared_ptr<sre::Mesh> woodMesh;
-	std::shared_ptr<sre::Mesh> planksMesh;
-
+	// List of all block meshes, these are used to be hold in hand by the player
+	std::shared_ptr<sre::Mesh>* blockMeshes;
 
 	glm::vec4 colorFrom = { 1,1,1,1 };
 	glm::vec4 colorTo = { 1,1,1,0 };

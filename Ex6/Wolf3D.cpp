@@ -73,8 +73,6 @@ Wolf3D* Wolf3D::getInstance(){
 
 void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
-
-	particleSystem->update(deltaTime);
 }
 
 
@@ -92,8 +90,6 @@ void Wolf3D::render() {
 	renderFloor(renderPass);
 	fpsController->draw(renderPass);
 
-	particleSystem->draw(renderPass);
-
 	// TODO TEMP remove
 	std::vector<vec3> rays;
 	rays.push_back(fpsController->fromRay);
@@ -108,6 +104,8 @@ void Wolf3D::render() {
 	//We're only drawing one chunk.
 	// TODO render a list of chunks.
 	renderChunk(renderPass);
+
+	particleSystem->draw(renderPass);
 
 	// Allow physics debug drawer to draw
 	physics.drawDebug(&renderPass);
@@ -220,16 +218,13 @@ void Wolf3D::init() {
 	// Initialise all the block meshes
 //	loadBlocks("blocks.json");
 
-	stoneMesh = initializeMesh(BlockType::Stone);
-	brickMesh = initializeMesh(BlockType::Brick);
-	grassMesh = initializeMesh(BlockType::Grass);
-	woolBlueMesh = initializeMesh(BlockType::WoolBlue);
-	sandMesh = initializeMesh(BlockType::Sand);
-	dirtMesh = initializeMesh(BlockType::Dirt);
-	gravelMesh = initializeMesh(BlockType::Gravel);
-	rockMesh = initializeMesh(BlockType::Rock);
-	woodMesh = initializeMesh(BlockType::Wood);
-	planksMesh = initializeMesh(BlockType::Planks);
+	// TODO make sure this is Dealloc this!
+	// Create all the blocks
+	blockMeshes = new std::shared_ptr<sre::Mesh>[BlockType::LENGTH];
+	for (int i = 0; i < BlockType::LENGTH; i++) {
+		blockMeshes[i] = initializeMesh((BlockType)i);
+	}
+
 
 	// Create a ground plane
 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
@@ -244,7 +239,7 @@ void Wolf3D::init() {
 
 	// Particle System
 	particleTexture = sre::Texture::getWhiteTexture();
-	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
+	particleSystem = std::make_shared<ParticleSystem>(500, particleTexture);
 	particleSystem->gravity = { 0,-.2,0 };
 	particleMaterial = sre::Shader::getStandard()->createMaterial();
 	updateApperance();
@@ -268,9 +263,10 @@ void Wolf3D::init() {
 	sphereMaterial = Shader::getStandard()->createMaterial();
 	sphereMaterial->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
-	//Create a bunch of chunks	
+	//Create the chunks	
 	int chunkDimension = Chunk::getChunkDimensions();
-		
+	
+	// TODO make sure this is Dealloc this!
 	chunkArray = new std::shared_ptr<Chunk>*[chunkArraySize];
 	for (int i = 0; i < chunkArraySize; i++) {
 		chunkArray[i] = new std::shared_ptr<Chunk>[chunkArraySize];
@@ -395,28 +391,7 @@ glm::vec4 Wolf3D::textureCoordinates(int blockID) {
 
 
 std::shared_ptr<sre::Mesh> Wolf3D::getMesh(BlockType type) {
-	switch (type) {
-	case BlockType::Stone:
-		return stoneMesh;
-	case BlockType::Brick:
-		return brickMesh;
-	case BlockType::Grass:
-		return grassMesh;
-	case BlockType::WoolBlue:
-		return woolBlueMesh;
-	case BlockType::Sand:
-		return sandMesh;
-	case BlockType::Dirt:
-		return dirtMesh;
-	case BlockType::Gravel:
-		return gravelMesh;
-	case BlockType::Rock:
-		return rockMesh;
-	case BlockType::Wood:
-		return woodMesh;
-	case BlockType::Planks:
-		return planksMesh;
-	}
+	return blockMeshes[(int)type];
 }
 
 /*
