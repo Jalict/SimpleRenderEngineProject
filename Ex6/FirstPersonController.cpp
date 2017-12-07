@@ -248,7 +248,6 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 }
 
 
-
 // TODO clean up
 void FirstPersonController::destroyBlock() {
 	std::cout << "destroying" << std::endl;
