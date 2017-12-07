@@ -160,9 +160,40 @@ void FirstPersonController::onKey(SDL_Event &event) {
 		replaceBlock = !replaceBlock;
 	}
 
+	// Toggle invisible mode
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_t) {
+		invisibleMode = !invisibleMode;
+
+		// Ignore contact respones if invisible mode is on
+		if(invisibleMode)
+			rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
+		else
+			rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
+	}
+
+	// Toggle flying
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_y) {
+		flyMode = !flyMode;
+		if(flyMode)
+			rigidBody->setGravity(btVector3(0, 0, 0));
+		else
+			rigidBody->setGravity(btVector3(0, -10, 0));
+	} 
+
+	// Flying up down control
+	if (flyMode) {
+		if (event.key.keysym.sym == SDLK_LCTRL) {
+			rigidBody->translate(btVector3(0, -.1f, 0));
+		}
+		else if (event.key.keysym.sym == SDLK_SPACE) {
+			rigidBody->translate(btVector3(0, .1f, 0));
+		}
+	}
+
 	// Capture Jump
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
-		rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
+		if(!flyMode)
+			rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
 	}
 
 	// Selected block to place
@@ -263,8 +294,10 @@ void FirstPersonController::destroyBlock() {
 void FirstPersonController::placeBlock() {
 	std::cout << "placing" << std::endl;
 
-	// Get the block we are looking at
-	auto block = castRayForBlock(0.2f);
+	// Get the block where we are placing
+	// If we replacemode is active replace the actual block
+	// Otherwise get the empty space we are looking at
+	auto block = castRayForBlock(replaceBlock? -.2f : .2f);
 
 	// If we are looking at a block, place one
 	if (block != nullptr) {
