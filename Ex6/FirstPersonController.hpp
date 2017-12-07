@@ -28,11 +28,7 @@ public:
 
 	Block* castRayForBlock(float normalMultiplier); // normalMultiplayer: Allows you to determine whether the normal should be substracted (to get a block), added (to get an empty location) or the border.
 
-	const float MAX_X_LOOK_ROTATION = 45.0f;
-	// TODO move this to camera?s
-	const float FIELD_OF_FIELD = 45.0f;
-	const float NEAR_PLANE = 0.05f;
-	const float FAR_PLANE = 1000.0f;
+
 
 	glm::vec2 lookRotation;
 
@@ -52,14 +48,20 @@ private:
 
 	const float ROTATION_SPEED = 0.3f;
 	const float MOVEMENT_SPEED = 150.0f;
-	const float JUMP_FORCE = 300.0f;
+	const float JUMP_FORCE = 320.0f;
 	const float SPRINT_MOVEMENT_INCREASE = 2.0f;
 	const float SPRINT_FOV_INCREASE = 1.1f;
 	const float Y_CAMERA_OFFSET = 0.7f;
 	const float COLLIDER_HEIGHT = 1.7f;
 	const float COLLIDER_RADIUS = .1f;
 	const float JUMP_MOVEMENT_MULTIPLIER = 0.8f;
-
+	const float MAX_X_LOOK_UP_ROTATION = 45.0f;
+	const float MAX_X_LOOK_DOWN_ROTATION = 80.0f;
+	// TODO move this to camera?s
+	const float FIELD_OF_FIELD = 45.0f;
+	const float NEAR_PLANE = 0.05f;
+	const float FAR_PLANE = 1000.0f;
+	
 	const bool NEEDS_GROUNDED_TO_MOVE = false;
    
     bool fwd = false;
