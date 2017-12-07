@@ -73,6 +73,12 @@ Wolf3D* Wolf3D::getInstance(){
 
 void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
+	
+	for (int i = 0; i < chunkArraySize; i++) {
+		for (int j = 0; j < chunkArraySize; j++) {
+			chunkArray[i][j]->update(deltaTime);
+		}
+	}
 }
 
 
@@ -104,8 +110,6 @@ void Wolf3D::render() {
 	//We're only drawing one chunk.
 	// TODO render a list of chunks.
 	renderChunk(renderPass);
-
-	particleSystem->draw(renderPass);
 
 	// Allow physics debug drawer to draw
 	physics.drawDebug(&renderPass);
@@ -192,25 +196,6 @@ void Wolf3D::handleDebugKeys(SDL_Event& e) {
 	}
 }
 
-void Wolf3D::updateApperance()
-{
-	particleSystem->updateAppearance = [&](const Particle& p) {
-		p.color = glm::mix(colorFrom, colorTo, p.normalizedAge);
-		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
-	};
-}
-
-void Wolf3D::updateEmit()
-{
-	particleSystem->emitter = [&](Particle& p) {
-		p.position = emitPosition;
-		p.velocity = glm::sphericalRand(emitVelocity);
-		p.rotation = 90;
-		p.angularVelocity = 10;
-		p.size = 50;
-	};
-}
-
 
 void Wolf3D::init() {
 	// TODO Clean up +  dealloc
@@ -236,14 +221,6 @@ void Wolf3D::init() {
 	physics.addRigidBody(groundRigidBody);
 	btTransform transform;
 	groundRigidBody->getMotionState()->getWorldTransform(transform);
-
-	// Particle System
-	particleTexture = sre::Texture::getWhiteTexture();
-	particleSystem = std::make_shared<ParticleSystem>(500, particleTexture);
-	particleSystem->gravity = { 0,-.2,0 };
-	particleMaterial = sre::Shader::getStandard()->createMaterial();
-	updateApperance();
-	updateEmit();
 
 	// Create falling ball
 	btCollisionShape* fallShape = new btSphereShape(1.0f);
@@ -414,26 +391,57 @@ void Wolf3D::loadBlocks(std::string fromFile) {
 }*/
 
 
-Block* Wolf3D::locationToBlock(int x,  int y,  int z) {
+Block* Wolf3D::locationToBlock(int x,  int y,  int z, BlockInspectState recalculate) {
 	int chunkSize = Chunk::getChunkDimensions();
 
 	// Determine the chunk we need 
 	vec3 blockPos = glm::vec3(x % chunkSize, y % chunkSize, z % chunkSize);
-	vec2 chunkPos = glm::vec2((x - blockPos.x)/Chunk::getChunkDimensions(), (z - blockPos.z)/ Chunk::getChunkDimensions());
+	vec3 chunkPos = glm::vec3((x - blockPos.x)/Chunk::getChunkDimensions(), (y - blockPos.y) / Chunk::getChunkDimensions(),(z - blockPos.z)/ Chunk::getChunkDimensions());
 
 	// If the chunk does not exist, return null pointerf
-	if(chunkPos.x < 0 || chunkPos.y < 0 || chunkPos.x >= chunkArraySize || chunkPos.y >= chunkArraySize){
-		std::cout << "chunk doesnt exist" << std::endl;
+	// TODO look at this -1
+	if(chunkPos.x < 0 || chunkPos.y < 0 || chunkPos.z < 0 || chunkPos.x >= chunkArraySize  || chunkPos.y >= chunkArraySize -1|| chunkPos.z >= chunkArraySize ){
+		//std::cout << "chunk doesnt exist" << std::endl;
 		return nullptr;
 	}
 		
 	// Else get the right block
-	auto chunk = chunkArray[(int)chunkPos.x][(int)chunkPos.y];
+	auto chunk = chunkArray[(int)chunkPos.x][(int)chunkPos.z];
 
 	// Get the block on the chunk
-	return chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
-}	
+	switch (recalculate) {
+		case BlockInspectState::HardRecalculate:
+			return chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+		case BlockInspectState::Medium:
+			std::cout << (int)blockPos.x << std::endl;
+			std::cout << Chunk::getChunkDimensions() - 1 << std::endl;
 
+			if((int)blockPos.x == 0 )
+				auto t = chunk->getBlock((int)blockPos.x + 1, (int)blockPos.y, (int)blockPos.z);
+			
+			if ((int)blockPos.x == Chunk::getChunkDimensions() - 1) {
+				auto t = chunk->getBlock((int)blockPos.x + 1, (int)blockPos.y, (int)blockPos.z);
+			}
+			
+			if ((int)blockPos.y == 0)
+				auto t = chunk->getBlock((int)blockPos.x, (int)blockPos.y + 1, (int)blockPos.z);
+			
+			if ((int)blockPos.y == Chunk::getChunkDimensions() - 1)
+				auto t = chunk->getBlock((int)blockPos.x, (int)blockPos.y - 1, (int)blockPos.z);
+			
+			if ((int)blockPos.z == 0)
+				auto t = chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z + 1);
+			
+			if ((int)blockPos.z == Chunk::getChunkDimensions() - 1)
+				auto t = chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z - 1);
+
+			return chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+
+			//return chunk->readBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+		case BlockInspectState::Soft:
+			return chunk->readBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+	}	
+}	
 
 int main(){
     new Wolf3D();

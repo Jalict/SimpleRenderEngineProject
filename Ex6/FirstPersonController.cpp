@@ -17,7 +17,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 	// Create Capsule collider
 	// # TODO PRIORITY fix controller shape size without getting stuck..
-	btCollisionShape* controllerShape = new btCapsuleShape(0.1f, 1.0f); // CHECKGROUND is linked to these values 1.2 / 2 = 0.6f;
+	btCollisionShape* controllerShape = new btCapsuleShape(COLLIDER_RADIUS, COLLIDER_HEIGHT);
 	btDefaultMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 0)));
 
 	btScalar mass = 1;
@@ -56,7 +56,7 @@ void FirstPersonController::update(float deltaTime){
 	vec3 movement = vec3(0, 0, 0);
 
 	// Only handle movement if we are grounded
-	if(isGrounded){
+	if(isGrounded || !NEEDS_GROUNDED_TO_MOVE){
 		if(fwd)
 			movement += vec3(0, 0, -1);
 		if(left)
@@ -73,6 +73,9 @@ void FirstPersonController::update(float deltaTime){
 
 		if(isSprinting)
 			movement *= SPRINT_MOVEMENT_INCREASE;	
+
+		if(!isGrounded)
+			movement *= JUMP_MOVEMENT_MULTIPLIER;
 
 		// Multiply by time that has passed to compensate for FPS
 		movement *= deltaTime;
@@ -137,7 +140,7 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 	// If we hit something, check the distance to the ground
 	// TODO distance check - expansive calculation, change to something more efficient.
 	if (res.hasHit()) {
-		isGrounded = !(position.distance(res.m_hitPointWorld) > 0.9f); // 0l.6f is the height of capsule collider
+		isGrounded = !(position.distance(res.m_hitPointWorld) > COLLIDER_RADIUS + 0.5f * COLLIDER_HEIGHT + 0.1f); 
 	}
 	else {
 		isGrounded = false;
@@ -157,13 +160,44 @@ void FirstPersonController::onKey(SDL_Event &event) {
 		replaceBlock = !replaceBlock;
 	}
 
+	// Toggle invisible mode
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_t) {
+		invisibleMode = !invisibleMode;
+
+		// Ignore contact respones if invisible mode is on
+		if(invisibleMode)
+			rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
+		else
+			rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
+	}
+
+	// Toggle flying
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_y) {
+		flyMode = !flyMode;
+		if(flyMode)
+			rigidBody->setGravity(btVector3(0, 0, 0));
+		else
+			rigidBody->setGravity(btVector3(0, -10, 0));
+	} 
+
+	// Flying up down control
+	if (flyMode) {
+		if (event.key.keysym.sym == SDLK_LCTRL) {
+			rigidBody->translate(btVector3(0, -.1f, 0));
+		}
+		else if (event.key.keysym.sym == SDLK_SPACE) {
+			rigidBody->translate(btVector3(0, .1f, 0));
+		}
+	}
+
 	// Capture Jump
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
-		rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
+		if(!flyMode)
+			rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
 	}
 
 	// Selected block to place
-	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_e && isGrounded) {
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_e) {
 		// Increase block selected
 		blockSelected = (BlockType)(blockSelected + 1);
 
@@ -172,7 +206,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 			blockSelected = BlockType::Stone;
 	}
 
-	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_q && isGrounded) {
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_q) {
 		// If we are at the end, go back to the start
 		if (blockSelected == BlockType::Stone)
 			blockSelected = BlockType::LENGTH;
@@ -198,9 +232,6 @@ void FirstPersonController::onKey(SDL_Event &event) {
 				right = true;
 				break;
 			case SDLK_LSHIFT:
-				if(!isGrounded)
-					return;
-
 				isSprinting = true;
 				camera->setPerspectiveProjection(FIELD_OF_FIELD * SPRINT_FOV_INCREASE, NEAR_PLANE, FAR_PLANE);
 				break;
@@ -224,6 +255,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 			case SDLK_LSHIFT:
 				camera->setPerspectiveProjection(FIELD_OF_FIELD, NEAR_PLANE, FAR_PLANE);
 				isSprinting = false;
+				break;
 			}
 	}
 }
@@ -234,7 +266,7 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 	if(event.type == SDL_MOUSEMOTION && !lockRotation) {
 		lookRotation.x += event.motion.xrel * ROTATION_SPEED;
 		lookRotation.y += event.motion.yrel * ROTATION_SPEED;
-		lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_ROTATION, MAX_X_LOOK_ROTATION);
+		lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_UP_ROTATION, MAX_X_LOOK_DOWN_ROTATION);
 	}
 	
 	if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -253,16 +285,19 @@ void FirstPersonController::destroyBlock() {
 	std::cout << "destroying" << std::endl;
 	auto block = castRayForBlock(-0.2f);
 
-	if(block != nullptr)
+	if (block != nullptr) {
 		block->setActive(false);
+	}
 }
 
 
 void FirstPersonController::placeBlock() {
 	std::cout << "placing" << std::endl;
 
-	// Get the block we are looking at
-	auto block = castRayForBlock(0.2f);
+	// Get the block where we are placing
+	// If we replacemode is active replace the actual block
+	// Otherwise get the empty space we are looking at
+	auto block = castRayForBlock(replaceBlock? -.2f : .2f);
 
 	// If we are looking at a block, place one
 	if (block != nullptr) {
@@ -310,7 +345,7 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 		hit += res.m_hitNormalWorld * normalMultiplier;
 
 		// Grab the block, and set it to not active - all numbers are floored since blocks take up a whole unit
-		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
+		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ(), BlockInspectState::Medium);
 	} else{
 		return nullptr;
 	}

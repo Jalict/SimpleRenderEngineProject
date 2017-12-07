@@ -4,6 +4,7 @@
 #include <glm\gtx\rotate_vector.hpp>
 #include "sre/SDLRenderer.hpp"
 #include "sre/Material.hpp"
+#include "ParticleSystem.hpp"
 
 /*
 Created: 01-12-2017
@@ -23,9 +24,14 @@ public:
 	void draw(sre::RenderPass& renderpass);
 	glm::vec3 getPosition();
 	Block* getBlock(int x, int y, int z);
+	Block* readBlock(int x, int y, int z);
+
+	void placeParticleSystem(glm::vec3 pos);
+	void updateApperance();
+	void updateEmit();
 	
 private:
-	const static int chunkDimensions = 8;
+	const static int chunkDimensions = 5;
 	glm::vec3 position;
 	
 	glm::mat4 chunkTransform;
@@ -33,12 +39,28 @@ private:
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec4> texCoords;
 
+	bool recalculateMesh = true; // Flag to see if we need to recalculate our mesh
+
 	Block*** blocksInChunk;
 	glm::vec4 textureCoordinates(int blockID);
 
 	void addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPositive, bool ZNegative, bool ZPositive, float x, float y, float z, BlockType type);
 	std::shared_ptr<sre::Mesh> mesh;
-	void assembleMeshData();
+	void calculateMesh();
 	void createMesh();
 
+	// Particles
+	std::shared_ptr<sre::Texture> particleTexture;
+	std::vector<std::shared_ptr<ParticleSystem>> particleSystems;
+
+	// Particle setting
+	glm::vec4 colorFrom = { 1,1,1,1 };
+	glm::vec4 colorTo = { 1,1,1,0 };
+	float sizeFrom = 50;
+	float sizeTo = 50;
+
+	glm::vec3 emitPosition = { 0,0,0 };
+	float emitVelocity = 1;
+	float emitRotation = 10;
+	float emitAngularVelocity = 10;
 };

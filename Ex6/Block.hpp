@@ -38,12 +38,12 @@ private:
 	btRigidBody* rigidbody;
 	btBoxShape* collider;
 
-	void setMesh(BlockType type);
+	//void setMesh(BlockType type);
 	BlockType type = BlockType::Dirt;			// Current type of block
 
 	bool active = true;
 
-	std::shared_ptr<sre::Mesh> mesh;			// Mesh of block
+//	std::shared_ptr<sre::Mesh> mesh;			// Mesh of block
 	glm::vec3 position;
 };
 

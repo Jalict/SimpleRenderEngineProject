@@ -4,16 +4,16 @@
 #include "sre/Material.hpp"
 #include "FirstPersonController.hpp"
 #include "Physics.hpp"
-#include "sre/SpriteAtlas.hpp"
-#include "ParticleSystem.hpp"
 #include "Chunk.hpp"
 #include "Block.hpp"
+
+enum BlockInspectState {HardRecalculate, Medium, Soft};
 
 class Wolf3D {
 public:
     Wolf3D();
 	static Wolf3D* getInstance();
-	Block* locationToBlock(int x, int y, int z);
+	Block* locationToBlock(int x, int y, int z, BlockInspectState recalculate);
 
 	Physics physics;
 
@@ -30,8 +30,6 @@ private:
 	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
 	void handleDebugKeys(SDL_Event& e);	
-	void updateApperance();
-	void updateEmit();
 //	void loadBlocks(std::string fromFile);
 
 	glm::vec4 textureCoordinates(int blockID);
@@ -57,10 +55,6 @@ private:
 	std::shared_ptr<sre::Material> sphereMaterial;
 	btTransform sphereTrans;
 
-	std::shared_ptr<sre::Texture> particleTexture;
-	std::shared_ptr<ParticleSystem> particleSystem;
-	std::shared_ptr<sre::Material> particleMaterial;
-
 	glm::mat4 floorTransform;
 	glm::vec4 floorColor;
 	std::shared_ptr<sre::Mesh> floor;
@@ -72,14 +66,4 @@ private:
 
 	// List of all block meshes, these are used to be hold in hand by the player
 	std::shared_ptr<sre::Mesh>* blockMeshes;
-
-	glm::vec4 colorFrom = { 1,1,1,1 };
-	glm::vec4 colorTo = { 1,1,1,0 };
-	float sizeFrom = 50;
-	float sizeTo = 50;
-
-	glm::vec3 emitPosition = { 0,3,0 };
-	float emitVelocity = 1;
-	float emitRotation = 10;
-	float emitAngularVelocity = 10;
 };

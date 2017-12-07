@@ -30,7 +30,12 @@ Chunk::Chunk(glm::vec3 position){
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
-				blocksInChunk[x][y][z] = Block(BlockType::Sand, glm::vec3(position.x + x,position.y + y, position.z + z));
+				if(y == chunkDimensions -1)
+					blocksInChunk[x][y][z] = Block(BlockType::Grass, glm::vec3(position.x + x,position.y + y, position.z + z));
+				else if (y == 0)
+					blocksInChunk[x][y][z] = Block(BlockType::Rock, glm::vec3(position.x + x, position.y + y, position.z + z));
+				else
+					blocksInChunk[x][y][z] = Block(BlockType::Dirt, glm::vec3(position.x + x, position.y + y, position.z + z));
 			}
 		}
 	}
@@ -51,7 +56,11 @@ Chunk::~Chunk(){
 }
 
 void Chunk::update(float dt) {
-	//Dunno what to do in here yet
+
+	// Update particle systems
+	for (int i = 0; i < particleSystems.size(); i++) {
+		particleSystems[i]->update(dt);
+	}
 }
 
 //void Chunk::draw(sre::RenderPass& renderpass) {
@@ -102,22 +111,41 @@ void Chunk::update(float dt) {
 
 
 void Chunk::draw(sre::RenderPass& renderpass) {
-	vertexPositions.clear();
-	texCoords.clear();
-	normals.clear();
-	assembleMeshData();
-	createMesh();
+	// Generate Mesh
+	if(recalculateMesh)
+		createMesh();
+
+	// Draw Mesh Chunk
 	renderpass.draw(this->mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
+
+	// Draw Particles
+	// Update particle systems
+	for (int i = 0; i < particleSystems.size(); i++) {
+		particleSystems[i]->draw(renderpass);
+	}
 }
 
 
 void Chunk::createMesh() {
-	std::string chunkID = "Chunk at pos: " + std::to_string(position.x) + ' ' + std::to_string(position.y) + ' ' + std::to_string(position.z) + '.';
+	std::cout << " recalculate chunk" << std::endl;
+
+	calculateMesh();
+
+	// Create the chunk
+	std::string chunkID = "Chunk_" + std::to_string(position.x) + '_' + std::to_string(position.y) + '_' + std::to_string(position.z);
 	mesh = sre::Mesh::create().withPositions(vertexPositions).withUVs(texCoords).withName(chunkID).withNormals(normals).build();
+
+	// Clean up after we used them
+	vertexPositions.clear();
+	texCoords.clear();
+	normals.clear();
+
+	// Lower the flag for recalculation
+	recalculateMesh = false;
 }
 
 
-void Chunk::assembleMeshData() {
+void Chunk::calculateMesh() {
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++){
 			for (int z = 0; z < chunkDimensions; z++){
@@ -129,7 +157,7 @@ void Chunk::assembleMeshData() {
 				if (x > 0) {
 					XNegative = !blocksInChunk[x - 1][y][z].getActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x - 1, position.y + y, position.z + z);
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x - 1, position.y + y, position.z + z, BlockInspectState::Soft);
 					if (t != nullptr)
 						XNegative = !t->getActive();
 				}
@@ -138,7 +166,7 @@ void Chunk::assembleMeshData() {
 				if (x < chunkDimensions - 1) {
 					XPositive = !blocksInChunk[x + 1][y][z].getActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x + 1, position.y + y, position.z + z);
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x + 1, position.y + y, position.z + z, BlockInspectState::Soft);
 					if (t != nullptr)
 						XPositive = !t->getActive();
 				}
@@ -147,7 +175,7 @@ void Chunk::assembleMeshData() {
 				if (y > 0) {
 					YNegative = !blocksInChunk[x][y - 1][z].getActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y - 1, position.z + z);
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y - 1, position.z + z, BlockInspectState::Soft);
 					if (t != nullptr)
 						YNegative = !t->getActive();
 				}
@@ -156,7 +184,7 @@ void Chunk::assembleMeshData() {
 				if (y < chunkDimensions - 1) {
 					YPositive = !blocksInChunk[x][y + 1][z].getActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y + 1, position.z + z);
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y + 1, position.z + z, BlockInspectState::Soft);
 					if (t != nullptr)
 						YPositive = !t->getActive();
 				}
@@ -165,7 +193,7 @@ void Chunk::assembleMeshData() {
 				if (z > 0) {
 					ZNegative = !blocksInChunk[x][y][z - 1].getActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z - 1);
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z - 1, BlockInspectState::Soft);
 					if (t != nullptr)
 						ZNegative = !t->getActive();
 				}
@@ -174,7 +202,7 @@ void Chunk::assembleMeshData() {
 				if (z < chunkDimensions - 1) {
 					ZPositive = !blocksInChunk[x][y][z + 1].getActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z + 1);
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z + 1, BlockInspectState::Soft);
 					if(t != nullptr)
 						ZPositive = !t->getActive();
 				}
@@ -208,8 +236,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 
 		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Left));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0),
 		});
 
 		//Normal for this face
@@ -229,8 +257,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 		//Texture coordinates for this face
 		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Right));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0),
 		});
 
 		//Normal for this face
@@ -288,8 +316,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 
 		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Back));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0),
 		});
 
 		//Normal for this face
@@ -308,8 +336,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 
 		glm::vec4 coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Front));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0)
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
+			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0)
 		});
 
 		//Normal for this face
@@ -353,15 +381,35 @@ glm::vec3 Chunk::getPosition() {
 
 //Problem: Chunk 
 Block* Chunk::getBlock(int x, int y, int z) {
+	std::cout << position.x << " " << position.z << std::endl;
+	recalculateMesh = true;
+
+	// Else return the block
+	return readBlock(x, y, z);
+}
+
+
+Block* Chunk::readBlock(int x, int y, int z) {
 	// If the block is not within bounds of this chunk, return null pointer
-	if((x < 0 || x >= chunkDimensions || y < 0 || y >= chunkDimensions || z < 0 || z >= chunkDimensions)){
-		std::cout << "block doesnt exist" << std::endl;
+	if ((x < 0 || x >= chunkDimensions || y < 0 || y >= chunkDimensions || z < 0 || z >= chunkDimensions)) {
+		//std::cout << "block doesnt exist" << std::endl;
 		return nullptr;
 	}
 
 
-	if(blocksInChunk)
+	//placeParticleSystem(glm::vec3(x + position.x, y + position.y, z + position.z));
 
 	// Else return the block
 	return &blocksInChunk[x][y][z];
+}
+
+void Chunk::placeParticleSystem(glm::vec3 pos) {
+	// Particle System
+	particleTexture = sre::Texture::getWhiteTexture();
+	particleSystems.insert(particleSystems.end(), std::make_shared<ParticleSystem>(10, particleTexture));
+	particleSystems[particleSystems.size() - 1]->gravity = { 0, -9.82, 0 };
+	particleSystems[particleSystems.size() - 1]->emitPosition = pos;
+	particleSystems[particleSystems.size() - 1]->emit();
+
+	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
 }
