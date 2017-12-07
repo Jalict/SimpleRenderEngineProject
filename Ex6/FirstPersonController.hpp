@@ -66,7 +66,7 @@ private:
 
 	BlockType blockSelected = BlockType::Dirt;
 	glm::mat4 transformMatrix;
-	glm::mat4 inventoryBlockMatrix;
+	glm::mat4 handBlockOffsetMatrix;
 
 
 	btRigidBody* rigidBody;
