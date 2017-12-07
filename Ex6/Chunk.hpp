@@ -2,6 +2,8 @@
 #include "Block.hpp"
 #include "sre/SDLRenderer.hpp"
 #include <glm\gtx\rotate_vector.hpp>
+#include "sre/SDLRenderer.hpp"
+#include "sre/Material.hpp"
 
 /*
 Created: 01-12-2017
@@ -27,6 +29,15 @@ private:
 	glm::vec3 position;
 	
 	glm::mat4 chunkTransform;
+	std::vector<glm::vec3> vertexPositions;
+	std::vector<glm::vec4> texCoords;
 
 	Block*** blocksInChunk;
+	glm::vec4 textureCoordinates(int blockID);
+
+	void addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPositive, bool ZNegative, bool ZPositive, float x, float y, float z, BlockType type);
+	std::shared_ptr<sre::Mesh> mesh;
+	void assembleVertexPositionsAndTexturePoints();
+	void createMesh();
+
 };

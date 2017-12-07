@@ -297,7 +297,6 @@ void Wolf3D::init() {
 	fpsController = new  FirstPersonController(&camera);
     fpsController->setPosition(vec3(-1.0f, 10.0f, -1.0f), 0);
 
-
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
 	floorMat = Shader::getStandard()->createMaterial();
