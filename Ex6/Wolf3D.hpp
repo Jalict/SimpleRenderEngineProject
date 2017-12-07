@@ -57,7 +57,7 @@ private:
 	std::shared_ptr<sre::Material> sphereMaterial;
 	btTransform sphereTrans;
 
-	std::shared_ptr<Texture> particleTexture;
+	std::shared_ptr<sre::Texture> particleTexture;
 	std::shared_ptr<ParticleSystem> particleSystem;
 	std::shared_ptr<sre::Material> particleMaterial;
 
@@ -81,4 +81,15 @@ private:
 	std::shared_ptr<sre::Mesh> rockMesh;
 	std::shared_ptr<sre::Mesh> woodMesh;
 	std::shared_ptr<sre::Mesh> planksMesh;
+
+
+	glm::vec4 colorFrom = { 1,1,1,1 };
+	glm::vec4 colorTo = { 1,1,1,0 };
+	float sizeFrom = 50;
+	float sizeTo = 50;
+
+	glm::vec3 emitPosition = { 0,3,0 };
+	float emitVelocity = 1;
+	float emitRotation = 10;
+	float emitAngularVelocity = 10;
 };
