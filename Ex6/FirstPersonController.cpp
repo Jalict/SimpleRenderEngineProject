@@ -343,7 +343,7 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 
 		// TODO TEMP prob remove below -- added for debug purposes
 		toRay = vec3(hit.getX(), hit.getY(), hit.getZ());
-		toRay2 = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()); //res.m_hitNormalWorld;
+		toRay2 = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()) * .2f; //res.m_hitNormalWorld;
 		fromRay1 = toRay;
 		fromRay = vec3(start.getX(), start.getY(), start.getZ());
 
