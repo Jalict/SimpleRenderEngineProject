@@ -63,6 +63,7 @@ private:
     bool right = false;
 	bool isGrounded = false;
 	bool isSprinting = false;
+	bool replaceBlock = true;  // Determines whether you can place blocks on locations that already have blocks
 
 	BlockType blockSelected = BlockType::Dirt;
 	glm::mat4 transformMatrix;

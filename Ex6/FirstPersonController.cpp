@@ -146,9 +146,15 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 
 
 void FirstPersonController::onKey(SDL_Event &event) {
-	// Reset character position if HOME is pressed
+	// Move character position if HOME is pressed
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_HOME) {
-		setPosition(glm::vec3(3, 8, 3), 0);
+		setPosition(glm::vec3(0, 8, 0), 0);
+	}
+
+
+	// Toggle Replacement mode of placing blocks
+	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_r) {
+		replaceBlock = !replaceBlock;
 	}
 
 	// Capture Jump
@@ -156,6 +162,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 		rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
 	}
 
+	// Selected block to place
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_RIGHT && isGrounded) {
 		// Increase block selected
 		blockSelected = (BlockType)(blockSelected + 1);
@@ -255,9 +262,15 @@ void FirstPersonController::destroyBlock() {
 void FirstPersonController::placeBlock() {
 	std::cout << "placing" << std::endl;
 
+	// Get the block we are looking at
 	auto block = castRayForBlock(0.2f);
 
+	// If we are looking at a block, place one
 	if (block != nullptr) {
+		// If theres is already a block and we are not allowed to replace it, don't do anything
+		if(!replaceBlock && block->getActive())
+			return;
+
 		block->setType(blockSelected);
 		block->setActive(true);
 	}
