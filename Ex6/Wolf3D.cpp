@@ -73,8 +73,6 @@ Wolf3D* Wolf3D::getInstance(){
 
 void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
-
-	particleSystem->update(deltaTime);
 }
 
 
