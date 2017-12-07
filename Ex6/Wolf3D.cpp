@@ -284,35 +284,55 @@ void Wolf3D::init() {
 }
 
 
+// TODO set sites correctly
 std::shared_ptr<sre::Mesh> Wolf3D::initializeMesh(BlockType type) {
-	const glm::vec4 coords = textureCoordinates(Block::getTextureIndex(type));
-	std::vector<glm::vec4> texCoords;			// texCoords for block
+	// Store the texture coordinates in a vector
+	std::vector<glm::vec4> texCoords;			
 	texCoords.clear();
+
+	// Collect texture coordinates for each side
+	glm::vec4 coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Front));
 	texCoords.insert(texCoords.end(), {
 		// +z
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0)
+	});
+	
+	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Left));
+	texCoords.insert(texCoords.end(), {
 		// ?
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	});
 
+	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Back));
+	texCoords.insert(texCoords.end(),{
 		// ?
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	});
 
+	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Right));
+	texCoords.insert(texCoords.end(),{
 		// ?
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	});
 
+	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Top));
+	texCoords.insert(texCoords.end(),{
 		// top
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	});
 
+	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Bottom));
+	texCoords.insert(texCoords.end(),{
 		// bottom
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
+
 	return sre::Mesh::create().withCube(0.5f).withUVs(texCoords).build();
 }
 
