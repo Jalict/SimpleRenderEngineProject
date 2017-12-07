@@ -30,7 +30,12 @@ Chunk::Chunk(glm::vec3 position){
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
-				blocksInChunk[x][y][z] = Block(BlockType::Sand, glm::vec3(position.x + x,position.y + y, position.z + z));
+				if(y == chunkDimensions -1)
+					blocksInChunk[x][y][z] = Block(BlockType::Grass, glm::vec3(position.x + x,position.y + y, position.z + z));
+				else if (y == 0)
+					blocksInChunk[x][y][z] = Block(BlockType::Rock, glm::vec3(position.x + x, position.y + y, position.z + z));
+				else
+					blocksInChunk[x][y][z] = Block(BlockType::Dirt, glm::vec3(position.x + x, position.y + y, position.z + z));
 			}
 		}
 	}
@@ -119,8 +124,6 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 
 
 void Chunk::createMesh() {
-	std::cout << "recal" << std::endl; 
-
 	calculateMesh();
 
 	// Create the chunk

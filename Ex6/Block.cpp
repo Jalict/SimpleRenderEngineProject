@@ -15,6 +15,8 @@ Block::Block(BlockType type, glm::vec3 position) {
 	// # TODO dealloc
 	// Add physics collider
 	collider = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+
+	this->position = position;
 	
 	btTransform startTransform;
 	startTransform.setIdentity();
@@ -27,18 +29,18 @@ Block::~Block() {
 	// TODO destroy physics
 }
 
-void Block::setMesh(BlockType type) {
+/*void Block::setMesh(BlockType type) {
 	this->mesh = Wolf3D::getInstance()->getMesh(type);
-}
+}*/
 
 void Block::setType(BlockType type) {
 	this->type = type;
-	setMesh(type);
+//	setMesh(type);
 }
 
-std::shared_ptr<sre::Mesh> Block::getMesh(){
+/*std::shared_ptr<sre::Mesh> Block::getMesh(){
 	return mesh;
-}
+}*/
 
 glm::vec3 Block::getPosition(){
 	return position;
