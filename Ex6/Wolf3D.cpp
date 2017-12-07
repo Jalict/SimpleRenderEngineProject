@@ -4,9 +4,15 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include "Wolf3D.hpp"
 #include <sre/Profiler.hpp>
+#include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
+#include <fstream>
+#include <iostream>
+#include <glm/gtc/matrix_access.inl>
 
 using namespace sre;
 using namespace glm;
+
 
 Wolf3D::Wolf3D() {
 	// Singleton-ish
@@ -67,21 +73,26 @@ Wolf3D* Wolf3D::getInstance(){
 
 void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
+
+	particleSystem->update(deltaTime);
 }
 
 
 void Wolf3D::render() {
 	// Create a render pass
 	auto renderPass = RenderPass::create()
-			.withCamera(camera)
-			.withWorldLights(&worldLights)
-			.withClearColor(true, { 0.73f, 0.83f, 1, 1 })
-            .build();
+		.withCamera(camera)
+		.withWorldLights(&worldLights)
+		.withClearColor(true, { 0.73f, 0.83f, 1, 1 })
+		.build();
 
 	// Draw objects 
 	// TODO make more generic
 	renderPass.draw(sphere, sphereTransform, sphereMaterial);
 	renderFloor(renderPass);
+	fpsController->draw(renderPass);
+
+	particleSystem->draw(renderPass);
 
 	// TODO TEMP remove
 	std::vector<vec3> rays;
@@ -116,6 +127,7 @@ void Wolf3D::render() {
 	auto simplePass = RenderPass::create()
 		.withCamera(simpleCamera)
 		.withClearColor(false, { 0, 0, 0, 1 })
+		.withGUI(false)
 		.build();
 
 	std::vector<glm::vec3> cross = {
@@ -147,9 +159,12 @@ void Wolf3D::drawGUI() {
 	ImGui::SetNextWindowPos(ImVec2(Renderer::instance->getWindowSize().x / 2 - 100, .0f), ImGuiSetCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Always);
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
-//	ImGui::DragFloat("Rot", &fpsController->rotation);
-//	ImGui::DragFloat3("Pos", &(fpsController->position.x), 0.1f);
-//	ImGui::Checkbox("LockRotation", &lockRotation);
+
+	glm::vec3 pos = fpsController->getPosition();
+	glm::vec3 lookPos = fpsController->toRay;
+	ImGui::Text("pos: %.1f %.1f %.1f", pos.x, pos.y, pos.z);
+	ImGui::Text("lookAt: %.1f %.1f %.1f", lookPos.x, lookPos.y, lookPos.z);
+
 	ImGui::End();
 }
 
@@ -179,11 +194,32 @@ void Wolf3D::handleDebugKeys(SDL_Event& e) {
 	}
 }
 
+void Wolf3D::updateApperance()
+{
+	particleSystem->updateAppearance = [&](const Particle& p) {
+		p.color = glm::mix(colorFrom, colorTo, p.normalizedAge);
+		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
+	};
+}
+
+void Wolf3D::updateEmit()
+{
+	particleSystem->emitter = [&](Particle& p) {
+		p.position = emitPosition;
+		p.velocity = glm::sphericalRand(emitVelocity);
+		p.rotation = 90;
+		p.angularVelocity = 10;
+		p.size = 50;
+	};
+}
+
 
 void Wolf3D::init() {
 	// TODO Clean up +  dealloc
 
 	// Initialise all the block meshes
+//	loadBlocks("blocks.json");
+
 	stoneMesh = initializeMesh(BlockType::Stone);
 	brickMesh = initializeMesh(BlockType::Brick);
 	grassMesh = initializeMesh(BlockType::Grass);
@@ -206,6 +242,13 @@ void Wolf3D::init() {
 	btTransform transform;
 	groundRigidBody->getMotionState()->getWorldTransform(transform);
 
+	// Particle System
+	particleTexture = sre::Texture::getWhiteTexture();
+	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
+	particleSystem->gravity = { 0,-.2,0 };
+	particleMaterial = sre::Shader::getStandard()->createMaterial();
+	updateApperance();
+	updateEmit();
 
 	// Create falling ball
 	btCollisionShape* fallShape = new btSphereShape(1.0f);
@@ -273,35 +316,55 @@ void Wolf3D::init() {
 }
 
 
+// TODO set sites correctly
 std::shared_ptr<sre::Mesh> Wolf3D::initializeMesh(BlockType type) {
-	const glm::vec4 coords = textureCoordinates((int)type);
-	std::vector<glm::vec4> texCoords;			// texCoords for block
+	// Store the texture coordinates in a vector
+	std::vector<glm::vec4> texCoords;			
 	texCoords.clear();
+
+	// Collect texture coordinates for each side
+	glm::vec4 coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Front));
 	texCoords.insert(texCoords.end(), {
 		// +z
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
-
+		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0)
+	});
+	
+	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Left));
+	texCoords.insert(texCoords.end(), {
 		// ?
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	});
 
+	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Back));
+	texCoords.insert(texCoords.end(),{
 		// ?
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	});
 
+	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Right));
+	texCoords.insert(texCoords.end(),{
 		// ?
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	});
 
+	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Top));
+	texCoords.insert(texCoords.end(),{
 		// top
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+	});
 
+	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Bottom));
+	texCoords.insert(texCoords.end(),{
 		// bottom
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
+
 	return sre::Mesh::create().withCube(0.5f).withUVs(texCoords).build();
 }
 
@@ -356,26 +419,24 @@ std::shared_ptr<sre::Mesh> Wolf3D::getMesh(BlockType type) {
 	}
 }
 
+/*
+void Wolf3D::loadBlocks(std::string fromFile) {
+	using namespace rapidjson;
+	std::ifstream fis(fromFile);
+	IStreamWrapper isw(fis);
+	Document doc;
+	doc.ParseStream(isw);
+	
 
-//I didn't know if we still used this, so I just commented it out
-//vec4 Wolf3D::textureCoordinates(int blockID){
-//	glm::vec2 textureSize(1024, 2048);
-//	glm::vec2 tileSize(128, 128);
-//
-//	float tileWidth = tileSize.x / textureSize.x;
-//	float tileHeight = tileSize.y / textureSize.y;
-//
-//	glm::vec2 min = vec2(0, 16 * tileSize.y) / textureSize;
-//	glm::vec2 max = min + tileSize / textureSize;
-//
-//	min.x += (blockID % 8) * tileWidth * 2;
-//	max.x += (blockID % 8) * tileWidth * 2;
-//
-//	min.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
-//	max.y -= ((blockID - (blockID % 8)) / 8) * tileHeight;
-//
-//	return vec4(min.x, min.y, max.x, max.y);
-//}
+	auto blocks = doc["blocks"].GetArray();
+	std::cout << blocks[0]["top"].GetInt() << std::endl;
+
+	// Loop over all blocks and load them
+	for (int i = 0; i < BlockType::LENGTH; i++) {
+
+	}
+	
+}*/
 
 
 Block* Wolf3D::locationToBlock(int x,  int y,  int z) {

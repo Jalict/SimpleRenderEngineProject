@@ -161,7 +161,7 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 	glm::vec3 p7 = glm::vec3(x - 0.5, y + 0.5, z - 0.5);
 	glm::vec3 p8 = glm::vec3(x + 0.5, y + 0.5, z - 0.5);
 
-	const glm::vec4 coords = textureCoordinates((int)type);
+	glm::vec4 coords;
 
 	//Left
 	if (XNegative) {
@@ -170,7 +170,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 			p6,p4,p7
 		});
 
-		texCoords.insert(texCoords.end(), { // +z
+		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Left));
+		texCoords.insert(texCoords.end(), {
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 		});
@@ -182,7 +183,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 			p2,p8,p3
 		});
 
-		texCoords.insert(texCoords.end(), { // +z
+		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Right));
+		texCoords.insert(texCoords.end(), {
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 		});
@@ -195,7 +197,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 			p6,p2,p1
 		});
 
-		texCoords.insert(texCoords.end(), { // +z
+		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Bottom));
+		texCoords.insert(texCoords.end(), {
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 		});
@@ -207,7 +210,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 			p4,p8,p7
 		});
 
-		texCoords.insert(texCoords.end(), { // +z
+		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Top));
+		texCoords.insert(texCoords.end(), {
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 		});
@@ -220,7 +224,8 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 			p5, p7, p8
 		});
 
-		texCoords.insert(texCoords.end(), { // +z
+		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Back));
+		texCoords.insert(texCoords.end(), {
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 		});
@@ -233,9 +238,10 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 			p1,p3,p4
 		});
 
-		texCoords.insert(texCoords.end(), { // +z
+		glm::vec4 coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Front));
+		texCoords.insert(texCoords.end(), {
 			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0)
 		});
 	}
 

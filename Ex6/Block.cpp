@@ -84,3 +84,69 @@ void Block::setActive(bool active) {
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 
 }
+
+
+// enum BlockType { Stone = 0, Brick = 1, Grass = 4, WoolBlue = 5, Sand = 8, Dirt = 9, Gravel = 25, Rock = 50, Wood = 74, Planks = 83 }; // Types of blocks
+int Block::getTextureIndex(BlockType type, BlockSides side){
+	switch (type) {
+		case BlockType::Stone:
+			return 0;
+		case BlockType::Brick:
+			return 1;
+		case BlockType::Grass:
+			switch (side){
+				case BlockSides::Top:
+					return 23;
+				case BlockSides::Bottom:
+					return 9;
+				default:
+					return 10;
+			}
+		case BlockType::WoolBlue:
+			return 5;
+		case BlockType::Sand:
+			return 8;
+		case BlockType::Dirt:
+			return 9;
+		case BlockType::Gravel:
+			return 25;
+		case BlockType::Rock:
+			return 50;
+		case BlockType::Wood:
+			return 74;
+		case BlockType::Planks:
+			return 83;
+		default:
+			return 0;
+	}
+}
+
+
+//Stone, Brick, Grass, WoolBlue, Sand, Dirt, Gravel, Rock, Wood, Planks,
+// # TODO set this in the right place
+/*std::string Block::typeToString(BlockType type) {
+	switch (type) {
+		case BlockType::Stone:
+			return "Stone";
+		case BlockType::Brick:
+			return "Brick";
+		case BlockType::Grass:
+			return "Grass";
+		case BlockType::WoolBlue:
+			return "WoolBlue";
+		case BlockType::Sand:
+			return "Sand";
+		case BlockType::Dirt:
+			return "Dirt";
+		case BlockType::Gravel:
+			return "Gravel";
+		case BlockType::Rock:
+			return "Rock";
+		case BlockType::Wood:
+			return "Wood";
+		case BlockType::Planks:
+			return "Planks";
+		default:
+			return "Unspecified";
+	}
+}*/

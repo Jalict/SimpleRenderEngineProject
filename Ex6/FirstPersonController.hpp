@@ -19,10 +19,12 @@ public:
     void update(float deltaTime);
     void onKey(SDL_Event& event);
     void onMouse(SDL_Event &event);
+	void draw(sre::RenderPass& renderpass);
 
     void setPosition(glm::vec3 position, float rotation);
 	glm::vec3 getPosition();
 	bool getIsGrounded();
+
 
 	Block* castRayForBlock(float normalMultiplier); // normalMultiplayer: Allows you to determine whether the normal should be substracted (to get a block), added (to get an empty location) or the border.
 
@@ -63,6 +65,9 @@ private:
 	bool isSprinting = false;
 
 	BlockType blockSelected = BlockType::Dirt;
+	glm::mat4 transformMatrix;
+	glm::mat4 handBlockOffsetMatrix;
+
 
 	btRigidBody* rigidBody;
 //	btDefaultMotionState* motionState;

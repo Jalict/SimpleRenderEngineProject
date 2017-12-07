@@ -36,6 +36,9 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 	// Set initial look rotation to 0, 0
 	lookRotation = vec2(0,0);
+
+	// Set local block matrix to display the block in the bottom right corner in front of the camera
+	handBlockOffsetMatrix = translate(mat4(), vec3(0.5f, -.5f, -1));
 }
 
 
@@ -95,12 +98,26 @@ void FirstPersonController::update(float deltaTime){
 	checkGrounded(position);
 	
 	// Update our tranform matrix, pass it on to the camera
-	auto transformMatrix = mat4();
+	transformMatrix = mat4();
 	transformMatrix = translate(transformMatrix, glm::vec3(position.getX(), position.getY() + Y_CAMERA_OFFSET, position.getZ())); 
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.x), vec3(0, -1, 0));
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.y), vec3(-1, 0, 0));
 	camera->setViewTransform(glm::inverse(transformMatrix));
 }
+
+
+void FirstPersonController::draw(sre::RenderPass& renderpass) {
+	// Translate to  the correct position ( controller position + the block offset for the hand)
+	auto matrix = transformMatrix * handBlockOffsetMatrix;
+	// Scale the block to 35%
+	matrix = scale(matrix, vec3(0.35f, 0.35f, 0.35f));
+	// Rotate it 45 degrees around y
+	matrix = rotate(matrix, radians(45.0f), vec3(0, -1, 0));
+	
+	// Draw the block we currently have selected
+	renderpass.draw(Wolf3D::getInstance()->getMesh(blockSelected), matrix, Wolf3D::getInstance()->blockMaterial);
+}
+
 
 glm::vec3 FirstPersonController::getPosition() {
 	btTransform transform;
@@ -140,31 +157,21 @@ void FirstPersonController::onKey(SDL_Event &event) {
 	}
 
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_RIGHT && isGrounded) {
-		switch (blockSelected) {
-			case BlockType::Dirt:
-				blockSelected = BlockType::Sand;
-				break;
-			case BlockType::Sand:
-				blockSelected = BlockType::Wood;
-				break;
-			case BlockType::Wood:
-				blockSelected = BlockType::Dirt;
-				break;
-		}
+		// Increase block selected
+		blockSelected = (BlockType)(blockSelected + 1);
+
+		// If we have the last block selected, go back to the start
+		if (blockSelected == BlockType::LENGTH)
+			blockSelected = BlockType::Stone;
 	}
 
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_LEFT && isGrounded) {
-		switch (blockSelected) {
-		case BlockType::Dirt:
-			blockSelected = BlockType::Wood;
-			break;
-		case BlockType::Sand:
-			blockSelected = BlockType::Dirt;
-			break;
-		case BlockType::Wood:
-			blockSelected = BlockType::Sand;
-			break;
-		}
+		// If we are at the end, go back to the start
+		if (blockSelected == BlockType::Stone)
+			blockSelected = BlockType::LENGTH;
+
+		// Decrease block selected
+		blockSelected = (BlockType)(blockSelected - 1);
 	}
 
 
