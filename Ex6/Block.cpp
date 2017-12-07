@@ -113,7 +113,14 @@ int Block::getTextureIndex(BlockType type, BlockSides side){
 		case BlockType::Rock:
 			return 50;
 		case BlockType::Wood:
-			return 74;
+			switch (side) {
+			case BlockSides::Top:
+				return 75;
+			case BlockSides::Bottom:
+				return 75;
+			default:
+				return 74;
+			}
 		case BlockType::Planks:
 			return 83;
 		default:
