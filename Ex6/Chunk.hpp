@@ -33,12 +33,14 @@ private:
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec4> texCoords;
 
+	bool recalculateMesh = true; // Flag to see if we need to recalculate our mesh
+
 	Block*** blocksInChunk;
 	glm::vec4 textureCoordinates(int blockID);
 
 	void addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPositive, bool ZNegative, bool ZPositive, float x, float y, float z, BlockType type);
 	std::shared_ptr<sre::Mesh> mesh;
-	void assembleVertexPositionsAndTexturePoints();
+	void calculateMesh();
 	void createMesh();
 
 };
