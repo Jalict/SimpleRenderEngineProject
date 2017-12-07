@@ -159,13 +159,12 @@ void Wolf3D::drawGUI() {
 	ImGui::SetNextWindowPos(ImVec2(Renderer::instance->getWindowSize().x / 2 - 100, .0f), ImGuiSetCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Always);
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+
 	glm::vec3 pos = fpsController->getPosition();
 	glm::vec3 lookPos = fpsController->toRay;
 	ImGui::Text("pos: %.1f %.1f %.1f", pos.x, pos.y, pos.z);
 	ImGui::Text("lookAt: %.1f %.1f %.1f", lookPos.x, lookPos.y, lookPos.z);
-//	ImGui::DragFloat("Rot", &fpsController->rotation);
-//	ImGui::DragFloat3("Pos", &(fpsController->position.x), 0.1f);
-//	ImGui::Checkbox("LockRotation", &lockRotation);
+
 	ImGui::End();
 }
 
