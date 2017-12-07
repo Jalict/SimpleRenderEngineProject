@@ -384,7 +384,7 @@ Block* Wolf3D::locationToBlock(int x,  int y,  int z) {
 
 	// Determine the chunk we need 
 	vec3 blockPos = glm::vec3(x % chunkSize, y % chunkSize, z % chunkSize);
-	vec2 chunkPos = glm::vec2(x - blockPos.x, z - blockPos.z);
+	vec2 chunkPos = glm::vec2((x - blockPos.x)/Chunk::getChunkDimensions(), (z - blockPos.z)/ Chunk::getChunkDimensions());
 
 	// If the chunk does not exist, return null pointerf
 	if(chunkPos.x < 0 || chunkPos.y < 0 || chunkPos.x >= chunkArraySize || chunkPos.y >= chunkArraySize){

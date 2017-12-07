@@ -61,7 +61,7 @@ private:
 
 	std::shared_ptr<Chunk>** chunkArray;
 
-	int chunkArraySize = 1;
+	int chunkArraySize = 3;
 
 	glm::vec4 textureCoordinates(int blockID);
 	std::shared_ptr<sre::Mesh> initializeMesh(BlockType type);
