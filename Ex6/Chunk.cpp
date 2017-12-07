@@ -48,7 +48,11 @@ Chunk::~Chunk(){
 }
 
 void Chunk::update(float dt) {
-	//Dunno what to do in here yet
+
+	// Update particle systems
+	for (int i = 0; i < particleSystems.size(); i++) {
+		particleSystems[i]->update(dt);
+	}
 }
 
 //void Chunk::draw(sre::RenderPass& renderpass) {
@@ -99,10 +103,18 @@ void Chunk::update(float dt) {
 
 
 void Chunk::draw(sre::RenderPass& renderpass) {
+	// Generate Mesh
 	if(recalculateMesh)
 		createMesh();
 
+	// Draw Mesh Chunk
 	renderpass.draw(this->mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
+
+	// Draw Particles
+	// Update particle systems
+	for (int i = 0; i < particleSystems.size(); i++) {
+		particleSystems[i]->draw(renderpass);
+	}
 }
 
 
@@ -335,6 +347,7 @@ Block* Chunk::getBlock(int x, int y, int z) {
 		return nullptr;
 	}
 
+	placeParticleSystem(glm::vec3(x + position.x, y + position.y, z + position.z));
 	// If an block was requested, changes probably occurred. Therefore recalculate.
 	// Eventhough this is not 100% accurate it saves us from having to loop over each block and check for flags
 	// Or store a reference to the parent chunk in each block
@@ -342,4 +355,21 @@ Block* Chunk::getBlock(int x, int y, int z) {
 
 	// Else return the block
 	return &blocksInChunk[x][y][z];
+}
+
+void Chunk::placeParticleSystem(glm::vec3 pos) {
+	// Particle System
+	particleTexture = sre::Texture::getWhiteTexture();
+	particleSystems.insert(particleSystems.end(), std::make_shared<ParticleSystem>(10, particleTexture));
+	particleSystems[particleSystems.size() - 1]->gravity = { 0, -9.82, 0 };
+	particleSystems[particleSystems.size() - 1]->emitPosition = pos;
+	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
+	
+	particleSystems[particleSystems.size()-1]->emitter = [&](Particle& p) {
+		p.position = emitPosition;
+		p.velocity = glm::sphericalRand(emitVelocity);
+		p.rotation = emitRotation;
+		p.angularVelocity = emitAngularVelocity;
+		p.size = 50;
+	};
 }

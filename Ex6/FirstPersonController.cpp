@@ -285,8 +285,9 @@ void FirstPersonController::destroyBlock() {
 	std::cout << "destroying" << std::endl;
 	auto block = castRayForBlock(-0.2f);
 
-	if(block != nullptr)
+	if (block != nullptr) {
 		block->setActive(false);
+	}
 }
 
 

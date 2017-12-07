@@ -4,6 +4,7 @@
 #include <glm\gtx\rotate_vector.hpp>
 #include "sre/SDLRenderer.hpp"
 #include "sre/Material.hpp"
+#include "ParticleSystem.hpp"
 
 /*
 Created: 01-12-2017
@@ -23,6 +24,10 @@ public:
 	void draw(sre::RenderPass& renderpass);
 	glm::vec3 getPosition();
 	Block* getBlock(int x, int y, int z);
+
+	void placeParticleSystem(glm::vec3 pos);
+	void updateApperance();
+	void updateEmit();
 	
 private:
 	const static int chunkDimensions = 5;
@@ -43,4 +48,18 @@ private:
 	void calculateMesh();
 	void createMesh();
 
+	// Particles
+	std::shared_ptr<sre::Texture> particleTexture;
+	std::vector<std::shared_ptr<ParticleSystem>> particleSystems;
+
+	// Particle setting
+	glm::vec4 colorFrom = { 1,1,1,1 };
+	glm::vec4 colorTo = { 1,1,1,0 };
+	float sizeFrom = 50;
+	float sizeTo = 50;
+
+	glm::vec3 emitPosition = { 0,0,0 };
+	float emitVelocity = 1;
+	float emitRotation = 10;
+	float emitAngularVelocity = 10;
 };
