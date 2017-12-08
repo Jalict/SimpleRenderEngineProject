@@ -322,8 +322,7 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 
 void FirstPersonController::destroyBlock(Block* block) {
 	vec3 position = block->getPosition();
-	position /= Chunk::getChunkDimensions();
-	Wolf3D::getInstance()->getChunk((int)position.x, (int)position.y, (int)position.z)->flagRecalculateMesh();
+	Wolf3D::getInstance()->flagNeighboursForRecalculateIfNecessary(position.x, position.y, position.z);
 
 	block->setActive(false);
 
@@ -344,8 +343,7 @@ void FirstPersonController::placeBlock() {
 			return;
 
 		vec3 position = detectedBlock->getPosition();
-		position /= Chunk::getChunkDimensions();
-		Wolf3D::getInstance()->getChunk((int)position.x, (int)position.y, (int)position.z)->flagRecalculateMesh();
+		Wolf3D::getInstance()->flagNeighboursForRecalculateIfNecessary((int)position.x, (int)position.y, (int)position.z);
 
 		detectedBlock->setType(blockSelected);
 		detectedBlock->setActive(true);

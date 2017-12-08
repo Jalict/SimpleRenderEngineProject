@@ -26,9 +26,6 @@ public:
 	glm::vec3 getPosition();
 	bool getIsGrounded();
 
-
-	Block* castRayForBlock(float normalMultiplier); // normalMultiplayer: Allows you to determine whether the normal should be substracted (to get a block), added (to get an empty location) or the border.
-
 	glm::vec2 lookRotation;
 
 	bool lockRotation = false;
@@ -42,6 +39,8 @@ private:
 	void checkGrounded(btVector3 position);
 	void destroyBlock(Block* block);
 	void placeBlock();
+
+	Block* castRayForBlock(float normalMultiplier); // normalMultiplier: Allows you to determine whether the normal should be substracted (to get a block), added (to get an empty location) or the border.
 
     sre::Camera * camera;
 

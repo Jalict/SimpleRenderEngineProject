@@ -19,6 +19,7 @@ public:
 	void updateApperance();
 	void updateEmit();
 
+	void flagNeighboursForRecalculateIfNecessary(int x, int y, int z);
 	Block* locationToBlock(int x, int y, int z, bool ghostInspect);
 
 	// Material used for everything

@@ -445,67 +445,75 @@ Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 
 	// If ghost mode is not activated, changes can occur to this block.
 	// Thus we should notify surrounding chunks to recalculate if necessary.
+	// And ourself
 	if (!ghostInspect) {
-		// Check if we need to update chunk left.
-		if (blockPos.x == 0) {
-			auto neighbour = getChunk(chunkPos.x - 1, chunkPos.y, chunkPos.z);
-
-			if (neighbour != nullptr){
-				neighbour->flagRecalculateMesh();
-			}
-		}
-		// Check if we need to update chunk right.
-		else if (blockPos.x >= Chunk::getChunkDimensions() - 1) {
-			auto neighbour = getChunk(chunkPos.x + 1, chunkPos.y, chunkPos.z);
-
-			if (neighbour != nullptr){
-				neighbour->flagRecalculateMesh();
-			}
-		}
-
-
-		// Check if we need to update chunk below.
-		if (blockPos.y == 0) {
-			auto neighbour = getChunk(chunkPos.x, chunkPos.y - 1, chunkPos.z);
-
-			if (neighbour != nullptr){
-				neighbour->flagRecalculateMesh();
-			}
-		}
-		// Check if we need to update chunk above.
-		else if (blockPos.y >= Chunk::getChunkDimensions() - 1) {
-			auto neighbour = getChunk(chunkPos.x, chunkPos.y + 1, chunkPos.z);
-
-			if (neighbour != nullptr){
-				neighbour->flagRecalculateMesh();
-			}
-		}
-
-
-		// Check if we need to update chunk in front.
-		if (blockPos.z == 0) {
-			auto neighbour = getChunk(chunkPos.x, chunkPos.y, chunkPos.z - 1);
-
-			if (neighbour != nullptr){
-				neighbour->flagRecalculateMesh();
-			}
-		}
-		// Check if we need to update chunk in behind.
-		else if (blockPos.z >= Chunk::getChunkDimensions() - 1) {
-			auto neighbour = getChunk(chunkPos.x, chunkPos.y, chunkPos.z + 1);
-
-			if (neighbour != nullptr){
-				neighbour->flagRecalculateMesh();
-			}
-		}
+		flagNeighboursForRecalculateIfNecessary(x, y, z);
 	}
-
-	// Flag this chunk for recalculation if needed
-	if(!ghostInspect)
-		chunk->flagRecalculateMesh();
 
 	// Return the actual block that was requested;
 	return chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+}
+
+
+// TODO recalculate if necessary
+void Wolf3D::flagNeighboursForRecalculateIfNecessary(int x,  int y, int z) {
+	vec3 blockPos = glm::vec3(x % Chunk::getChunkDimensions(), y % Chunk::getChunkDimensions(), z % Chunk::getChunkDimensions());
+	vec3 chunkPos = glm::vec3((x - blockPos.x) / Chunk::getChunkDimensions(), (y - blockPos.y) / Chunk::getChunkDimensions(), (z - blockPos.z) / Chunk::getChunkDimensions());
+
+	// Check if we need to update chunk left.
+	if (blockPos.x == 0) {
+		auto neighbour = getChunk(chunkPos.x - 1, chunkPos.y, chunkPos.z);
+
+		if (neighbour != nullptr) {
+			neighbour->flagRecalculateMesh();
+		}
+	}
+	// Check if we need to update chunk right.
+	else if (blockPos.x >= Chunk::getChunkDimensions() - 1) {
+		auto neighbour = getChunk(chunkPos.x + 1, chunkPos.y, chunkPos.z);
+
+		if (neighbour != nullptr) {
+			neighbour->flagRecalculateMesh();
+		}
+	}
+
+
+	// Check if we need to update chunk below.
+	if (blockPos.y == 0) {
+		auto neighbour = getChunk(chunkPos.x, chunkPos.y - 1, chunkPos.z);
+
+		if (neighbour != nullptr) {
+			neighbour->flagRecalculateMesh();
+		}
+	}
+	// Check if we need to update chunk above.
+	else if (blockPos.y >= Chunk::getChunkDimensions() - 1) {
+		auto neighbour = getChunk(chunkPos.x, chunkPos.y + 1, chunkPos.z);
+
+		if (neighbour != nullptr) {
+			neighbour->flagRecalculateMesh();
+		}
+	}
+
+
+	// Check if we need to update chunk in front.
+	if (blockPos.z == 0) {
+		auto neighbour = getChunk(chunkPos.x, chunkPos.y, chunkPos.z - 1);
+
+		if (neighbour != nullptr) {
+			neighbour->flagRecalculateMesh();
+		}
+	}
+	// Check if we need to update chunk in behind.
+	else if (blockPos.z >= Chunk::getChunkDimensions() - 1) {
+		auto neighbour = getChunk(chunkPos.x, chunkPos.y, chunkPos.z + 1);
+
+		if (neighbour != nullptr) {
+			neighbour->flagRecalculateMesh();
+		}
+	}
+
+	getChunk(chunkPos.x, chunkPos.y, chunkPos.z)->flagRecalculateMesh();
 }
 
 
