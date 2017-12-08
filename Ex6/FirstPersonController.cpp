@@ -118,6 +118,26 @@ void FirstPersonController::update(float deltaTime){
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.x), vec3(0, -1, 0));
 	transformMatrix = rotate(transformMatrix, radians(lookRotation.y), vec3(-1, 0, 0));
 	camera->setViewTransform(glm::inverse(transformMatrix));
+
+	// Mine block
+	if (isMining) {
+		auto detectedBlock = castRayForBlock(-0.2f);
+
+		if(detectedBlock == lastBlock) {
+			minedAmount += deltaTime;
+
+			if (minedAmount >= 1 && lastBlock != nullptr) {
+				destroyBlock(lastBlock);
+			}
+		}
+		else {
+			minedAmount = 0;
+		}
+
+		lastBlock = detectedBlock;
+
+		printf("%.1f\n", minedAmount);
+	}
 }
 
 
@@ -286,44 +306,42 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 	
 	if (event.type == SDL_MOUSEBUTTONDOWN) {
 		if (event.button.button == SDL_BUTTON_LEFT) {
-			destroyBlock();
+			isMining = true;
 		}
 		else if(event.button.button == SDL_BUTTON_RIGHT) {
 			placeBlock();
 		}
 	}
+	if (event.type == SDL_MOUSEBUTTONUP) {
+		if (event.button.button == SDL_BUTTON_LEFT) {
+			isMining = false;
+		}
+	}
 }
 
 
-// TODO clean up
-void FirstPersonController::destroyBlock() {
-//	std::cout << "destroying" << std::endl;
-	auto block = castRayForBlock(-0.2f);
+void FirstPersonController::destroyBlock(Block* block) {
+	block->setActive(false);
 
-	if (block != nullptr) {
-		block->setActive(false);
-	}
+	minedAmount = 0;
 }
 
 
 void FirstPersonController::placeBlock() {
-//	std::cout << "placing" << std::endl;
-
 	// Get the block where we are placing
 	// If we replacemode is active replace the actual block
 	// Otherwise get the empty space we are looking at
-	auto block = castRayForBlock(replaceBlock? -.2f : .2f);
+	auto detectedBlock = castRayForBlock(replaceBlock? -.2f : .2f);
 
 	// If we are looking at a block, place one
-	if (block != nullptr) {
+	if (detectedBlock != nullptr) {
 		// If theres is already a block and we are not allowed to replace it, don't do anything
-		if(!replaceBlock && block->isActive())
+		if(!replaceBlock && detectedBlock->isActive())
 			return;
 
-		block->setType(blockSelected);
-		block->setActive(true);
-	}
-	
+		detectedBlock->setType(blockSelected);
+		detectedBlock->setActive(true);
+	}	
 }
 
 
