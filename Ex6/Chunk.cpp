@@ -142,6 +142,12 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 }
 
 
+// TODO recalculate on the spot instead of during render thread.
+void Chunk::flagRecalculateMesh() {
+	recalculateMesh = true;
+}
+
+
 void Chunk::createMesh() {
 	std::cout << " recalculate chunk" << std::endl;
 
@@ -162,72 +168,87 @@ void Chunk::createMesh() {
 
 
 void Chunk::calculateMesh() {
+	// Loop over all blocks in this chunk
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++){
 			for (int z = 0; z < chunkDimensions; z++){
-				if (blocksInChunk[x][y][z].isActive() == false){
+				// If the block is not activated, it not displayed so skip  it
+				if (blocksInChunk[x][y][z].isActive() == false)
 					continue;
-				}
 
 				bool XNegative = true;
 				if (x > 0) {
 					XNegative = !blocksInChunk[x - 1][y][z].isActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x - 1, position.y + y, position.z + z, BlockInspectState::Soft);
-					if (t != nullptr)
-						XNegative = !t->isActive();
+					//auto t = Wolf3D::getInstance()->locationToBlock(position.x + x - 1, position.y + y, position.z + z, BlockInspectState::Soft);
+					//if (t != nullptr)
+					//	std::cout << "sdf" << std::endl;
+					//	//XNegative = !t->isActive();
 				}
 
 				bool XPositive = true;
-				if (x < chunkDimensions - 1) {
+				if (x != chunkDimensions - 1){// (x < chunkDimensions - 1) {
 					XPositive = !blocksInChunk[x + 1][y][z].isActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x + 1, position.y + y, position.z + z, BlockInspectState::Soft);
+					std::cout << position.x << " + " << x << " | " << position.y << " + " << y << " | " << position.z << " + " << z << std::endl;
+					auto t = Wolf3D::getInstance()->locationToBlock(position.x + x + 1, position.y + y, position.z + z, BlockInspectState::Soft);
 					if (t != nullptr)
-						XPositive = !t->isActive();
+						std::cout << "sdf" << std::endl;
+					//	XPositive = !t->isActive();
 				}
 
 				bool YNegative = true;
 				if (y > 0) {
 					YNegative = !blocksInChunk[x][y - 1][z].isActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y - 1, position.z + z, BlockInspectState::Soft);
-					if (t != nullptr)
-						YNegative = !t->isActive();
+					//auto t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y - 1, position.z + z, BlockInspectState::Soft);
+					//if (t != nullptr)
+					//	std::cout << "sdf" << std::endl;
+					//	//YNegative = !t->isActive();
 				}
 					
 				bool YPositive = true;
 				if (y < chunkDimensions - 1) {
 					YPositive = !blocksInChunk[x][y + 1][z].isActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y + 1, position.z + z, BlockInspectState::Soft);
-					if (t != nullptr)
-						YPositive = !t->isActive();
+					//auto t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y + 1, position.z + z, BlockInspectState::Soft);
+					//if (t != nullptr)
+					//	std::cout << "sdf" << std::endl;
+					//	//YPositive = !t->isActive();
 				}
 					
 				bool ZNegative = true;
 				if (z > 0) {
 					ZNegative = !blocksInChunk[x][y][z - 1].isActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z - 1, BlockInspectState::Soft);
-					if (t != nullptr)
-						ZNegative = !t->isActive();
+					//auto t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z - 1, BlockInspectState::Soft);
+					//if (t != nullptr)
+					//	std::cout << "sdf" << std::endl;
+					//	//ZNegative = !t->isActive();
 				}
 					
 				bool ZPositive = true;
 				if (z < chunkDimensions - 1) {
 					ZPositive = !blocksInChunk[x][y][z + 1].isActive();
 				} else {
-					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z + 1, BlockInspectState::Soft);
-					if(t != nullptr)
-						ZPositive = !t->isActive();
-				}
+//					auto t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z + 1, BlockInspectState::Soft);
+//					if(t != nullptr)
+//						std::cout << "sdf" << std::endl;
+////						ZPositive = !t->isActive();
+				} 
 					
-				//addToMesh(true, true, true, true, true, true, x, y, z, blocksInChunk[x][y][z].getType());
-				addToMesh(XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive, x, y, z, blocksInChunk[x][y][z].getType());
+				addToMesh(true, true, true, true, true, true, x, y, z, blocksInChunk[x][y][z].getType());
+				//addToMesh(XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive, x, y, z, blocksInChunk[x][y][z].getType());
 			}
 		}
 	}
+}
+
+
+Block* Chunk::test() {
+//	if(rand()%2 == 0)
+		return nullptr;
+//	else return &blocksInChunk[0][0][0];
 }
 
 
@@ -395,28 +416,35 @@ glm::vec3 Chunk::getPosition() {
 }
 
 
+bool Chunk::hasBlock(int x, int y, int z) {
+	return !(x < 0 || x > chunkDimensions - 1 || y < 0 || y > chunkDimensions - 1 || z < 0 || z > chunkDimensions - 1);
+}
+
 //Problem: Chunk 
 Block* Chunk::getBlock(int x, int y, int z) {
 	std::cout << position.x << " " << position.z << std::endl;
 	recalculateMesh = true;
 
+	Block* b3 = readBlock(x, y, z);
+
 	// Else return the block
-	return readBlock(x, y, z);
+	if(b3 == nullptr)
+		return nullptr;
+	
+	return b3;
 }
 
 
 Block* Chunk::readBlock(int x, int y, int z) {
 	// If the block is not within bounds of this chunk, return null pointer
-	if ((x < 0 || x >= chunkDimensions || y < 0 || y >= chunkDimensions || z < 0 || z >= chunkDimensions)) {
-		//std::cout << "block doesnt exist" << std::endl;
+	if (x < 0 || x > chunkDimensions - 1  || y < 0 || y > chunkDimensions - 1 || z < 0 || z > chunkDimensions - 1) {
+		std::cout << "block doesnt exist" << std::endl;
 		return nullptr;
 	}
-
-
-	//placeParticleSystem(glm::vec3(x + position.x, y + position.y, z + position.z));
-
 	// Else return the block
-	return &blocksInChunk[x][y][z];
+	else {
+		return &blocksInChunk[x][y][z];
+	}
 }
 
 void Chunk::placeParticleSystem(glm::vec3 pos) {

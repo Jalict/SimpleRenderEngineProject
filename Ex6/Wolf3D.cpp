@@ -392,56 +392,98 @@ void Wolf3D::loadBlocks(std::string fromFile) {
 
 
 Block* Wolf3D::locationToBlock(int x,  int y,  int z, BlockInspectState recalculate) {
-	int chunkSize = Chunk::getChunkDimensions();
-
 	// Determine the chunk we need 
-	vec3 blockPos = glm::vec3(x % chunkSize, y % chunkSize, z % chunkSize);
+	vec3 blockPos = glm::vec3(x % Chunk::getChunkDimensions(), y % Chunk::getChunkDimensions(), z % Chunk::getChunkDimensions());
 	vec3 chunkPos = glm::vec3((x - blockPos.x)/Chunk::getChunkDimensions(), (y - blockPos.y) / Chunk::getChunkDimensions(),(z - blockPos.z)/ Chunk::getChunkDimensions());
+	
+	// Get a pointer to the chunk we want to access
+	auto chunk = getChunk((int)chunkPos.x, 0, (int)chunkPos.z);
 
-	// If the chunk does not exist, return null pointerf
-	// TODO look at this -1
-	if(chunkPos.x < 0 || chunkPos.y < 0 || chunkPos.z < 0 || chunkPos.x >= chunkArraySize  || chunkPos.y >= chunkArraySize -1|| chunkPos.z >= chunkArraySize ){
-		//std::cout << "chunk doesnt exist" << std::endl;
-		return nullptr;
-	}
-		
-	// Else get the right block
-	auto chunk = chunkArray[(int)chunkPos.x][(int)chunkPos.z];
+	// If we tried to get a chunk which does not exist, we can already return
+	if(chunk == nullptr)
+		 return nullptr;
 
 	// Get the block on the chunk
 	switch (recalculate) {
-		case BlockInspectState::HardRecalculate:
+		case BlockInspectState::HardRecalculate: {
 			return chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
-		case BlockInspectState::Medium:
-			std::cout << (int)blockPos.x << std::endl;
-			std::cout << Chunk::getChunkDimensions() - 1 << std::endl;
+		}
+		case BlockInspectState::Medium:{
+			// Check if we need to update chunk left.
+			if (blockPos.x == 0) {
+				auto other = getChunk(chunkPos.x - 1, 0, chunkPos.y);
 
-			if((int)blockPos.x == 0 )
-				auto t = chunk->getBlock((int)blockPos.x + 1, (int)blockPos.y, (int)blockPos.z);
-			
-			if ((int)blockPos.x == Chunk::getChunkDimensions() - 1) {
-				auto t = chunk->getBlock((int)blockPos.x + 1, (int)blockPos.y, (int)blockPos.z);
+				if(other != nullptr)
+					other->flagRecalculateMesh();
+			} 
+			// Check if we need to update chunk right.
+			else if (blockPos.x == 0) {
+				auto other = getChunk(chunkPos.x + 1, 0, chunkPos.y);
+
+				if (other != nullptr)
+					other->flagRecalculateMesh();
 			}
-			
-			if ((int)blockPos.y == 0)
-				auto t = chunk->getBlock((int)blockPos.x, (int)blockPos.y + 1, (int)blockPos.z);
-			
-			if ((int)blockPos.y == Chunk::getChunkDimensions() - 1)
-				auto t = chunk->getBlock((int)blockPos.x, (int)blockPos.y - 1, (int)blockPos.z);
-			
-			if ((int)blockPos.z == 0)
-				auto t = chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z + 1);
-			
-			if ((int)blockPos.z == Chunk::getChunkDimensions() - 1)
-				auto t = chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z - 1);
 
-			return chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+			// Check if we need to update chunk above.
+			if (blockPos.y == 0) {
+				auto other = getChunk(chunkPos.x, 0 - 1, chunkPos.y);
 
-			//return chunk->readBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
-		case BlockInspectState::Soft:
-			return chunk->readBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+				if (other != nullptr)
+					other->flagRecalculateMesh();
+			}
+			// Check if we need to update chunk below.
+			else if (blockPos.y == 0) {
+				auto other = getChunk(chunkPos.x, 0 + 1, chunkPos.y);
+
+				if (other != nullptr)
+					other->flagRecalculateMesh();
+			}
+
+			// Check if we need to update chunk behind.
+			if (blockPos.z == 0) {
+				auto other = getChunk(chunkPos.x, 0, chunkPos.y - 1);
+
+				if (other != nullptr)
+					other->flagRecalculateMesh();
+			}
+			// Check if we need to update chunk in front.
+			else if (blockPos.z == 0) {
+				auto other = getChunk(chunkPos.x, 0, chunkPos.y + 1);
+
+				if (other != nullptr)
+					other->flagRecalculateMesh();
+			}
+
+			// Return a pointer to the block
+			Block* b1 = chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+			
+			if(b1 == nullptr)
+				return nullptr;
+			return b1;
+		}
+		case BlockInspectState::Soft: {
+			Block* b2 = chunk->readBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+			
+			if(b2 == nullptr)
+				return nullptr;
+			return b2;
+		}
 	}	
 }	
+
+std::shared_ptr<Chunk> Wolf3D::getChunk(int x, int y, int z) {
+	// TODO hardcoded y
+	// If the chunk does not exist, return null pointer
+	if (x < 0 || y < 0 || z < 0 || x >= chunkArraySize|| y > 0 || z >= chunkArraySize) 
+		return nullptr;
+
+	// Else get the right block
+	auto chunk = chunkArray[x][z];
+	if(chunk == nullptr)
+		return nullptr;
+	
+	return chunk;
+}
 
 int main(){
     new Wolf3D();

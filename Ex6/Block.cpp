@@ -83,10 +83,8 @@ void Block::setActive(bool active) {
 
 	// If this is grass see if there is something above, if so turn into dirt since grass needs air
 	Block* b = Wolf3D::getInstance()->locationToBlock(position.x, position.y + 1, position.z, BlockInspectState::Soft);
-	if (type == BlockType::Grass && b->isActive()) {
-		if(b != nullptr)
+	if (type == BlockType::Grass && b != nullptr && b->isActive()) 
 			type = BlockType::Dirt;
-	}
 	
 	// If block below is grass turn it into dirt, since now there is something on top
 	b = Wolf3D::getInstance()->locationToBlock(position.x, position.y - 1, position.z, BlockInspectState::Medium);

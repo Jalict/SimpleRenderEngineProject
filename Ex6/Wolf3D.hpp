@@ -14,6 +14,7 @@ public:
     Wolf3D();
 	static Wolf3D* getInstance();
 	Block* locationToBlock(int x, int y, int z, BlockInspectState recalculate);
+	std::shared_ptr<Chunk> getChunk(int x, int y,  int z);
 
 	Physics physics;
 

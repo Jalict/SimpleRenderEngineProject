@@ -25,13 +25,16 @@ public:
 	glm::vec3 getPosition();
 	Block* getBlock(int x, int y, int z);
 	Block* readBlock(int x, int y, int z);
+	Block* test();
+	bool hasBlock(int x, int y, int z);
+	void flagRecalculateMesh();
 
 	void placeParticleSystem(glm::vec3 pos);
 	void updateApperance();
 	void updateEmit();
 	
 private:
-	const static int chunkDimensions = 5;
+	const static int chunkDimensions = 2;
 	glm::vec3 position;
 	
 	glm::mat4 chunkTransform;
