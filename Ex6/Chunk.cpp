@@ -368,6 +368,45 @@ void Chunk::flagRecalculateMesh() {
 }
 
 
+bool Chunk::isCollidersActive() {
+	return collidersActive;
+}
+
+void Chunk::addCollidersToWorld() {
+	// If colliders are already active, we do not have to do anything
+	if(collidersActive)
+		return;
+
+	for (int x = 0; x < chunkDimensions; x++)	{
+		for (int y = 0; y < chunkDimensions; y++) {
+			for (int z = 0; z < chunkDimensions; z++) {
+				blocksInChunk[x][y][z].addColliderToWorld();
+			}
+		}
+	}
+
+	collidersActive = true;
+}
+
+
+void Chunk::removeCollidersFromWorld() {
+	// If colliders are already active, we do not have to do anything
+	if(!collidersActive)
+		return;
+
+	// If colliders are already not active, we do not have to do anything
+	for (int x = 0; x < chunkDimensions; x++) {
+		for (int y = 0; y < chunkDimensions; y++) {
+			for (int z = 0; z < chunkDimensions; z++) {
+				blocksInChunk[x][y][z].removeColliderFromWorld();
+			}
+		}
+	}
+
+	collidersActive = false;
+}
+
+
 glm::vec3 Chunk::getPosition() {
 	return position;
 }
@@ -392,7 +431,7 @@ void Chunk::placeParticleSystem(glm::vec3 pos) {
 
 	particleSystem->emit();
 
-	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
+//	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
 }
 
 

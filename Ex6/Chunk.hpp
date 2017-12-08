@@ -24,6 +24,9 @@ public:
 	
 	// When this function is called the mesh for the chunk will be recalculated.
 	void flagRecalculateMesh();
+	void addCollidersToWorld();
+	void removeCollidersFromWorld();
+	bool isCollidersActive();
 
 	void placeParticleSystem(glm::vec3 pos);
 	void updateApperance();
@@ -53,6 +56,9 @@ private:
 	// Flag to see if we need to recalculate our mesh
 	bool recalculateMesh = true; 
 	std::shared_ptr<sre::Mesh> mesh;
+
+	// Whether colliders are active on this chunk
+	bool collidersActive = false;
 
 	// The actual blocks in this chunk
 	Block*** blocksInChunk;

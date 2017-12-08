@@ -62,13 +62,23 @@ void Block::setActive(bool active) {
 
 	this->active = active;
 	if(active){
-		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
+		addColliderToWorld();
+//		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
 	}
 	else {
-		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
+		removeColliderFromWorld();
+//		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 	}
+}
+
+void Block::addColliderToWorld() {
+	Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
+}
+
+void Block::removeColliderFromWorld(){
+	Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
 }
 
 
@@ -152,6 +162,6 @@ btRigidBody* Block::createRigidBody(float mass, const btTransform& startTransfor
 
 	//  Dont know what this does. Documentation does not have this listed.
 	//	body->setUserIndex(-1); 
-	Wolf3D::getInstance()->physics.addRigidBody(body);
+	// Wolf3D::getInstance()->physics.addRigidBody(body);
 	return body;
 }

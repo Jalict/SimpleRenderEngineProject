@@ -73,12 +73,17 @@ Wolf3D* Wolf3D::getInstance(){
 
 void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
+
+	// Update physics
+	stepChunkPhysicsInit();
 	
+	// Update chunks
 	for (int i = 0; i < chunkArraySize; i++) {
 		for (int j = 0; j < chunkArraySize; j++) {
 			chunkArray[i][j]->update(deltaTime);
 		}
 	}
+
 }
 
 
@@ -270,7 +275,9 @@ void Wolf3D::init() {
 
 	// Setup FPS Controller
 	fpsController = new  FirstPersonController(&camera);
-    fpsController->setPosition(vec3(-1.0f, 10.0f, -1.0f), 0);
+	// Spawn the player in the middle of all chunks
+	fpsController->setPosition(vec3(-1, 1, -1), 0);
+  //  fpsController->setPosition(vec3(chunkArraySize * Chunk::getChunkDimensions() *  0.5f, Chunk::getChunkDimensions() + 3.0f, chunkArraySize * Chunk::getChunkDimensions() *  0.5f), 0);
 
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
@@ -286,6 +293,40 @@ void Wolf3D::init() {
 	SDL_SetWindowGrab(renderer.getSDLWindow(), mouseLock ? SDL_TRUE : SDL_FALSE);
 	SDL_SetRelativeMouseMode(mouseLock ? SDL_TRUE : SDL_FALSE);
 	fpsController->lockRotation = !mouseLock;
+
+	// Setup physics for the first chunk
+	stepChunkPhysicsInit();
+}
+
+
+// # TODO add a cooldown to a change, so not everything is constantly switching when the player is on a chunk edge
+void  Wolf3D::stepChunkPhysicsInit() {
+	vec3 playerPosition = fpsController->getPosition();
+
+	int xPos = (int)(playerPosition.x / Chunk::getChunkDimensions());
+	int yPos = (int)(playerPosition.y / Chunk::getChunkDimensions());
+	int zPos = (int)(playerPosition.z / Chunk::getChunkDimensions());
+
+	// Loop over all chunks
+	for (int x = 0; x < chunkArraySize; x++){
+		for (int y = 0; y < chunkArraySize; y++){
+			for (int z = 0; z < chunkArraySize; z++){
+				auto chunk = getChunk(x, y, z);
+
+				if(chunk == nullptr)
+					continue;
+
+				// Enable the 9 surrounding chunks
+				if (x >= xPos - 1 && x <= xPos + 1 && y >= yPos - 1 && y <= yPos + 1 && z >= zPos - 1 && z <= zPos + 1) {
+					chunk->addCollidersToWorld();
+				}
+				// Disable the others
+				else {
+					chunk->removeCollidersFromWorld();
+				}
+			}
+		}
+	}
 }
 
 

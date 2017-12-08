@@ -25,6 +25,9 @@ public:
 	// Returns the texture coordinates depending on type and side requested
 	static int getTextureIndex(BlockType type, BlockSides side = BlockSides::Top);
 
+	void addColliderToWorld();
+	void removeColliderFromWorld();
+
 	// Sets the type of this block
 	void setType(BlockType type);				
 	void setActive(bool active);

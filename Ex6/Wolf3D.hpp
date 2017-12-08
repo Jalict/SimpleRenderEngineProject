@@ -33,10 +33,14 @@ private:
 	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
 	void handleDebugKeys(SDL_Event& e);	
+	void stepChunkPhysicsInit();
 
 	glm::vec4 textureCoordinates(int blockID);
 	std::shared_ptr<sre::Mesh> createBlockMesh(BlockType type);
 
+
+	int chunkPhysicsInitProgress = 0;
+	int totalChunks = 0;
 
 	static bool instanceFlag;
 	static Wolf3D* instance;
@@ -64,7 +68,7 @@ private:
 	std::shared_ptr<sre::Material> floorMat;
 
 	// Array for all chunks
-	const int chunkArraySize = 2;
+	const int chunkArraySize = 8;
 	std::shared_ptr<Chunk>** chunkArray;
 
 	// List of all block meshes, these are used to be hold in hand by the player
