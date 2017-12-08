@@ -59,13 +59,11 @@ private:
 	
 	// Particles
 	std::shared_ptr<sre::Texture> particleTexture;
-	std::vector<std::shared_ptr<ParticleSystem>> particleSystems;
+	std::shared_ptr<ParticleSystem> particleSystem;
 
 	// Particle setting
-	glm::vec4 colorFrom = { 1,1,1,1 };
-	glm::vec4 colorTo = { 1,1,1,0 };
 	float sizeFrom = 50;
-	float sizeTo = 50;
+	float sizeTo = 0;
 
 	glm::vec3 emitPosition = { 0,0,0 };
 	float emitVelocity = 1;

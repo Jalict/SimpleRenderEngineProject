@@ -51,6 +51,15 @@ Chunk::Chunk(glm::vec3 position){
 			}
 		}
 	}
+
+	// Particle System
+	particleTexture = sre::Texture::getWhiteTexture();
+	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
+	particleSystem->gravity = { 0, -9.82, 0 };
+	particleSystem->material->setColor(glm::vec4(1, 0, 0, 1));
+	
+	updateApperance();
+	updateEmit();
 }
 
 
@@ -68,9 +77,7 @@ Chunk::~Chunk(){
 
 void Chunk::update(float dt) {
 	// Update particle systems
-	for (int i = 0; i < particleSystems.size(); i++) {
-		particleSystems[i]->update(dt);
-	}
+	particleSystem->update(dt);
 }
 
 
@@ -83,9 +90,7 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 	renderpass.draw(this->mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
 
 	// Draw Particles
-	for (int i = 0; i < particleSystems.size(); i++) {
-		particleSystems[i]->draw(renderpass);
-	}
+	particleSystem->draw(renderpass);
 }
 
 
@@ -373,19 +378,36 @@ Block* Chunk::getBlock(int x, int y, int z) {
 	if (x < 0 || x > chunkDimensions - 1 || y < 0 || y > chunkDimensions - 1 || z < 0 || z > chunkDimensions - 1) {
 		return nullptr;
 	}
-	// Else return the block.
-	else {
-		return &blocksInChunk[x][y][z];
-	}
+
+	//(TODO) Find better spot to emit particles
+	placeParticleSystem(glm::vec3(x + position.x, y + position.y, z + position.z));
+
+	// Else return the block
+	return &blocksInChunk[x][y][z];
 }
 
 void Chunk::placeParticleSystem(glm::vec3 pos) {
-	// Particle System
-	particleTexture = sre::Texture::getWhiteTexture();
-	particleSystems.insert(particleSystems.end(), std::make_shared<ParticleSystem>(10, particleTexture));
-	particleSystems[particleSystems.size() - 1]->gravity = { 0, -9.82, 0 };
-	particleSystems[particleSystems.size() - 1]->emitPosition = pos;
-	particleSystems[particleSystems.size() - 1]->emit();
+	//(TODO) Investigate weird spawning position
+	emitPosition = pos;
+
+	particleSystem->emit();
 
 	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
+}
+
+
+void Chunk::updateApperance() {
+	particleSystem->updateAppearance = [&](const Particle& p) {
+		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
+	};
+}
+
+void Chunk::updateEmit() {
+	particleSystem->emitter = [&](Particle& p) {
+		p.position = emitPosition;
+		p.velocity = glm::sphericalRand(emitVelocity);
+		p.rotation = emitRotation;
+		p.angularVelocity = emitAngularVelocity;
+		p.size = sizeFrom;
+	};
 }
