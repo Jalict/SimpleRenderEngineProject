@@ -57,7 +57,7 @@ void Block::setActive(bool active) {
 	
 	// If block below is grass turn it into dirt, since now there is something on top
 	b = Wolf3D::getInstance()->locationToBlock(position.x, position.y - 1, position.z, false);
-	if (b != nullptr && b->isActive() && b->getType() == BlockType::Grass)
+	if (b != nullptr && active && b->isActive() && b->getType() == BlockType::Grass)
 		b->setType(BlockType::Dirt);
 
 	this->active = active;
