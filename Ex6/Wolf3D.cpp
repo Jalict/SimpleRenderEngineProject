@@ -85,6 +85,8 @@ void Wolf3D::update(float deltaTime) {
 		}
 	}
 
+	// Update particle systems
+	particleSystem->update(deltaTime);
 }
 
 
@@ -114,6 +116,9 @@ void Wolf3D::render() {
 	renderPass.drawLines(rays1, vec4(1, 0, 0, 1));
 
 	renderChunk(renderPass);
+
+	// Draw Particles
+	particleSystem->draw(renderPass);
 
 	// Allow physics debug drawer to draw
 	physics.drawDebug(&renderPass);
@@ -239,6 +244,15 @@ void Wolf3D::init() {
 	fallRigidBody = new btRigidBody(fallRigidBodyCI);
 	
 	physics.addRigidBody(fallRigidBody);
+
+	// Particle System
+	particleTexture = sre::Texture::getWhiteTexture();
+	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
+	particleSystem->gravity = { 0, -9.82, 0 };
+	particleSystem->material->setColor(glm::vec4(1, 0, 0, 1));
+
+	updateApperance();
+	updateEmit();
 
 	// Create ball mesh
 	sphere = Mesh::create().withSphere(16, 32, 1.0f).build();
@@ -495,6 +509,31 @@ std::shared_ptr<Chunk> Wolf3D::getChunk(int x, int y, int z) {
 
 	// Else get the right block
 	return chunkArray[x][y][z];
+}
+
+void Wolf3D::placeParticleSystem(glm::vec3 pos) {
+	emitPosition = pos;
+
+	particleSystem->emit();
+
+	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
+}
+
+
+void Wolf3D::updateApperance() {
+	particleSystem->updateAppearance = [&](const Particle& p) {
+		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
+	};
+}
+
+void Wolf3D::updateEmit() {
+	particleSystem->emitter = [&](Particle& p) {
+		p.position = emitPosition;
+		p.velocity = glm::sphericalRand(emitVelocity);
+		p.rotation = emitRotation;
+		p.angularVelocity = emitAngularVelocity;
+		p.size = sizeFrom;
+	};
 }
 
 

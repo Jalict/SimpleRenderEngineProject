@@ -68,9 +68,11 @@ void Block::setActive(bool active) {
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
 	}
 	else {
+
 		removeColliderFromWorld();
-//		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
-//		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
+		//Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
+		Wolf3D::getInstance()->placeParticleSystem(position);
+		//rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 	}
 }
 
@@ -81,8 +83,8 @@ void Block::addColliderToWorld() {
 }
 
 void Block::removeColliderFromWorld(){
-	if(!active)
-		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
+//	if(!active)
+	Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
 }
 
 

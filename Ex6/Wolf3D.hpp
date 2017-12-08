@@ -3,6 +3,7 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/Material.hpp"
 #include "FirstPersonController.hpp"
+#include "ParticleSystem.hpp"
 #include "Physics.hpp"
 #include "Chunk.hpp"
 #include "Block.hpp"
@@ -12,6 +13,9 @@ public:
     Wolf3D();
 
 	static Wolf3D* getInstance();
+	void placeParticleSystem(glm::vec3 pos);
+	void updateApperance();
+	void updateEmit();
 
 	Block* locationToBlock(int x, int y, int z, bool ghostInspect);
 
@@ -21,6 +25,7 @@ public:
 	Physics physics; 
 
 	// Returns the material of on complete block
+
 	std::shared_ptr<sre::Mesh> getBlockMesh(BlockType type);
 	std::shared_ptr<Chunk> getChunk(int x, int y, int z);
 private:
@@ -73,4 +78,17 @@ private:
 
 	// List of all block meshes, these are used to be hold in hand by the player
 	std::shared_ptr<sre::Mesh>* blockMeshes;
+
+	// Particles
+	std::shared_ptr<sre::Texture> particleTexture;
+	std::shared_ptr<ParticleSystem> particleSystem;
+
+	// Particle setting
+	float sizeFrom = 50;
+	float sizeTo = 0;
+
+	glm::vec3 emitPosition = { 0,0,0 };
+	float emitVelocity = 1;
+	float emitRotation = 10;
+	float emitAngularVelocity = 10;
 };
