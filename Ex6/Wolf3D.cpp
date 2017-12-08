@@ -75,7 +75,7 @@ void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
 
 	// Update physics
-//	stepChunkPhysicsInit();
+	stepChunkPhysicsInit();
 
 	for (int i = 0; i < chunkArrayX; i++) {
 		for (int j = 0; j < chunkArrayY; j++) {
