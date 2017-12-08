@@ -13,6 +13,8 @@ public:
     Wolf3D();
 
 	static Wolf3D* getInstance();
+
+	// Particle systemm
 	void placeParticleSystem(glm::vec3 pos);
 	void updateApperance();
 	void updateEmit();
@@ -86,6 +88,7 @@ private:
 	// Particle setting
 	float sizeFrom = 50;
 	float sizeTo = 0;
+	float elapsedTime = 0;
 
 	glm::vec3 emitPosition = { 0,0,0 };
 	float emitVelocity = 1;
