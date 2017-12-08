@@ -77,6 +77,13 @@ void FirstPersonController::update(float deltaTime){
 		if(!isGrounded)
 			movement *= JUMP_MOVEMENT_MULTIPLIER;
 
+		if (flyMode) {
+			if (up)
+				movement += vec3(0, 1, 0);
+			if (down)
+				movement += vec3(0, -1, 0);
+		}
+
 		// Multiply by time that has passed to compensate for FPS
 		movement *= deltaTime;
 
@@ -88,7 +95,10 @@ void FirstPersonController::update(float deltaTime){
 
 		// Apply movmement
 		btVector3 velocity = rigidBody->getLinearVelocity();
-		velocity = btVector3(x * MOVEMENT_SPEED, velocity.getY(), z * MOVEMENT_SPEED); // Carry falling speed to our current movement
+		if(flyMode)
+			velocity = btVector3(x * MOVEMENT_SPEED, movement.y * MOVEMENT_SPEED, z * MOVEMENT_SPEED); // Carry falling speed to our current movement
+		else
+			velocity = btVector3(x * MOVEMENT_SPEED, velocity.getY(), z * MOVEMENT_SPEED); // Carry falling speed to our current movement
 		rigidBody->setLinearVelocity(velocity);
 	}
 	
@@ -162,13 +172,13 @@ void FirstPersonController::onKey(SDL_Event &event) {
 
 	// Toggle invisible mode
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_t) {
-		invisibleMode = !invisibleMode;
+		ghostMode = !ghostMode;
 
-		// Ignore contact respones if invisible mode is on
-		if(invisibleMode)
+		// Ignore contact respones if invisible mode is 
+		if(ghostMode)
 			rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 		else
-			rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
+			rigidBody->setCollisionFlags(0);
 	}
 
 	// Toggle flying
@@ -180,15 +190,6 @@ void FirstPersonController::onKey(SDL_Event &event) {
 			rigidBody->setGravity(btVector3(0, -10, 0));
 	} 
 
-	// Flying up down control
-	if (flyMode) {
-		if (event.key.keysym.sym == SDLK_LCTRL) {
-			rigidBody->translate(btVector3(0, -.1f, 0));
-		}
-		else if (event.key.keysym.sym == SDLK_SPACE) {
-			rigidBody->translate(btVector3(0, .1f, 0));
-		}
-	}
 
 	// Capture Jump
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
@@ -235,6 +236,12 @@ void FirstPersonController::onKey(SDL_Event &event) {
 				isSprinting = true;
 				camera->setPerspectiveProjection(FIELD_OF_FIELD * SPRINT_FOV_INCREASE, NEAR_PLANE, FAR_PLANE);
 				break;
+			case SDLK_SPACE:
+				up = true;
+				break;
+			case SDLK_LCTRL:
+				down = true;
+				break;
 		}
 	}
 	// Capture movement keys released
@@ -255,6 +262,12 @@ void FirstPersonController::onKey(SDL_Event &event) {
 			case SDLK_LSHIFT:
 				camera->setPerspectiveProjection(FIELD_OF_FIELD, NEAR_PLANE, FAR_PLANE);
 				isSprinting = false;
+				break;
+			case SDLK_SPACE:
+				up = false;
+				break;
+			case SDLK_LCTRL:
+				down = false;
 				break;
 			}
 	}
@@ -302,7 +315,7 @@ void FirstPersonController::placeBlock() {
 	// If we are looking at a block, place one
 	if (block != nullptr) {
 		// If theres is already a block and we are not allowed to replace it, don't do anything
-		if(!replaceBlock && block->getActive())
+		if(!replaceBlock && block->isActive())
 			return;
 
 		block->setType(blockSelected);
@@ -330,7 +343,7 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 
 		// TODO TEMP prob remove below -- added for debug purposes
 		toRay = vec3(hit.getX(), hit.getY(), hit.getZ());
-		toRay2 = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()); //res.m_hitNormalWorld;
+		toRay2 = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()) * .2f; //res.m_hitNormalWorld;
 		fromRay1 = toRay;
 		fromRay = vec3(start.getX(), start.getY(), start.getZ());
 
@@ -345,7 +358,7 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 		hit += res.m_hitNormalWorld * normalMultiplier;
 
 		// Grab the block, and set it to not active - all numbers are floored since blocks take up a whole unit
-		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ());
+		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ(), BlockInspectState::Medium);
 	} else{
 		return nullptr;
 	}

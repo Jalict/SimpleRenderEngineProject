@@ -11,7 +11,7 @@ A block in the world
 */
 
 // enum BlockType { Stone = 0, Brick = 1, Grass = 4, WoolBlue = 5, Sand = 8, Dirt = 9, Gravel = 25, Rock = 50, Wood = 74, Planks = 83 }; // Types of blocks
-enum BlockType { Stone, Brick, Grass, WoolBlue, Sand, Dirt, Gravel, Rock, Wood, Planks, LENGTH }; // Types of blocks
+enum BlockType { Stone, Brick, Grass, Dirt, Gravel, Rock, Wood, Planks, Bedrock, Glass, WorkBench, IronOre, CoalOre, DiamondOre, LENGTH }; // Types of blocks
 enum BlockSides {Top, Bottom, Left, Right, Front, Back };
 
 class Wolf3D;
@@ -28,7 +28,7 @@ public:
 	static int getTextureIndex(BlockType type, BlockSides side = BlockSides::Top);
 
 	glm::vec3 getPosition();
-	bool getActive();
+	bool isActive();
 	void setActive(bool active);
 	BlockType getType() { return type; }
 
@@ -38,12 +38,12 @@ private:
 	btRigidBody* rigidbody;
 	btBoxShape* collider;
 
-	void setMesh(BlockType type);
+	//void setMesh(BlockType type);
 	BlockType type = BlockType::Dirt;			// Current type of block
 
 	bool active = true;
 
-	std::shared_ptr<sre::Mesh> mesh;			// Mesh of block
+//	std::shared_ptr<sre::Mesh> mesh;			// Mesh of block
 	glm::vec3 position;
 };
 

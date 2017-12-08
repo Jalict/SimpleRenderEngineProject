@@ -30,10 +30,34 @@ Chunk::Chunk(glm::vec3 position){
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++) {
 			for (int z = 0; z < chunkDimensions; z++) {
-				blocksInChunk[x][y][z] = Block(BlockType::Sand, glm::vec3(position.x + x,position.y + y, position.z + z));
+				if (y == 0)
+					blocksInChunk[x][y][z] = Block(BlockType::Bedrock, glm::vec3(position.x + x, position.y + y, position.z + z)); 
+				else if (y <= 2) {
+					int p = rand() % 5;
+
+					if(p == 0)
+						blocksInChunk[x][y][z] = Block(BlockType::IronOre, glm::vec3(position.x + x, position.y + y, position.z + z));
+					else if(p == 1)
+						blocksInChunk[x][y][z] = Block(BlockType::CoalOre, glm::vec3(position.x + x, position.y + y, position.z + z));
+					else
+						blocksInChunk[x][y][z] = Block(BlockType::Rock, glm::vec3(position.x + x, position.y + y, position.z + z));
+				}
+				else if (y == chunkDimensions - 1)
+					blocksInChunk[x][y][z] = Block(BlockType::Grass, glm::vec3(position.x + x, position.y + y, position.z + z));			
+				else {
+					int p = rand() % 3;
+
+					if (p == 0)
+						blocksInChunk[x][y][z] = Block(BlockType::Gravel, glm::vec3(position.x + x, position.y + y, position.z + z));
+					else
+						blocksInChunk[x][y][z] = Block(BlockType::Dirt, glm::vec3(position.x + x, position.y + y, position.z + z));
+				}
 			}
 		}
 	}
+
+	//assembleMeshData();
+	//createMesh();
 }
 
 Chunk::~Chunk(){
@@ -65,10 +89,10 @@ void Chunk::update(float dt) {
 //				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x, y, z));
 //
 //				//NOTE: Blocks aren't actually ever set to not being active
-//				//std::cout << blocksInChunk[x][y][z].getActive() << std::endl;
+//				//std::cout << blocksInChunk[x][y][z].isActive() << std::endl;
 //
 //				//If the block is not active we don't render it
-//				if (blocksInChunk[x][y][z].getActive() == false){
+//				if (blocksInChunk[x][y][z].isActive() == false){
 //					//std::cout << "Skipped an inactive block" << std::endl;
 //					continue;
 //				}
@@ -82,12 +106,12 @@ void Chunk::update(float dt) {
 //				//If the block is surrounded by active blocks we don't render it
 //				bool surrounded = false;
 //				if (!onOutsideOfChunk) {
-//					if (blocksInChunk[x - 1][y][z].getActive() && 
-//						blocksInChunk[x + 1][y][z].getActive() &&
-//						blocksInChunk[x][y - 1][z].getActive() && 
-//						blocksInChunk[x][y + 1][z].getActive() &&
-//						blocksInChunk[x][y][z - 1].getActive() && 
-//						blocksInChunk[x][y][z + 1].getActive()) {
+//					if (blocksInChunk[x - 1][y][z].isActive() && 
+//						blocksInChunk[x + 1][y][z].isActive() &&
+//						blocksInChunk[x][y - 1][z].isActive() && 
+//						blocksInChunk[x][y + 1][z].isActive() &&
+//						blocksInChunk[x][y][z - 1].isActive() && 
+//						blocksInChunk[x][y][z + 1].isActive()) {
 //
 //						surrounded = true;
 //					}
@@ -119,7 +143,7 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 
 
 void Chunk::createMesh() {
-	std::cout << "recal" << std::endl; 
+	std::cout << " recalculate chunk" << std::endl;
 
 	calculateMesh();
 
@@ -141,34 +165,65 @@ void Chunk::calculateMesh() {
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++){
 			for (int z = 0; z < chunkDimensions; z++){
-				if (blocksInChunk[x][y][z].getActive() == false){
+				if (blocksInChunk[x][y][z].isActive() == false){
 					continue;
 				}
 
 				bool XNegative = true;
-				if (x > 0)
-					XNegative = !blocksInChunk[x - 1][y][z].getActive();
+				if (x > 0) {
+					XNegative = !blocksInChunk[x - 1][y][z].isActive();
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x - 1, position.y + y, position.z + z, BlockInspectState::Soft);
+					if (t != nullptr)
+						XNegative = !t->isActive();
+				}
 
 				bool XPositive = true;
-				if (x < chunkDimensions - 1)
-					XPositive = !blocksInChunk[x + 1][y][z].getActive();
+				if (x < chunkDimensions - 1) {
+					XPositive = !blocksInChunk[x + 1][y][z].isActive();
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x + 1, position.y + y, position.z + z, BlockInspectState::Soft);
+					if (t != nullptr)
+						XPositive = !t->isActive();
+				}
 
 				bool YNegative = true;
-				if (y > 0)
-					YNegative = !blocksInChunk[x][y - 1][z].getActive();
-
+				if (y > 0) {
+					YNegative = !blocksInChunk[x][y - 1][z].isActive();
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y - 1, position.z + z, BlockInspectState::Soft);
+					if (t != nullptr)
+						YNegative = !t->isActive();
+				}
+					
 				bool YPositive = true;
-				if (y < chunkDimensions - 1)
-					YPositive = !blocksInChunk[x][y + 1][z].getActive();
-
+				if (y < chunkDimensions - 1) {
+					YPositive = !blocksInChunk[x][y + 1][z].isActive();
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y + 1, position.z + z, BlockInspectState::Soft);
+					if (t != nullptr)
+						YPositive = !t->isActive();
+				}
+					
 				bool ZNegative = true;
-				if (z > 0)
-					ZNegative = !blocksInChunk[x][y][z - 1].getActive();
-
+				if (z > 0) {
+					ZNegative = !blocksInChunk[x][y][z - 1].isActive();
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z - 1, BlockInspectState::Soft);
+					if (t != nullptr)
+						ZNegative = !t->isActive();
+				}
+					
 				bool ZPositive = true;
-				if (z < chunkDimensions - 1)
-					ZPositive = !blocksInChunk[x][y][z + 1].getActive();
-
+				if (z < chunkDimensions - 1) {
+					ZPositive = !blocksInChunk[x][y][z + 1].isActive();
+				} else {
+					Block* t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z + 1, BlockInspectState::Soft);
+					if(t != nullptr)
+						ZPositive = !t->isActive();
+				}
+					
+				//addToMesh(true, true, true, true, true, true, x, y, z, blocksInChunk[x][y][z].getType());
 				addToMesh(XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive, x, y, z, blocksInChunk[x][y][z].getType());
 			}
 		}
@@ -340,24 +395,28 @@ glm::vec3 Chunk::getPosition() {
 }
 
 
+//Problem: Chunk 
 Block* Chunk::getBlock(int x, int y, int z) {
+	std::cout << position.x << " " << position.z << std::endl;
+	recalculateMesh = true;
+
+	// Else return the block
+	return readBlock(x, y, z);
+}
+
+
+Block* Chunk::readBlock(int x, int y, int z) {
 	// If the block is not within bounds of this chunk, return null pointer
-	if ((x < 0 && x >= chunkDimensions) || (y < 0 && y >= chunkDimensions) || (z < 0 && z >= chunkDimensions)) {
-		std::cout << "block doesnt exist" << std::endl;
+	if ((x < 0 || x >= chunkDimensions || y < 0 || y >= chunkDimensions || z < 0 || z >= chunkDimensions)) {
+		//std::cout << "block doesnt exist" << std::endl;
 		return nullptr;
 	}
 
-
-	placeParticleSystem(glm::vec3(x + position.x, y + position.y, z + position.z));
-	// If an block was requested, changes probably occurred. Therefore recalculate.
-	// Eventhough this is not 100% accurate it saves us from having to loop over each block and check for flags
-	// Or store a reference to the parent chunk in each block
-	recalculateMesh = true;
+	//placeParticleSystem(glm::vec3(x + position.x, y + position.y, z + position.z));
 
 	// Else return the block
 	return &blocksInChunk[x][y][z];
 }
-
 
 void Chunk::placeParticleSystem(glm::vec3 pos) {
 	// Particle System

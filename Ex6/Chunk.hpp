@@ -24,6 +24,7 @@ public:
 	void draw(sre::RenderPass& renderpass);
 	glm::vec3 getPosition();
 	Block* getBlock(int x, int y, int z);
+	Block* readBlock(int x, int y, int z);
 
 	void placeParticleSystem(glm::vec3 pos);
 	void updateApperance();

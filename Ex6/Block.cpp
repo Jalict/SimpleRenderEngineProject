@@ -15,6 +15,8 @@ Block::Block(BlockType type, glm::vec3 position) {
 	// # TODO dealloc
 	// Add physics collider
 	collider = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+
+	this->position = position;
 	
 	btTransform startTransform;
 	startTransform.setIdentity();
@@ -27,18 +29,18 @@ Block::~Block() {
 	// TODO destroy physics
 }
 
-void Block::setMesh(BlockType type) {
+/*void Block::setMesh(BlockType type) {
 	this->mesh = Wolf3D::getInstance()->getMesh(type);
-}
+}*/
 
 void Block::setType(BlockType type) {
 	this->type = type;
-	setMesh(type);
+//	setMesh(type);
 }
 
-std::shared_ptr<sre::Mesh> Block::getMesh(){
+/*std::shared_ptr<sre::Mesh> Block::getMesh(){
 	return mesh;
-}
+}*/
 
 glm::vec3 Block::getPosition(){
 	return position;
@@ -65,7 +67,7 @@ btRigidBody* Block::createRigidBody(float mass, const btTransform& startTransfor
 	return body;
 }
 
-bool Block::getActive() {
+bool Block::isActive() {
 	return this->active;
 }
 
@@ -74,6 +76,23 @@ void Block::setActive(bool active) {
 	// If the block is already in the correct state, we do not have to do anything.
 	if(this->active == active)
 		return;
+
+	// Bedrock cannot be deactivated
+	if (type == BlockType::Bedrock)
+		return;
+
+	// If this is grass see if there is something above, if so turn into dirt since grass needs air
+	Block* b = Wolf3D::getInstance()->locationToBlock(position.x, position.y + 1, position.z, BlockInspectState::Soft);
+	if (type == BlockType::Grass && b->isActive()) {
+		if(b != nullptr)
+			type = BlockType::Dirt;
+	}
+	
+	// If block below is grass turn it into dirt, since now there is something on top
+	b = Wolf3D::getInstance()->locationToBlock(position.x, position.y - 1, position.z, BlockInspectState::Medium);
+	if (b != nullptr && b->isActive() && b->getType() == BlockType::Grass)
+		b->setType(BlockType::Dirt);
+
 
 	this->active = active;
 	if(active)
@@ -104,10 +123,6 @@ int Block::getTextureIndex(BlockType type, BlockSides side){
 				default:
 					return 10;
 			}
-		case BlockType::WoolBlue:
-			return 5;
-		case BlockType::Sand:
-			return 8;
 		case BlockType::Dirt:
 			return 9;
 		case BlockType::Gravel:
@@ -123,8 +138,27 @@ int Block::getTextureIndex(BlockType type, BlockSides side){
 			default:
 				return 74;
 			}
+		case BlockType::WorkBench:
+			switch (side) {
+			case BlockSides::Top:
+				return 67;
+			case BlockSides::Bottom:
+				return 83;
+			default:
+				return 83;
+			}
+		case BlockType::IronOre:
+			return 51;
+		case BlockType::CoalOre:
+			return 53;
+		case BlockType::DiamondOre:
+			return 55;
 		case BlockType::Planks:
 			return 83;
+		case BlockType::Bedrock:
+			return 27;
+		case BlockType::Glass:
+			return 16;
 		default:
 			return 0;
 	}

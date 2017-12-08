@@ -7,11 +7,13 @@
 #include "Chunk.hpp"
 #include "Block.hpp"
 
+enum BlockInspectState {HardRecalculate, Medium, Soft};
+
 class Wolf3D {
 public:
     Wolf3D();
 	static Wolf3D* getInstance();
-	Block* locationToBlock(int x, int y, int z);
+	Block* locationToBlock(int x, int y, int z, BlockInspectState recalculate);
 
 	Physics physics;
 
