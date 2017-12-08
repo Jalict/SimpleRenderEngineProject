@@ -73,9 +73,9 @@ private:
 	std::shared_ptr<sre::Material> floorMat;
 
 	// Array for all chunks
-	const int chunkArrayX = 1;
+	const int chunkArrayX = 8;
 	const int chunkArrayY = 2;
-	const int chunkArrayZ = 3;
+	const int chunkArrayZ = 8;
 	std::shared_ptr<Chunk>*** chunkArray;
 
 	// List of all block meshes, these are used to be hold in hand by the player
