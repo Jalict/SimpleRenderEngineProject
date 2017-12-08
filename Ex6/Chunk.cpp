@@ -358,6 +358,7 @@ Block* Chunk::getBlock(int x, int y, int z) {
 	return &blocksInChunk[x][y][z];
 }
 
+
 void Chunk::placeParticleSystem(glm::vec3 pos) {
 	// Particle System
 	particleTexture = sre::Texture::getWhiteTexture();
