@@ -9,7 +9,6 @@ using namespace sre;
 using namespace glm;
 
 
-
 FirstPersonController::FirstPersonController(sre::Camera * camera)
 :camera(camera) {
 	// Setup  Camera projection
@@ -26,6 +25,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 	btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motionState, controllerShape, fallInertia);
 	rigidBody = new btRigidBody(fallRigidBodyCI);
+	rigidBody->setFriction(0.0f);
 
 	// Disable the rigidbody from going to sleep
 	rigidBody->setActivationState(DISABLE_DEACTIVATION);
@@ -54,6 +54,7 @@ FirstPersonController::~FirstPersonController(){
 
 
 void FirstPersonController::update(float deltaTime){
+
 	// Determine local movement
 	vec3 movement = vec3(0, 0, 0);
 
@@ -193,10 +194,11 @@ void FirstPersonController::onKey(SDL_Event &event) {
 	} 
 
 
-	// Capture Jump
+	// Capture Jump TODO set back to force
 	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
-		if(!flyMode)
-			rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
+		if (!flyMode)
+			rigidBody->setLinearVelocity(btVector3(0, 5, 0)); //applyCentralForce(btVector3(0, JUMP_FORCE, 0));
+			//rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
 	}
 
 	// Selected block to place
