@@ -67,6 +67,7 @@ void Block::setActive(bool active) {
 	}
 	else {
 		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
+		Wolf3D::getInstance()->placeParticleSystem(position);
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 	}
 }

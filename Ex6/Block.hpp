@@ -40,7 +40,7 @@ private:
 	// Current type of block
 	BlockType type = BlockType::Dirt;			
 	
-	// Wether the block exists or not
+	// Whether the block exists or not
 	bool active = true;
 
 	// World position of the block

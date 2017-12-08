@@ -79,6 +79,9 @@ void Wolf3D::update(float deltaTime) {
 			chunkArray[i][j]->update(deltaTime);
 		}
 	}
+
+	// Update particle systems
+	particleSystem->update(deltaTime);
 }
 
 
@@ -110,6 +113,9 @@ void Wolf3D::render() {
 	//We're only drawing one chunk.
 	// TODO render a list of chunks.
 	renderChunk(renderPass);
+
+	// Draw Particles
+	particleSystem->draw(renderPass);
 
 	// Allow physics debug drawer to draw
 	physics.drawDebug(&renderPass);
@@ -278,6 +284,15 @@ void Wolf3D::init() {
 	floorMat->setColor(vec4(.44f, .44f, .44f, 1.0f));
 	floorTransform = glm::translate(vec3(0, -1.0f, 0));
 	floorTransform = glm::rotate(floorTransform, glm::radians(-90.0f), vec3(1, 0, 0));
+
+	// Particle System
+	particleTexture = sre::Texture::getWhiteTexture();
+	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
+	particleSystem->gravity = { 0, -9.82, 0 };
+	particleSystem->material->setColor(glm::vec4(1, 0, 0, 1));
+
+	updateApperance();
+	updateEmit();
 
 	// setMouseCursorLocked state correctly
 	mouseLock = !mouseLock;
@@ -450,6 +465,32 @@ std::shared_ptr<Chunk> Wolf3D::getChunk(int x, int y, int z) {
 
 	// Else get the right block
 	return chunkArray[x][z];
+}
+
+void Wolf3D::placeParticleSystem(glm::vec3 pos) {
+	//(TODO) Investigate weird spawning position
+	emitPosition = pos;
+
+	particleSystem->emit();
+
+	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
+}
+
+
+void Wolf3D::updateApperance() {
+	particleSystem->updateAppearance = [&](const Particle& p) {
+		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
+	};
+}
+
+void Wolf3D::updateEmit() {
+	particleSystem->emitter = [&](Particle& p) {
+		p.position = emitPosition;
+		p.velocity = glm::sphericalRand(emitVelocity);
+		p.rotation = emitRotation;
+		p.angularVelocity = emitAngularVelocity;
+		p.size = sizeFrom;
+	};
 }
 
 

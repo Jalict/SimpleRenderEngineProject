@@ -25,10 +25,6 @@ public:
 	// When this function is called the mesh for the chunk will be recalculated.
 	void flagRecalculateMesh();
 
-	void placeParticleSystem(glm::vec3 pos);
-	void updateApperance();
-	void updateEmit();
-
 	glm::vec3 getPosition();
 	Block* getBlock(int x, int y, int z);
 	static int getChunkDimensions() { return chunkDimensions; } // #TODO just public constant?
@@ -56,17 +52,4 @@ private:
 
 	// The actual blocks in this chunk
 	Block*** blocksInChunk;
-	
-	// Particles
-	std::shared_ptr<sre::Texture> particleTexture;
-	std::shared_ptr<ParticleSystem> particleSystem;
-
-	// Particle setting
-	float sizeFrom = 50;
-	float sizeTo = 0;
-
-	glm::vec3 emitPosition = { 0,0,0 };
-	float emitVelocity = 1;
-	float emitRotation = 10;
-	float emitAngularVelocity = 10;
 };
