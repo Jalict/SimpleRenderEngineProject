@@ -123,20 +123,17 @@ void FirstPersonController::update(float deltaTime){
 	if (isMining) {
 		auto detectedBlock = castRayForBlock(-0.2f);
 
-		if(detectedBlock == lastBlock) {
+		if(detectedBlock != nullptr && detectedBlock == lastBlock) {
 			minedAmount += deltaTime;
 
-			if (minedAmount >= 1 && lastBlock != nullptr) {
+			if (minedAmount >= 1) {
 				destroyBlock(lastBlock);
 			}
-		}
-		else {
+		} else {
 			minedAmount = 0;
 		}
 
 		lastBlock = detectedBlock;
-
-		printf("%.1f\n", minedAmount);
 	}
 }
 
@@ -315,12 +312,17 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 	if (event.type == SDL_MOUSEBUTTONUP) {
 		if (event.button.button == SDL_BUTTON_LEFT) {
 			isMining = false;
+			minedAmount = 0;
 		}
 	}
 }
 
 
 void FirstPersonController::destroyBlock(Block* block) {
+	vec3 position = block->getPosition();
+	position /= Chunk::getChunkDimensions();
+	Wolf3D::getInstance()->getChunk((int)position.x, (int)position.y, (int)position.z)->flagRecalculateMesh();
+
 	block->setActive(false);
 
 	minedAmount = 0;
@@ -338,6 +340,10 @@ void FirstPersonController::placeBlock() {
 		// If theres is already a block and we are not allowed to replace it, don't do anything
 		if(!replaceBlock && detectedBlock->isActive())
 			return;
+
+		vec3 position = detectedBlock->getPosition();
+		position /= Chunk::getChunkDimensions();
+		Wolf3D::getInstance()->getChunk((int)position.x, (int)position.y, (int)position.z)->flagRecalculateMesh();
 
 		detectedBlock->setType(blockSelected);
 		detectedBlock->setActive(true);
@@ -378,7 +384,7 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 		hit += res.m_hitNormalWorld * normalMultiplier;
 
 		// Grab the block, and set it to not active - all numbers are floored since blocks take up a whole unit
-		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ(), false);
+		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ(), true);
 	} else{
 		return nullptr;
 	}
@@ -395,4 +401,8 @@ void FirstPersonController::setPosition(glm::vec3 position, float rotation) {
 
 bool FirstPersonController::getIsGrounded() {
 	return isGrounded;
+}
+
+float FirstPersonController::getMinedAmount() {
+	return minedAmount;
 }

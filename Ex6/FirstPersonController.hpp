@@ -22,6 +22,7 @@ public:
 	void draw(sre::RenderPass& renderpass);
 
     void setPosition(glm::vec3 position, float rotation);
+	float getMinedAmount();
 	glm::vec3 getPosition();
 	bool getIsGrounded();
 

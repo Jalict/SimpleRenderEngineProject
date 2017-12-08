@@ -179,6 +179,7 @@ void Wolf3D::drawGUI() {
 	ImGui::SetNextWindowPos(ImVec2(Renderer::instance->getWindowSize().x / 2 - 100, .0f), ImGuiSetCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Always);
 	ImGui::Begin("", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+	ImGui::ProgressBar(fpsController->getMinedAmount());
 
 	glm::vec3 pos = fpsController->getPosition();
 	glm::vec3 lookPos = fpsController->toRay;
