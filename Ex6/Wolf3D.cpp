@@ -75,7 +75,7 @@ void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
 
 	// Update physics
-	stepChunkPhysicsInit();
+//	stepChunkPhysicsInit();
 
 	for (int i = 0; i < chunkArrayX; i++) {
 		for (int j = 0; j < chunkArrayY; j++) {
@@ -147,11 +147,10 @@ void Wolf3D::render() {
 
 
 void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
-
-	for (int i = 0; i < chunkArrayX; i++) {
-		for (int j = 0; j < chunkArrayY; j++) {
-			for (int k = 0; k < chunkArrayZ; k++) {
-				chunkArray[i][j][k]->draw(renderPass);
+	for (int x = 0; x < chunkArrayX; x++) {
+		for (int y = 0; y < chunkArrayY; y++) {
+			for (int z = 0; z < chunkArrayZ; z++) {
+				chunkArray[x][y][z]->draw(renderPass);
 			}
 		}
 	}
@@ -251,10 +250,10 @@ void Wolf3D::init() {
 	
 	// TODO make sure this is Dealloc this!
 	chunkArray = new std::shared_ptr<Chunk>**[chunkArrayX];
-	for (int i = 0; i < chunkArrayY; i++) {
-		chunkArray[i] = new std::shared_ptr<Chunk>*[chunkArrayY];
-		for (int j = 0; j < chunkArrayZ; j++) {
-			chunkArray[i][j] = new std::shared_ptr<Chunk>[chunkArrayZ];
+	for (int x = 0; x < chunkArrayX; x++) {
+		chunkArray[x] = new std::shared_ptr<Chunk>*[chunkArrayY];
+		for (int y = 0; y < chunkArrayY; y++) {
+			chunkArray[x][y] = new std::shared_ptr<Chunk>[chunkArrayZ];
 		}
 	}
 
@@ -281,9 +280,8 @@ void Wolf3D::init() {
 
 	// Setup FPS Controller
 	fpsController = new  FirstPersonController(&camera);
-	// Spawn the player in the middle of all chunks
-	fpsController->setPosition(vec3(-1, 1, -1), 0);
-  //  fpsController->setPosition(vec3(chunkArraySize * Chunk::getChunkDimensions() *  0.5f, Chunk::getChunkDimensions() + 3.0f, chunkArraySize * Chunk::getChunkDimensions() *  0.5f), 0);
+	// Spawn the player in the middle of the world.
+    fpsController->setPosition(vec3(chunkArrayX * Chunk::getChunkDimensions() *  0.5f, Chunk::getChunkDimensions() + 3.0f, chunkArrayZ * Chunk::getChunkDimensions() *  0.5f), 0);
 
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
@@ -306,6 +304,7 @@ void Wolf3D::init() {
 
 
 // # TODO add a cooldown to a change, so not everything is constantly switching when the player is on a chunk edge
+// # TOOD rename function
 void  Wolf3D::stepChunkPhysicsInit() {
 	vec3 playerPosition = fpsController->getPosition();
 
@@ -416,7 +415,7 @@ Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 	vec3 chunkPos = glm::vec3((x - blockPos.x) / Chunk::getChunkDimensions(), (y - blockPos.y) / Chunk::getChunkDimensions(), (z - blockPos.z) / Chunk::getChunkDimensions());
 
 	// Get a pointer to the chunk we want to access.
-	auto chunk = getChunk((int)chunkPos.x, 0, (int)chunkPos.z);
+	auto chunk = getChunk((int)chunkPos.x, (int)chunkPos.y, (int)chunkPos.z);
 
 	// If we tried to get a chunk which does not exist, we can already return and don't need to do anything else.
 	if (chunk == nullptr)
@@ -427,7 +426,7 @@ Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 	if (!ghostInspect) {
 		// Check if we need to update chunk left.
 		if (blockPos.x == 0) {
-			auto neighbour = getChunk(chunkPos.x - 1, 0, chunkPos.z);
+			auto neighbour = getChunk(chunkPos.x - 1, chunkPos.y, chunkPos.z);
 
 			if (neighbour != nullptr){
 				neighbour->flagRecalculateMesh();
@@ -435,7 +434,7 @@ Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 		}
 		// Check if we need to update chunk right.
 		else if (blockPos.x >= Chunk::getChunkDimensions() - 1) {
-			auto neighbour = getChunk(chunkPos.x + 1, 0, chunkPos.z);
+			auto neighbour = getChunk(chunkPos.x + 1, chunkPos.y, chunkPos.z);
 
 			if (neighbour != nullptr){
 				neighbour->flagRecalculateMesh();
@@ -445,15 +444,15 @@ Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 
 		// Check if we need to update chunk below.
 		if (blockPos.y == 0) {
-			auto neighbour = getChunk(chunkPos.x, 0 - 1, chunkPos.z);
+			auto neighbour = getChunk(chunkPos.x, chunkPos.y - 1, chunkPos.z);
 
 			if (neighbour != nullptr){
 				neighbour->flagRecalculateMesh();
 			}
 		}
 		// Check if we need to update chunk above.
-		else if (blockPos.y >= 1){// Chunk::getChunkDimensions() - 1) {
-			auto neighbour = getChunk(chunkPos.x, 0 + 1, chunkPos.z);
+		else if (blockPos.y >= Chunk::getChunkDimensions() - 1) {
+			auto neighbour = getChunk(chunkPos.x, chunkPos.y + 1, chunkPos.z);
 
 			if (neighbour != nullptr){
 				neighbour->flagRecalculateMesh();
@@ -463,7 +462,7 @@ Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 
 		// Check if we need to update chunk in front.
 		if (blockPos.z == 0) {
-			auto neighbour = getChunk(chunkPos.x, 0, chunkPos.z - 1);
+			auto neighbour = getChunk(chunkPos.x, chunkPos.y, chunkPos.z - 1);
 
 			if (neighbour != nullptr){
 				neighbour->flagRecalculateMesh();
@@ -471,7 +470,7 @@ Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 		}
 		// Check if we need to update chunk in behind.
 		else if (blockPos.z >= Chunk::getChunkDimensions() - 1) {
-			auto neighbour = getChunk(chunkPos.x, 0, chunkPos.z + 1);
+			auto neighbour = getChunk(chunkPos.x, chunkPos.y, chunkPos.z + 1);
 
 			if (neighbour != nullptr){
 				neighbour->flagRecalculateMesh();

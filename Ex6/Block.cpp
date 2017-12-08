@@ -63,11 +63,13 @@ void Block::setActive(bool active) {
 	this->active = active;
 
 	if(active){
+//		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
 		addColliderToWorld();
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
 	}
 	else {
 		removeColliderFromWorld();
+//		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 	}
 }
