@@ -76,11 +76,12 @@ void Wolf3D::update(float deltaTime) {
 
 	// Update physics
 	stepChunkPhysicsInit();
-	
-	// Update chunks
-	for (int i = 0; i < chunkArraySize; i++) {
-		for (int j = 0; j < chunkArraySize; j++) {
-			chunkArray[i][j]->update(deltaTime);
+
+	for (int i = 0; i < chunkArrayX; i++) {
+		for (int j = 0; j < chunkArrayY; j++) {
+			for (int k = 0; k < chunkArrayZ; k++) {
+				chunkArray[i][j][k]->update(deltaTime);
+			}
 		}
 	}
 
@@ -112,8 +113,6 @@ void Wolf3D::render() {
 	rays1.push_back(fpsController->toRay2);
 	renderPass.drawLines(rays1, vec4(1, 0, 0, 1));
 
-	//We're only drawing one chunk.
-	// TODO render a list of chunks.
 	renderChunk(renderPass);
 
 	// Allow physics debug drawer to draw
@@ -149,9 +148,11 @@ void Wolf3D::render() {
 
 void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
 
-	for (int i = 0; i < chunkArraySize; i++) {
-		for (int j = 0; j < chunkArraySize; j++) {
-			chunkArray[i][j]->draw(renderPass);
+	for (int i = 0; i < chunkArrayX; i++) {
+		for (int j = 0; j < chunkArrayY; j++) {
+			for (int k = 0; k < chunkArrayZ; k++) {
+				chunkArray[i][j][k]->draw(renderPass);
+			}
 		}
 	}
 }	
@@ -249,14 +250,19 @@ void Wolf3D::init() {
 	int chunkDimension = Chunk::getChunkDimensions();
 	
 	// TODO make sure this is Dealloc this!
-	chunkArray = new std::shared_ptr<Chunk>*[chunkArraySize];
-	for (int i = 0; i < chunkArraySize; i++) {
-		chunkArray[i] = new std::shared_ptr<Chunk>[chunkArraySize];
+	chunkArray = new std::shared_ptr<Chunk>**[chunkArrayX];
+	for (int i = 0; i < chunkArrayY; i++) {
+		chunkArray[i] = new std::shared_ptr<Chunk>*[chunkArrayY];
+		for (int j = 0; j < chunkArrayZ; j++) {
+			chunkArray[i][j] = new std::shared_ptr<Chunk>[chunkArrayZ];
+		}
 	}
 
-	for (int x = 0; x < chunkArraySize; x++) {
-		for (int z = 0; z < chunkArraySize; z++) {
-			chunkArray[x][z] = std::make_shared<Chunk>(glm::vec3(x * chunkDimension, 0, z * chunkDimension));
+	for (int x = 0; x < chunkArrayX; x++) {
+		for (int y = 0; y < chunkArrayY; y++) {
+			for (int z = 0; z < chunkArrayZ; z++) {
+				chunkArray[x][y][z] = std::make_shared<Chunk>(glm::vec3(x * chunkDimension, y * chunkDimension, z * chunkDimension));
+			}
 		}
 	}
 
@@ -308,9 +314,9 @@ void  Wolf3D::stepChunkPhysicsInit() {
 	int zPos = (int)(playerPosition.z / Chunk::getChunkDimensions());
 
 	// Loop over all chunks
-	for (int x = 0; x < chunkArraySize; x++){
-		for (int y = 0; y < chunkArraySize; y++){
-			for (int z = 0; z < chunkArraySize; z++){
+	for (int x = 0; x < chunkArrayX; x++){
+		for (int y = 0; y < chunkArrayY; y++){
+			for (int z = 0; z < chunkArrayZ; z++){
 				auto chunk = getChunk(x, y, z);
 
 				if(chunk == nullptr)
@@ -483,14 +489,13 @@ Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 
 
 std::shared_ptr<Chunk> Wolf3D::getChunk(int x, int y, int z) {
-	// TODO hardcoded y
 	// If the chunk does not exist, return null pointer
-	if (x < 0 || y < 0 || z < 0 || x >= chunkArraySize|| y > 0 || z >= chunkArraySize) {
+	if (x < 0 || y < 0 || z < 0 || x >= chunkArrayX || y >= chunkArrayY || z >= chunkArrayZ) {
 		return nullptr;
 	}
 
 	// Else get the right block
-	return chunkArray[x][z];
+	return chunkArray[x][y][z];
 }
 
 

@@ -7,8 +7,6 @@
 #include "Chunk.hpp"
 #include "Block.hpp"
 
-enum BlockInspectState {HardRecalculate, Medium, Soft};
-
 class Wolf3D {
 public:
     Wolf3D();
@@ -68,8 +66,10 @@ private:
 	std::shared_ptr<sre::Material> floorMat;
 
 	// Array for all chunks
-	const int chunkArraySize = 8;
-	std::shared_ptr<Chunk>** chunkArray;
+	const int chunkArrayX = 1;
+	const int chunkArrayY = 2;
+	const int chunkArrayZ = 3;
+	std::shared_ptr<Chunk>*** chunkArray;
 
 	// List of all block meshes, these are used to be hold in hand by the player
 	std::shared_ptr<sre::Mesh>* blockMeshes;
