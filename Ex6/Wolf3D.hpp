@@ -88,7 +88,7 @@ private:
 	// Particle setting
 	float sizeFrom = 50;
 	float sizeTo = 0;
-	float elapsedTime = 0;
+	float elapsedParticleTime = 0;
 
 	glm::vec3 emitPosition = { 0,0,0 };
 	float emitVelocity = 1;

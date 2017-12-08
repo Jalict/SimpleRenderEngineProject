@@ -22,13 +22,12 @@ public:
 	void draw(sre::RenderPass& renderpass);
 
     void setPosition(glm::vec3 position, float rotation);
+	float getMinedAmount();
 	glm::vec3 getPosition();
 	bool getIsGrounded();
 
 
 	Block* castRayForBlock(float normalMultiplier); // normalMultiplayer: Allows you to determine whether the normal should be substracted (to get a block), added (to get an empty location) or the border.
-
-
 
 	glm::vec2 lookRotation;
 
@@ -41,7 +40,7 @@ public:
 	glm::vec3 toRay2 = glm::vec3(0, 0, 0);
 private:
 	void checkGrounded(btVector3 position);
-	void destroyBlock();
+	void destroyBlock(Block* block);
 	void placeBlock();
 
     sre::Camera * camera;
@@ -83,6 +82,9 @@ private:
 	glm::mat4 transformMatrix;
 	glm::mat4 handBlockOffsetMatrix;
 
+	bool isMining = false;
+	float minedAmount = 0;
+	Block* lastBlock;
 
 	btRigidBody* rigidBody;
 //	btDefaultMotionState* motionState;
