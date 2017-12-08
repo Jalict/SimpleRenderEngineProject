@@ -89,9 +89,9 @@ void Wolf3D::update(float deltaTime) {
 	particleSystem->update(deltaTime);
 
 	if(particleSystem->emitting) {
-		elapsedTime += deltaTime;
-		if (elapsedTime > 0.05f) {
-			elapsedTime = 0;
+		elapsedParticleTime += deltaTime;
+		if (elapsedParticleTime > 0.05f) {
+			elapsedParticleTime = 0;
 			particleSystem->emitting = false;
 		}
 	}
