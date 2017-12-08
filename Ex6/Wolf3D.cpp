@@ -73,10 +73,15 @@ Wolf3D* Wolf3D::getInstance(){
 
 void Wolf3D::update(float deltaTime) {
     fpsController->update(deltaTime);
-	
-	for (int i = 0; i < chunkArraySize; i++) {
-		for (int j = 0; j < chunkArraySize; j++) {
-			chunkArray[i][j]->update(deltaTime);
+
+	// Update physics
+	stepChunkPhysicsInit();
+
+	for (int i = 0; i < chunkArrayX; i++) {
+		for (int j = 0; j < chunkArrayY; j++) {
+			for (int k = 0; k < chunkArrayZ; k++) {
+				chunkArray[i][j][k]->update(deltaTime);
+			}
 		}
 	}
 
@@ -110,8 +115,6 @@ void Wolf3D::render() {
 	rays1.push_back(fpsController->toRay2);
 	renderPass.drawLines(rays1, vec4(1, 0, 0, 1));
 
-	//We're only drawing one chunk.
-	// TODO render a list of chunks.
 	renderChunk(renderPass);
 
 	// Draw Particles
@@ -150,9 +153,11 @@ void Wolf3D::render() {
 
 void Wolf3D::renderChunk(sre::RenderPass & renderPass) {
 
-	for (int i = 0; i < chunkArraySize; i++) {
-		for (int j = 0; j < chunkArraySize; j++) {
-			chunkArray[i][j]->draw(renderPass);
+	for (int i = 0; i < chunkArrayX; i++) {
+		for (int j = 0; j < chunkArrayY; j++) {
+			for (int k = 0; k < chunkArrayZ; k++) {
+				chunkArray[i][j][k]->draw(renderPass);
+			}
 		}
 	}
 }	
@@ -241,6 +246,15 @@ void Wolf3D::init() {
 	
 	physics.addRigidBody(fallRigidBody);
 
+	// Particle System
+	particleTexture = sre::Texture::getWhiteTexture();
+	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
+	particleSystem->gravity = { 0, -9.82, 0 };
+	particleSystem->material->setColor(glm::vec4(1, 0, 0, 1));
+
+	updateApperance();
+	updateEmit();
+
 	// Create ball mesh
 	sphere = Mesh::create().withSphere(16, 32, 1.0f).build();
 	sphereMaterial = Shader::getStandard()->createMaterial();
@@ -250,14 +264,19 @@ void Wolf3D::init() {
 	int chunkDimension = Chunk::getChunkDimensions();
 	
 	// TODO make sure this is Dealloc this!
-	chunkArray = new std::shared_ptr<Chunk>*[chunkArraySize];
-	for (int i = 0; i < chunkArraySize; i++) {
-		chunkArray[i] = new std::shared_ptr<Chunk>[chunkArraySize];
+	chunkArray = new std::shared_ptr<Chunk>**[chunkArrayX];
+	for (int i = 0; i < chunkArrayY; i++) {
+		chunkArray[i] = new std::shared_ptr<Chunk>*[chunkArrayY];
+		for (int j = 0; j < chunkArrayZ; j++) {
+			chunkArray[i][j] = new std::shared_ptr<Chunk>[chunkArrayZ];
+		}
 	}
 
-	for (int x = 0; x < chunkArraySize; x++) {
-		for (int z = 0; z < chunkArraySize; z++) {
-			chunkArray[x][z] = std::make_shared<Chunk>(glm::vec3(x * chunkDimension, 0, z * chunkDimension));
+	for (int x = 0; x < chunkArrayX; x++) {
+		for (int y = 0; y < chunkArrayY; y++) {
+			for (int z = 0; z < chunkArrayZ; z++) {
+				chunkArray[x][y][z] = std::make_shared<Chunk>(glm::vec3(x * chunkDimension, y * chunkDimension, z * chunkDimension));
+			}
 		}
 	}
 
@@ -276,7 +295,9 @@ void Wolf3D::init() {
 
 	// Setup FPS Controller
 	fpsController = new  FirstPersonController(&camera);
-    fpsController->setPosition(vec3(-1.0f, 10.0f, -1.0f), 0);
+	// Spawn the player in the middle of all chunks
+	fpsController->setPosition(vec3(-1, 1, -1), 0);
+  //  fpsController->setPosition(vec3(chunkArraySize * Chunk::getChunkDimensions() *  0.5f, Chunk::getChunkDimensions() + 3.0f, chunkArraySize * Chunk::getChunkDimensions() *  0.5f), 0);
 
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
@@ -285,15 +306,6 @@ void Wolf3D::init() {
 	floorTransform = glm::translate(vec3(0, -1.0f, 0));
 	floorTransform = glm::rotate(floorTransform, glm::radians(-90.0f), vec3(1, 0, 0));
 
-	// Particle System
-	particleTexture = sre::Texture::getWhiteTexture();
-	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
-	particleSystem->gravity = { 0, -9.82, 0 };
-	particleSystem->material->setColor(glm::vec4(1, 0, 0, 1));
-
-	updateApperance();
-	updateEmit();
-
 	// setMouseCursorLocked state correctly
 	mouseLock = !mouseLock;
 	renderer.setMouseCursorVisible(mouseLock);
@@ -301,6 +313,40 @@ void Wolf3D::init() {
 	SDL_SetWindowGrab(renderer.getSDLWindow(), mouseLock ? SDL_TRUE : SDL_FALSE);
 	SDL_SetRelativeMouseMode(mouseLock ? SDL_TRUE : SDL_FALSE);
 	fpsController->lockRotation = !mouseLock;
+
+	// Setup physics for the first chunk
+	stepChunkPhysicsInit();
+}
+
+
+// # TODO add a cooldown to a change, so not everything is constantly switching when the player is on a chunk edge
+void  Wolf3D::stepChunkPhysicsInit() {
+	vec3 playerPosition = fpsController->getPosition();
+
+	int xPos = (int)(playerPosition.x / Chunk::getChunkDimensions());
+	int yPos = (int)(playerPosition.y / Chunk::getChunkDimensions());
+	int zPos = (int)(playerPosition.z / Chunk::getChunkDimensions());
+
+	// Loop over all chunks
+	for (int x = 0; x < chunkArrayX; x++){
+		for (int y = 0; y < chunkArrayY; y++){
+			for (int z = 0; z < chunkArrayZ; z++){
+				auto chunk = getChunk(x, y, z);
+
+				if(chunk == nullptr)
+					continue;
+
+				// Enable the 9 surrounding chunks
+				if (x >= xPos - 1 && x <= xPos + 1 && y >= yPos - 1 && y <= yPos + 1 && z >= zPos - 1 && z <= zPos + 1) {
+					chunk->addCollidersToWorld();
+				}
+				// Disable the others
+				else {
+					chunk->removeCollidersFromWorld();
+				}
+			}
+		}
+	}
 }
 
 
@@ -457,18 +503,16 @@ Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 
 
 std::shared_ptr<Chunk> Wolf3D::getChunk(int x, int y, int z) {
-	// TODO hardcoded y
 	// If the chunk does not exist, return null pointer
-	if (x < 0 || y < 0 || z < 0 || x >= chunkArraySize|| y > 0 || z >= chunkArraySize) {
+	if (x < 0 || y < 0 || z < 0 || x >= chunkArrayX || y >= chunkArrayY || z >= chunkArrayZ) {
 		return nullptr;
 	}
 
 	// Else get the right block
-	return chunkArray[x][z];
+	return chunkArray[x][y][z];
 }
 
 void Wolf3D::placeParticleSystem(glm::vec3 pos) {
-	//(TODO) Investigate weird spawning position
 	emitPosition = pos;
 
 	particleSystem->emit();

@@ -8,8 +8,6 @@
 #include "Chunk.hpp"
 #include "Block.hpp"
 
-enum BlockInspectState {HardRecalculate, Medium, Soft};
-
 class Wolf3D {
 public:
     Wolf3D();
@@ -27,6 +25,7 @@ public:
 	Physics physics; 
 
 	// Returns the material of on complete block
+
 	std::shared_ptr<sre::Mesh> getBlockMesh(BlockType type);
 	std::shared_ptr<Chunk> getChunk(int x, int y, int z);
 private:
@@ -37,10 +36,14 @@ private:
 	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
 	void handleDebugKeys(SDL_Event& e);	
+	void stepChunkPhysicsInit();
 
 	glm::vec4 textureCoordinates(int blockID);
 	std::shared_ptr<sre::Mesh> createBlockMesh(BlockType type);
 
+
+	int chunkPhysicsInitProgress = 0;
+	int totalChunks = 0;
 
 	static bool instanceFlag;
 	static Wolf3D* instance;
@@ -68,8 +71,10 @@ private:
 	std::shared_ptr<sre::Material> floorMat;
 
 	// Array for all chunks
-	const int chunkArraySize = 2;
-	std::shared_ptr<Chunk>** chunkArray;
+	const int chunkArrayX = 1;
+	const int chunkArrayY = 2;
+	const int chunkArrayZ = 3;
+	std::shared_ptr<Chunk>*** chunkArray;
 
 	// List of all block meshes, these are used to be hold in hand by the player
 	std::shared_ptr<sre::Mesh>* blockMeshes;

@@ -24,6 +24,9 @@ public:
 	
 	// When this function is called the mesh for the chunk will be recalculated.
 	void flagRecalculateMesh();
+	void addCollidersToWorld();
+	void removeCollidersFromWorld();
+	bool isCollidersActive();
 
 	glm::vec3 getPosition();
 	Block* getBlock(int x, int y, int z);
@@ -49,6 +52,9 @@ private:
 	// Flag to see if we need to recalculate our mesh
 	bool recalculateMesh = true; 
 	std::shared_ptr<sre::Mesh> mesh;
+
+	// Whether colliders are active on this chunk
+	bool collidersActive = false;
 
 	// The actual blocks in this chunk
 	Block*** blocksInChunk;
