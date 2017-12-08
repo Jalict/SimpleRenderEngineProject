@@ -87,6 +87,14 @@ void Wolf3D::update(float deltaTime) {
 
 	// Update particle systems
 	particleSystem->update(deltaTime);
+
+	if(particleSystem->emitting) {
+		elapsedTime += deltaTime;
+		if (elapsedTime > 0.05f) {
+			elapsedTime = 0;
+			particleSystem->emitting = false;
+		}
+	}
 }
 
 
@@ -250,7 +258,6 @@ void Wolf3D::init() {
 	particleTexture = sre::Texture::getWhiteTexture();
 	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
 	particleSystem->gravity = { 0, -9.82, 0 };
-	particleSystem->material->setColor(glm::vec4(1, 0, 0, 1));
 
 	updateApperance();
 	updateEmit();
@@ -513,17 +520,18 @@ std::shared_ptr<Chunk> Wolf3D::getChunk(int x, int y, int z) {
 }
 
 void Wolf3D::placeParticleSystem(glm::vec3 pos) {
+	particleSystem->emitting = true;
+
 	emitPosition = pos;
 
 	particleSystem->emit();
-
-	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
 }
 
 
 void Wolf3D::updateApperance() {
 	particleSystem->updateAppearance = [&](const Particle& p) {
 		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
+		p.color = { 0.17f,0.08f,0.02f,1 };
 	};
 }
 
