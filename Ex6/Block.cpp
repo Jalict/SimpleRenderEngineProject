@@ -3,7 +3,7 @@
 #include "Physics.hpp"
 #include "Wolf3D.hpp"
 
-Block::Block() : Block(BlockType::Dirt, glm::vec3(0,0,0)) { // HACK if type is being passed on type = -8100000000000 or something (not initialized? mem loc? out of bounds?). Therefore we set default hardcoded here. 
+Block::Block() { // Default constructor. This doesn't do anything. 
 }
 
 Block::Block(BlockType type, glm::vec3 position) {
@@ -57,7 +57,7 @@ void Block::setActive(bool active) {
 	
 	// If block below is grass turn it into dirt, since now there is something on top
 	b = Wolf3D::getInstance()->locationToBlock(position.x, position.y - 1, position.z, false);
-	if (b != nullptr && b->isActive() && b->getType() == BlockType::Grass)
+	if (b != nullptr && active && b->isActive() && b->getType() == BlockType::Grass)
 		b->setType(BlockType::Dirt);
 
 	this->active = active;
