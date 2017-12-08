@@ -55,6 +55,8 @@ Chunk::Chunk(glm::vec3 position){
 					else
 						blocksInChunk[x][y][z] = Block(BlockType::Dirt, glm::vec3(position.x + x, position.y + y, position.z + z));
 				}
+
+				// If this is the top chunk, set it to deactive so it can act as air.
 				if (position.y + y >= chunkDimensions) {
 					blocksInChunk[x][y][z].setActive(false);
 				}
