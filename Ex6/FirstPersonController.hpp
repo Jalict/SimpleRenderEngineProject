@@ -57,6 +57,7 @@ private:
 	const float JUMP_MOVEMENT_MULTIPLIER = 0.8f;
 	const float MAX_X_LOOK_UP_ROTATION = 45.0f;
 	const float MAX_X_LOOK_DOWN_ROTATION = 80.0f;
+	const float MINE_RANGE = 10.0f;
 	// TODO move this to camera?s
 	const float FIELD_OF_FIELD = 45.0f;
 	const float NEAR_PLANE = 0.05f;

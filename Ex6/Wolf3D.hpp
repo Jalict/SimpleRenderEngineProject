@@ -74,7 +74,7 @@ private:
 
 	// Array for all chunks
 	const int chunkArrayX = 8;
-	const int chunkArrayY = 2;
+	const int chunkArrayY = 2; 
 	const int chunkArrayZ = 8;
 	std::shared_ptr<Chunk>*** chunkArray;
 

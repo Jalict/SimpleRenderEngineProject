@@ -332,26 +332,12 @@ void FirstPersonController::placeBlock() {
 Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 	btVector3 start = rigidBody->getWorldTransform().getOrigin();
 	start.setY(start.getY() + Y_CAMERA_OFFSET);
-	std::cout << lookRotation.y << " - " << lookRotation.y / 45 << std::endl;
 
-	//float lookY = 0;
-	//float lookYa = 0;
-	//float lookYb = 0;
-
-	//if(lookRotation.y < 30 && lookRotation.y > -30)
-	//	lookYa = sin(radians(lookRotation.y));
-	//else 
-	//	lookYb = (lookRotation.y /45);
-	//float p = (!sign(lookRotation.y) ? lookRotation.y / MAX_X_LOOK_UP_ROTATION :  lookRotation.y / MAX_X_LOOK_DOWN_ROTATION);
-	//lookY = (1 - p)*lookYa + (p) * lookYb;
-	// float p = lookRotation.y - 45;
-	// (lookRotation.y / 45) * (-1  )
-	// float p = 0.25;
-	// float lookY = (sin(radians(lookRotation.y)) * 1.25f) * p + (lookRotation.y/52) * (1-p);
-	btVector3 direction = btVector3(sin(radians(lookRotation.x)), 0, cos(radians(lookRotation.x)) * -1);
+	float cosY = cos(radians(lookRotation.y));
+	btVector3 direction = btVector3( cosY * sin(radians(lookRotation.x)), -1 * sin(radians(lookRotation.y)), cosY * cos(radians(lookRotation.x)) * -1);
 	direction = direction.normalized();
-	direction.setY(sin(radians(lookRotation.y)) * (-1.2));
-	btVector3 end = start + direction * 10.0f;
+
+	btVector3 end = start + direction * MINE_RANGE;
 
 	btCollisionWorld::ClosestRayResultCallback res(start, end);
 
