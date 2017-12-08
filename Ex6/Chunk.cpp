@@ -7,7 +7,7 @@
 
 
 
-Chunk::Chunk() : Chunk(glm::vec3(0, 0, 0)) { // HACK: This doesn't actually set anything 
+Chunk::Chunk() { // Default constructor. This doesn't do anything.
 }
 
 
@@ -26,9 +26,13 @@ Chunk::Chunk(glm::vec3 position){
 
 			// Set blocktype based on height.
 			for (int z = 0; z < chunkDimensions; z++) {
-				if (y == 0)
-					blocksInChunk[x][y][z] = Block(BlockType::Bedrock, glm::vec3(position.x + x, position.y + y, position.z + z)); 
-				else if (y <= 2) {
+
+				// Bedrock on y == 0
+				if (position.y + y == 0) {
+					blocksInChunk[x][y][z] = Block(BlockType::Bedrock, glm::vec3(position.x + x, position.y + y, position.z + z));
+
+				//Random ores
+				} else if (position.y + y <= 2) {
 					int p = rand() % 5;
 
 					if(p == 0)
@@ -37,16 +41,22 @@ Chunk::Chunk(glm::vec3 position){
 						blocksInChunk[x][y][z] = Block(BlockType::CoalOre, glm::vec3(position.x + x, position.y + y, position.z + z));
 					else
 						blocksInChunk[x][y][z] = Block(BlockType::Rock, glm::vec3(position.x + x, position.y + y, position.z + z));
-				}
-				else if (y == chunkDimensions - 1)
-					blocksInChunk[x][y][z] = Block(BlockType::Grass, glm::vec3(position.x + x, position.y + y, position.z + z));			
-				else {
+					
+				//On top of the chunks we want grass
+				} else if (position.y + y == chunkDimensions - 1) {
+					blocksInChunk[x][y][z] = Block(BlockType::Grass, glm::vec3(position.x + x, position.y + y, position.z + z));
+
+				//Otherwise we want random gravel and dirt
+				} else {
 					int p = rand() % 3;
 
 					if (p == 0)
 						blocksInChunk[x][y][z] = Block(BlockType::Gravel, glm::vec3(position.x + x, position.y + y, position.z + z));
 					else
 						blocksInChunk[x][y][z] = Block(BlockType::Dirt, glm::vec3(position.x + x, position.y + y, position.z + z));
+				}
+				if (position.y + y >= chunkDimensions) {
+					blocksInChunk[x][y][z].setActive(false);
 				}
 			}
 		}
