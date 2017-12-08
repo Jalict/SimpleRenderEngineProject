@@ -26,6 +26,8 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 	btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motionState, controllerShape, fallInertia);
 	rigidBody = new btRigidBody(fallRigidBodyCI);
+
+	// Disable the rigidbody from going to sleep
 	rigidBody->setActivationState(DISABLE_DEACTIVATION);
 
 	// Add rigidbody to world
@@ -128,7 +130,7 @@ void FirstPersonController::draw(sre::RenderPass& renderpass) {
 	matrix = rotate(matrix, radians(45.0f), vec3(0, -1, 0));
 	
 	// Draw the block we currently have selected
-	renderpass.draw(Wolf3D::getInstance()->getMesh(blockSelected), matrix, Wolf3D::getInstance()->blockMaterial);
+	renderpass.draw(Wolf3D::getInstance()->getBlockMesh(blockSelected), matrix, Wolf3D::getInstance()->blockMaterial);
 }
 
 
@@ -295,7 +297,7 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 
 // TODO clean up
 void FirstPersonController::destroyBlock() {
-	std::cout << "destroying" << std::endl;
+//	std::cout << "destroying" << std::endl;
 	auto block = castRayForBlock(-0.2f);
 
 	if (block != nullptr) {
@@ -305,7 +307,7 @@ void FirstPersonController::destroyBlock() {
 
 
 void FirstPersonController::placeBlock() {
-	std::cout << "placing" << std::endl;
+//	std::cout << "placing" << std::endl;
 
 	// Get the block where we are placing
 	// If we replacemode is active replace the actual block
@@ -358,7 +360,7 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 		hit += res.m_hitNormalWorld * normalMultiplier;
 
 		// Grab the block, and set it to not active - all numbers are floored since blocks take up a whole unit
-		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ(), BlockInspectState::Medium);
+		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ(), false);
 	} else{
 		return nullptr;
 	}

@@ -18,40 +18,45 @@ public:
 	Chunk();
 	Chunk(glm::vec3 position);
 	~Chunk();
-	static int getChunkDimensions() { return chunkDimensions; }
 
 	void update(float dt);
 	void draw(sre::RenderPass& renderpass);
-	glm::vec3 getPosition();
-	Block* getBlock(int x, int y, int z);
-	Block* readBlock(int x, int y, int z);
-	Block* test();
-	bool hasBlock(int x, int y, int z);
+	
+	// When this function is called the mesh for the chunk will be recalculated.
 	void flagRecalculateMesh();
 
 	void placeParticleSystem(glm::vec3 pos);
 	void updateApperance();
 	void updateEmit();
-	
+
+	glm::vec3 getPosition();
+	Block* getBlock(int x, int y, int z);
+	static int getChunkDimensions() { return chunkDimensions; } // #TODO just public constant?
 private:
-	const static int chunkDimensions = 2;
+	void calculateMesh();
+	void createMesh();
+	void addToMesh(float x, float y, float z, BlockType type, bool left, bool right, bool bottom, bool top, bool front, bool back);
+	glm::vec4 textureCoordinates(int blockID);
+
+
+	const static int chunkDimensions = 8;
+
 	glm::vec3 position;
-	
 	glm::mat4 chunkTransform;
+
+	// List of positions for the Mesh 
+	// # TODO move?
 	std::vector<glm::vec3> vertexPositions;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec4> texCoords;
 
-	bool recalculateMesh = true; // Flag to see if we need to recalculate our mesh
-
-	Block*** blocksInChunk;
-	glm::vec4 textureCoordinates(int blockID);
-
-	void addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPositive, bool ZNegative, bool ZPositive, float x, float y, float z, BlockType type);
+	// Flag to see if we need to recalculate our mesh
+	bool recalculateMesh = true; 
 	std::shared_ptr<sre::Mesh> mesh;
-	void calculateMesh();
-	void createMesh();
 
+	// The actual blocks in this chunk
+	Block*** blocksInChunk;
+	
 	// Particles
 	std::shared_ptr<sre::Texture> particleTexture;
 	std::vector<std::shared_ptr<ParticleSystem>> particleSystems;

@@ -207,7 +207,7 @@ void Wolf3D::init() {
 	// Create all the blocks
 	blockMeshes = new std::shared_ptr<sre::Mesh>[BlockType::LENGTH];
 	for (int i = 0; i < BlockType::LENGTH; i++) {
-		blockMeshes[i] = initializeMesh((BlockType)i);
+		blockMeshes[i] = createBlockMesh((BlockType)i);
 	}
 
 
@@ -289,60 +289,55 @@ void Wolf3D::init() {
 }
 
 
-// TODO set sites correctly
-std::shared_ptr<sre::Mesh> Wolf3D::initializeMesh(BlockType type) {
-	// Store the texture coordinates in a vector
-	std::vector<glm::vec4> texCoords;			
-	texCoords.clear();
+// This function creates a complete block mesh for a specific type with the correct texture coordinates.
+std::shared_ptr<sre::Mesh> Wolf3D::createBlockMesh(BlockType type) {
+	// Store the uv coordinates in a vector
+	std::vector<glm::vec4> uvs;			
+//	uvs.clear();
 
 	// Collect texture coordinates for each side
 	glm::vec4 coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Front));
-	texCoords.insert(texCoords.end(), {
-		// +z
+	uvs.insert(uvs.end(), { // z+
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0)
 	});
 	
 	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Left));
-	texCoords.insert(texCoords.end(), {
-		// ?
+	uvs.insert(uvs.end(), {
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
 
 	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Back));
-	texCoords.insert(texCoords.end(),{
-		// ?
+	uvs.insert(uvs.end(),{
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
 
 	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Right));
-	texCoords.insert(texCoords.end(),{
-		// ?
+	uvs.insert(uvs.end(),{
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
 
 	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Top));
-	texCoords.insert(texCoords.end(),{
-		// top
+	uvs.insert(uvs.end(),{ // top
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
 
 	coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Bottom));
-	texCoords.insert(texCoords.end(),{
-		// bottom
+	uvs.insert(uvs.end(),{ // bottom
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
 		glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
 	});
 
-	return sre::Mesh::create().withCube(0.5f).withUVs(texCoords).withName("BlockInHandMesh").build();
+	return sre::Mesh::create().withCube(0.5f).withUVs(uvs).withName("BlockInHandMesh").build();
 }
 
 
-glm::vec4 Wolf3D::textureCoordinates(int blockID) {
+// Function translates a texture index to UV coordinates
+glm::vec4 Wolf3D::textureCoordinates(int textureId) {
 	glm::vec2 textureSize(1024, 2048);
 	glm::vec2 tileSize(128, 128);
 
@@ -354,8 +349,8 @@ glm::vec4 Wolf3D::textureCoordinates(int blockID) {
 
 	int tilesX = textureSize.x / tileSize.x;
 
-	float xOffset = (blockID % tilesX) * tileWidth;
-	float yOffset = ((blockID - (blockID % tilesX)) / tilesX) * tileHeight;
+	float xOffset = (textureId % tilesX) * tileWidth;
+	float yOffset = ((textureId - (textureId % tilesX)) / tilesX) * tileHeight;
 
 	min.x += xOffset;
 	max.x += xOffset;
@@ -367,123 +362,102 @@ glm::vec4 Wolf3D::textureCoordinates(int blockID) {
 }
 
 
-std::shared_ptr<sre::Mesh> Wolf3D::getMesh(BlockType type) {
-	return blockMeshes[(int)type];
-}
-
-/*
-void Wolf3D::loadBlocks(std::string fromFile) {
-	using namespace rapidjson;
-	std::ifstream fis(fromFile);
-	IStreamWrapper isw(fis);
-	Document doc;
-	doc.ParseStream(isw);
-	
-
-	auto blocks = doc["blocks"].GetArray();
-	std::cout << blocks[0]["top"].GetInt() << std::endl;
-
-	// Loop over all blocks and load them
-	for (int i = 0; i < BlockType::LENGTH; i++) {
-
-	}
-	
-}*/
-
-
-Block* Wolf3D::locationToBlock(int x,  int y,  int z, BlockInspectState recalculate) {
-	// Determine the chunk we need 
+// This function translate any position to a block pointer (inside the chunk) if any exists.
+Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
+	// Determine the chunk coordinates, and local block coordinates.
 	vec3 blockPos = glm::vec3(x % Chunk::getChunkDimensions(), y % Chunk::getChunkDimensions(), z % Chunk::getChunkDimensions());
-	vec3 chunkPos = glm::vec3((x - blockPos.x)/Chunk::getChunkDimensions(), (y - blockPos.y) / Chunk::getChunkDimensions(),(z - blockPos.z)/ Chunk::getChunkDimensions());
-	
-	// Get a pointer to the chunk we want to access
+	vec3 chunkPos = glm::vec3((x - blockPos.x) / Chunk::getChunkDimensions(), (y - blockPos.y) / Chunk::getChunkDimensions(), (z - blockPos.z) / Chunk::getChunkDimensions());
+
+	// Get a pointer to the chunk we want to access.
 	auto chunk = getChunk((int)chunkPos.x, 0, (int)chunkPos.z);
 
-	// If we tried to get a chunk which does not exist, we can already return
-	if(chunk == nullptr)
-		 return nullptr;
+	// If we tried to get a chunk which does not exist, we can already return and don't need to do anything else.
+	if (chunk == nullptr)
+		return nullptr;
 
-	// Get the block on the chunk
-	switch (recalculate) {
-		case BlockInspectState::HardRecalculate: {
-			return chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+	// If ghost mode is not activated, changes can occur to this block.
+	// Thus we should notify surrounding chunks to recalculate if necessary.
+	if (!ghostInspect) {
+		// Check if we need to update chunk left.
+		if (blockPos.x == 0) {
+			auto neighbour = getChunk(chunkPos.x - 1, 0, chunkPos.z);
+
+			if (neighbour != nullptr){
+				neighbour->flagRecalculateMesh();
+			}
 		}
-		case BlockInspectState::Medium:{
-			// Check if we need to update chunk left.
-			if (blockPos.x == 0) {
-				auto other = getChunk(chunkPos.x - 1, 0, chunkPos.y);
+		// Check if we need to update chunk right.
+		else if (blockPos.x >= Chunk::getChunkDimensions() - 1) {
+			auto neighbour = getChunk(chunkPos.x + 1, 0, chunkPos.z);
 
-				if(other != nullptr)
-					other->flagRecalculateMesh();
-			} 
-			// Check if we need to update chunk right.
-			else if (blockPos.x == 0) {
-				auto other = getChunk(chunkPos.x + 1, 0, chunkPos.y);
-
-				if (other != nullptr)
-					other->flagRecalculateMesh();
+			if (neighbour != nullptr){
+				neighbour->flagRecalculateMesh();
 			}
-
-			// Check if we need to update chunk above.
-			if (blockPos.y == 0) {
-				auto other = getChunk(chunkPos.x, 0 - 1, chunkPos.y);
-
-				if (other != nullptr)
-					other->flagRecalculateMesh();
-			}
-			// Check if we need to update chunk below.
-			else if (blockPos.y == 0) {
-				auto other = getChunk(chunkPos.x, 0 + 1, chunkPos.y);
-
-				if (other != nullptr)
-					other->flagRecalculateMesh();
-			}
-
-			// Check if we need to update chunk behind.
-			if (blockPos.z == 0) {
-				auto other = getChunk(chunkPos.x, 0, chunkPos.y - 1);
-
-				if (other != nullptr)
-					other->flagRecalculateMesh();
-			}
-			// Check if we need to update chunk in front.
-			else if (blockPos.z == 0) {
-				auto other = getChunk(chunkPos.x, 0, chunkPos.y + 1);
-
-				if (other != nullptr)
-					other->flagRecalculateMesh();
-			}
-
-			// Return a pointer to the block
-			Block* b1 = chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
-			
-			if(b1 == nullptr)
-				return nullptr;
-			return b1;
 		}
-		case BlockInspectState::Soft: {
-			Block* b2 = chunk->readBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
-			
-			if(b2 == nullptr)
-				return nullptr;
-			return b2;
+
+
+		// Check if we need to update chunk below.
+		if (blockPos.y == 0) {
+			auto neighbour = getChunk(chunkPos.x, 0 - 1, chunkPos.z);
+
+			if (neighbour != nullptr){
+				neighbour->flagRecalculateMesh();
+			}
 		}
-	}	
-}	
+		// Check if we need to update chunk above.
+		else if (blockPos.y >= 1){// Chunk::getChunkDimensions() - 1) {
+			auto neighbour = getChunk(chunkPos.x, 0 + 1, chunkPos.z);
+
+			if (neighbour != nullptr){
+				neighbour->flagRecalculateMesh();
+			}
+		}
+
+
+		// Check if we need to update chunk in front.
+		if (blockPos.z == 0) {
+			auto neighbour = getChunk(chunkPos.x, 0, chunkPos.z - 1);
+
+			if (neighbour != nullptr){
+				neighbour->flagRecalculateMesh();
+			}
+		}
+		// Check if we need to update chunk in behind.
+		else if (blockPos.z >= Chunk::getChunkDimensions() - 1) {
+			auto neighbour = getChunk(chunkPos.x, 0, chunkPos.z + 1);
+
+			if (neighbour != nullptr){
+				neighbour->flagRecalculateMesh();
+			}
+		}
+	}
+
+	// Flag this chunk for recalculation if needed
+	if(!ghostInspect)
+		chunk->flagRecalculateMesh();
+
+	// Return the actual block that was requested;
+	return chunk->getBlock((int)blockPos.x, (int)blockPos.y, (int)blockPos.z);
+}
+
 
 std::shared_ptr<Chunk> Wolf3D::getChunk(int x, int y, int z) {
 	// TODO hardcoded y
 	// If the chunk does not exist, return null pointer
-	if (x < 0 || y < 0 || z < 0 || x >= chunkArraySize|| y > 0 || z >= chunkArraySize) 
+	if (x < 0 || y < 0 || z < 0 || x >= chunkArraySize|| y > 0 || z >= chunkArraySize) {
 		return nullptr;
+	}
 
 	// Else get the right block
-	auto chunk = chunkArray[x][z];
-	if(chunk == nullptr)
-		return nullptr;
-	
-	return chunk;
+	return chunkArray[x][z];
 }
+
+
+// Returns a pointer to a Mesh for a complete cube
+std::shared_ptr<sre::Mesh> Wolf3D::getBlockMesh(BlockType type) {
+	return blockMeshes[(int)type];
+}
+
 
 int main(){
     new Wolf3D();

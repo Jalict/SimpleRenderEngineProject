@@ -12,17 +12,19 @@ enum BlockInspectState {HardRecalculate, Medium, Soft};
 class Wolf3D {
 public:
     Wolf3D();
+
 	static Wolf3D* getInstance();
-	Block* locationToBlock(int x, int y, int z, BlockInspectState recalculate);
-	std::shared_ptr<Chunk> getChunk(int x, int y,  int z);
 
-	Physics physics;
+	Block* locationToBlock(int x, int y, int z, bool ghostInspect);
 
-	std::shared_ptr<sre::Material> blockMaterial; // #WIP blockTextures
-	//glm::vec4 textureCoordinates(int blockID); //I didn't know if we still used this, so I just commented it out
+	// Material used for everything
+	std::shared_ptr<sre::Material> blockMaterial; 
+	// Physics of this world
+	Physics physics; 
 
-	std::shared_ptr<sre::Mesh> getMesh(BlockType type);
-
+	// Returns the material of on complete block
+	std::shared_ptr<sre::Mesh> getBlockMesh(BlockType type);
+	std::shared_ptr<Chunk> getChunk(int x, int y, int z);
 private:
     void init();
     void update(float deltaTime);
@@ -31,31 +33,31 @@ private:
 	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
 	void handleDebugKeys(SDL_Event& e);	
-//	void loadBlocks(std::string fromFile);
 
 	glm::vec4 textureCoordinates(int blockID);
-	std::shared_ptr<sre::Mesh> initializeMesh(BlockType type);
+	std::shared_ptr<sre::Mesh> createBlockMesh(BlockType type);
+
 
 	static bool instanceFlag;
 	static Wolf3D* instance;
 
     sre::SDLRenderer renderer;
     sre::Camera camera;
-	FirstPersonController* fpsController;
 	sre::WorldLights worldLights;
-
-    std::shared_ptr<sre::Mesh> walls;
+	FirstPersonController* fpsController;
 
 	bool physicsDebugDraw = false;
 	bool mouseLock = false;
 	bool debugProfiler = false;
 	
+	// The red falling ball
 	btRigidBody* fallRigidBody;
 	glm::mat4 sphereTransform;
 	std::shared_ptr<sre::Mesh> sphere;
 	std::shared_ptr<sre::Material> sphereMaterial;
 	btTransform sphereTrans;
 
+	// Floor for the whole world
 	glm::mat4 floorTransform;
 	glm::vec4 floorColor;
 	std::shared_ptr<sre::Mesh> floor;

@@ -10,14 +10,14 @@ Block::Block(BlockType type, glm::vec3 position) {
 	// Set the type of the block
 	setType(type);
 
-	//this->position = position;
-
 	// # TODO dealloc
 	// Add physics collider
 	collider = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
 
+	// # TODO are we using position??
 	this->position = position;
 	
+	// Add a physics collider to it
 	btTransform startTransform;
 	startTransform.setIdentity();
 	btScalar mass(0);
@@ -25,47 +25,16 @@ Block::Block(BlockType type, glm::vec3 position) {
 	rigidbody = createRigidBody(mass, startTransform, collider);
 }
 
+
 Block::~Block() {
 	// TODO destroy physics
 }
 
-/*void Block::setMesh(BlockType type) {
-	this->mesh = Wolf3D::getInstance()->getMesh(type);
-}*/
 
 void Block::setType(BlockType type) {
 	this->type = type;
-//	setMesh(type);
 }
 
-/*std::shared_ptr<sre::Mesh> Block::getMesh(){
-	return mesh;
-}*/
-
-glm::vec3 Block::getPosition(){
-	return position;
-}
-
-
-// TODO move to proper location / clean up
-// http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Simple_Box
-btRigidBody* Block::createRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape) {
-//	btAssert((!shape || shape->getShapeType() != INVALID_SHAPE_PROXYTYPE));
-	bool isDynamic = (mass != 0.f);
-
-	btVector3 localInertia(0, 0, 0);
-	if (isDynamic)
-		shape->calculateLocalInertia(mass, localInertia);
-
-	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, myMotionState, shape, localInertia);
-	btRigidBody* body = new btRigidBody(cInfo);
-
-//  Dont know what this does. Documentation does not have this listed.
-//	body->setUserIndex(-1); 
-	Wolf3D::getInstance()->physics.addRigidBody(body);
-	return body;
-}
 
 bool Block::isActive() {
 	return this->active;
@@ -82,30 +51,28 @@ void Block::setActive(bool active) {
 		return;
 
 	// If this is grass see if there is something above, if so turn into dirt since grass needs air
-	Block* b = Wolf3D::getInstance()->locationToBlock(position.x, position.y + 1, position.z, BlockInspectState::Soft);
+	Block* b = Wolf3D::getInstance()->locationToBlock(position.x, position.y + 1, position.z, true);
 	if (type == BlockType::Grass && b != nullptr && b->isActive()) 
 			type = BlockType::Dirt;
 	
 	// If block below is grass turn it into dirt, since now there is something on top
-	b = Wolf3D::getInstance()->locationToBlock(position.x, position.y - 1, position.z, BlockInspectState::Medium);
+	b = Wolf3D::getInstance()->locationToBlock(position.x, position.y - 1, position.z, false);
 	if (b != nullptr && b->isActive() && b->getType() == BlockType::Grass)
 		b->setType(BlockType::Dirt);
 
-
 	this->active = active;
-	if(active)
+	if(active){
 		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
-	else
+	}
+	else {
 		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
-
-
-
+	}
 }
 
 
-// enum BlockType { Stone = 0, Brick = 1, Grass = 4, WoolBlue = 5, Sand = 8, Dirt = 9, Gravel = 25, Rock = 50, Wood = 74, Planks = 83 }; // Types of blocks
+// Function returns the correct texture index for a block type on the correct side
 int Block::getTextureIndex(BlockType type, BlockSides side){
 	switch (type) {
 		case BlockType::Stone:
@@ -163,31 +130,28 @@ int Block::getTextureIndex(BlockType type, BlockSides side){
 }
 
 
-//Stone, Brick, Grass, WoolBlue, Sand, Dirt, Gravel, Rock, Wood, Planks,
-// # TODO set this in the right place
-/*std::string Block::typeToString(BlockType type) {
-	switch (type) {
-		case BlockType::Stone:
-			return "Stone";
-		case BlockType::Brick:
-			return "Brick";
-		case BlockType::Grass:
-			return "Grass";
-		case BlockType::WoolBlue:
-			return "WoolBlue";
-		case BlockType::Sand:
-			return "Sand";
-		case BlockType::Dirt:
-			return "Dirt";
-		case BlockType::Gravel:
-			return "Gravel";
-		case BlockType::Rock:
-			return "Rock";
-		case BlockType::Wood:
-			return "Wood";
-		case BlockType::Planks:
-			return "Planks";
-		default:
-			return "Unspecified";
-	}
-}*/
+// #TODO are we using this naywere?
+glm::vec3 Block::getPosition() {
+	return position;
+}
+
+
+// TODO move to proper location / clean up
+// http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Simple_Box
+btRigidBody* Block::createRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape) {
+	//	btAssert((!shape || shape->getShapeType() != INVALID_SHAPE_PROXYTYPE));
+	bool isDynamic = (mass != 0.f);
+
+	btVector3 localInertia(0, 0, 0);
+	if (isDynamic)
+		shape->calculateLocalInertia(mass, localInertia);
+
+	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, myMotionState, shape, localInertia);
+	btRigidBody* body = new btRigidBody(cInfo);
+
+	//  Dont know what this does. Documentation does not have this listed.
+	//	body->setUserIndex(-1); 
+	Wolf3D::getInstance()->physics.addRigidBody(body);
+	return body;
+}

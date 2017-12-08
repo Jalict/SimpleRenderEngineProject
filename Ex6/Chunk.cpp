@@ -4,31 +4,27 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
 
+
+
+
 Chunk::Chunk() : Chunk(glm::vec3(0, 0, 0)) { // HACK: This doesn't actually set anything 
 }
+
 
 Chunk::Chunk(glm::vec3 position){
 	//Set the position of the chunk
 	this->position = position;
 	chunkTransform = glm::translate(position);
 	
-	//For outputting a glm::mat4
-	//const float *pSource = (const float*)glm::value_ptr(chunkTransform);
-	//for (int i = 0; i < 16; ++i) //Output from upper left corner, one collum at a time
-	//	std::cout << pSource[i] << std::endl;
-	//std::cout << "END OF MATRIX" << std::endl;
-
-	// Create the blocks
-	blocksInChunk = new Block** [chunkDimensions];
-	for (int i = 0; i < chunkDimensions; i++){
-		blocksInChunk[i] = new Block* [chunkDimensions];
-		for (int j = 0; j < chunkDimensions; j++){
-			blocksInChunk[i][j] = new Block[chunkDimensions];
-		}
-	}
-
+	// Create the block array for this chunk.
+	blocksInChunk = new Block**[chunkDimensions];
 	for (int x = 0; x < chunkDimensions; x++){
+		blocksInChunk[x] = new Block*[chunkDimensions];
+
 		for (int y = 0; y < chunkDimensions; y++) {
+			blocksInChunk[x][y] = new Block[chunkDimensions];
+
+			// Set blocktype based on height.
 			for (int z = 0; z < chunkDimensions; z++) {
 				if (y == 0)
 					blocksInChunk[x][y][z] = Block(BlockType::Bedrock, glm::vec3(position.x + x, position.y + y, position.z + z)); 
@@ -55,10 +51,8 @@ Chunk::Chunk(glm::vec3 position){
 			}
 		}
 	}
-
-	//assembleMeshData();
-	//createMesh();
 }
+
 
 Chunk::~Chunk(){
 	// Delete the blocks
@@ -71,63 +65,17 @@ Chunk::~Chunk(){
 	delete[] blocksInChunk;
 }
 
-void Chunk::update(float dt) {
 
+void Chunk::update(float dt) {
 	// Update particle systems
 	for (int i = 0; i < particleSystems.size(); i++) {
 		particleSystems[i]->update(dt);
 	}
 }
 
-//void Chunk::draw(sre::RenderPass& renderpass) {
-//	//Loop over all cubes, get their information, call render
-//	//Offset blocks by a transformation every time
-//
-//	for (int x = 0; x < chunkDimensions; x++) {
-//		for (int y = 0; y < chunkDimensions; y++) {
-//			for (int z = 0; z < chunkDimensions; z++) {
-//				auto transformMatrix = glm::translate(chunkTransform, glm::vec3(x, y, z));
-//
-//				//NOTE: Blocks aren't actually ever set to not being active
-//				//std::cout << blocksInChunk[x][y][z].isActive() << std::endl;
-//
-//				//If the block is not active we don't render it
-//				if (blocksInChunk[x][y][z].isActive() == false){
-//					//std::cout << "Skipped an inactive block" << std::endl;
-//					continue;
-//				}
-//
-//				//If the block is at the edge of a chunk we always render it
-//				bool onOutsideOfChunk = false;
-//				if (!(x > 0) || !(x < chunkDimensions - 1) || !(y > 0) || !(y < chunkDimensions - 1) || !(z > 0) || !(z < chunkDimensions - 1)) {
-//					onOutsideOfChunk = true;
-//				}
-//
-//				//If the block is surrounded by active blocks we don't render it
-//				bool surrounded = false;
-//				if (!onOutsideOfChunk) {
-//					if (blocksInChunk[x - 1][y][z].isActive() && 
-//						blocksInChunk[x + 1][y][z].isActive() &&
-//						blocksInChunk[x][y - 1][z].isActive() && 
-//						blocksInChunk[x][y + 1][z].isActive() &&
-//						blocksInChunk[x][y][z - 1].isActive() && 
-//						blocksInChunk[x][y][z + 1].isActive()) {
-//
-//						surrounded = true;
-//					}
-//				}
-//
-//				if (onOutsideOfChunk || !surrounded) {
-//					renderpass.draw(blocksInChunk[x][y][z].getMesh(), transformMatrix, Wolf3D::getInstance()->blockMaterial);
-//				}
-//			}
-//		}
-//	}
-//}
-
 
 void Chunk::draw(sre::RenderPass& renderpass) {
-	// Generate Mesh
+	// Generate Mesh if we are told to recalculate one
 	if(recalculateMesh)
 		createMesh();
 
@@ -135,124 +83,126 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 	renderpass.draw(this->mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
 
 	// Draw Particles
-	// Update particle systems
 	for (int i = 0; i < particleSystems.size(); i++) {
 		particleSystems[i]->draw(renderpass);
 	}
 }
 
 
-// TODO recalculate on the spot instead of during render thread.
-void Chunk::flagRecalculateMesh() {
-	recalculateMesh = true;
-}
-
-
 void Chunk::createMesh() {
 	std::cout << " recalculate chunk" << std::endl;
 
+	// Calculate vertex positions, UV coordinates and normals.
 	calculateMesh();
 
-	// Create the chunk
-	std::string chunkID = "Chunk_" + std::to_string(position.x) + '_' + std::to_string(position.y) + '_' + std::to_string(position.z);
-	mesh = sre::Mesh::create().withPositions(vertexPositions).withUVs(texCoords).withName(chunkID).withNormals(normals).build();
+	// Create the chunk  mesh.
+	mesh = sre::Mesh::create()
+				.withPositions(vertexPositions)
+				.withUVs(texCoords)
+				.withName("Chunk_" + std::to_string(position.x) + '_' + std::to_string(position.y) + '_' + std::to_string(position.z))
+				.withNormals(normals)
+				.build();
 
-	// Clean up after we used them
+	// Clean up after we used them.
 	vertexPositions.clear();
 	texCoords.clear();
 	normals.clear();
 
-	// Lower the flag for recalculation
+	// Lower the flag for recalculation, since we just did that.
 	recalculateMesh = false;
 }
 
 
 void Chunk::calculateMesh() {
+	// Flags for what sides should be drawn, by default faces should be drawn unless told otherwise.
+	bool left = true;  
+	bool right = true; 
+	bool bottom = true; 
+	bool top = true; 
+	bool front = true;
+	bool back = true;
+
 	// Loop over all blocks in this chunk
 	for (int x = 0; x < chunkDimensions; x++){
 		for (int y = 0; y < chunkDimensions; y++){
 			for (int z = 0; z < chunkDimensions; z++){
-				// If the block is not activated, it not displayed so skip  it
+
+				// If the block is not activated, it not displayed so skip it alltogether.
 				if (blocksInChunk[x][y][z].isActive() == false)
 					continue;
 
-				bool XNegative = true;
 				if (x > 0) {
-					XNegative = !blocksInChunk[x - 1][y][z].isActive();
+					left = !blocksInChunk[x - 1][y][z].isActive();
 				} else {
-					//auto t = Wolf3D::getInstance()->locationToBlock(position.x + x - 1, position.y + y, position.z + z, BlockInspectState::Soft);
-					//if (t != nullptr)
-					//	std::cout << "sdf" << std::endl;
-					//	//XNegative = !t->isActive();
+					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x - 1, position.y + y, position.z + z, true);
+					if (b != nullptr){
+						left = !b->isActive();
+					}
 				}
 
-				bool XPositive = true;
-				if (x != chunkDimensions - 1){// (x < chunkDimensions - 1) {
-					XPositive = !blocksInChunk[x + 1][y][z].isActive();
+				if (x < chunkDimensions - 1){
+					right = !blocksInChunk[x + 1][y][z].isActive();
 				} else {
-					std::cout << position.x << " + " << x << " | " << position.y << " + " << y << " | " << position.z << " + " << z << std::endl;
-					auto t = Wolf3D::getInstance()->locationToBlock(position.x + x + 1, position.y + y, position.z + z, BlockInspectState::Soft);
-					if (t != nullptr)
-						std::cout << "sdf" << std::endl;
-					//	XPositive = !t->isActive();
+					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x + 1, position.y + y, position.z + z, true);
+					if (b != nullptr){
+						right = !b->isActive();
+					}
 				}
 
-				bool YNegative = true;
 				if (y > 0) {
-					YNegative = !blocksInChunk[x][y - 1][z].isActive();
+					bottom = !blocksInChunk[x][y - 1][z].isActive();
 				} else {
-					//auto t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y - 1, position.z + z, BlockInspectState::Soft);
-					//if (t != nullptr)
-					//	std::cout << "sdf" << std::endl;
-					//	//YNegative = !t->isActive();
+					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y - 1, position.z + z, true);
+					if (b != nullptr){
+						bottom = !b->isActive();
+					}
 				}
 					
-				bool YPositive = true;
 				if (y < chunkDimensions - 1) {
-					YPositive = !blocksInChunk[x][y + 1][z].isActive();
+					top = !blocksInChunk[x][y + 1][z].isActive();
 				} else {
-					//auto t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y + 1, position.z + z, BlockInspectState::Soft);
-					//if (t != nullptr)
-					//	std::cout << "sdf" << std::endl;
-					//	//YPositive = !t->isActive();
+					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y + 1, position.z + z, true);
+					if (b != nullptr){
+						top = !b->isActive();
+					}
 				}
-					
-				bool ZNegative = true;
+				
 				if (z > 0) {
-					ZNegative = !blocksInChunk[x][y][z - 1].isActive();
+					front = !blocksInChunk[x][y][z - 1].isActive();
 				} else {
-					//auto t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z - 1, BlockInspectState::Soft);
-					//if (t != nullptr)
-					//	std::cout << "sdf" << std::endl;
-					//	//ZNegative = !t->isActive();
+					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z - 1, true);
+					if (b != nullptr) {
+						front = !b->isActive();
+					}
 				}
 					
-				bool ZPositive = true;
+				
 				if (z < chunkDimensions - 1) {
-					ZPositive = !blocksInChunk[x][y][z + 1].isActive();
+					back = !blocksInChunk[x][y][z + 1].isActive();
 				} else {
-//					auto t = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z + 1, BlockInspectState::Soft);
-//					if(t != nullptr)
-//						std::cout << "sdf" << std::endl;
-////						ZPositive = !t->isActive();
+					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z + 1, true);
+					if(b != nullptr){
+						back = !b->isActive();
+					}
 				} 
 					
-				addToMesh(true, true, true, true, true, true, x, y, z, blocksInChunk[x][y][z].getType());
-				//addToMesh(XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive, x, y, z, blocksInChunk[x][y][z].getType());
+				addToMesh(x, y, z, blocksInChunk[x][y][z].getType(), left, right, bottom, top, front, back);
+
+				// Reset the flags for the next loop
+				left = true;
+				right = true;
+				bottom = true;
+				top = true;
+				front = true;
+				back = true;
 			}
 		}
 	}
 }
 
 
-Block* Chunk::test() {
-//	if(rand()%2 == 0)
-		return nullptr;
-//	else return &blocksInChunk[0][0][0];
-}
-
-
-void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPositive, bool ZNegative, bool ZPositive, float x, float y, float z, BlockType type) {
+void Chunk::addToMesh(float x, float y, float z, BlockType type, bool left, bool right, bool bottom, bool top, bool front, bool back) {
+	// All corners of a cube
 	glm::vec3 p1 = glm::vec3(x - 0.5, y - 0.5, z + 0.5);
 	glm::vec3 p2 = glm::vec3(x + 0.5, y - 0.5, z + 0.5);
 	glm::vec3 p3 = glm::vec3(x + 0.5, y + 0.5, z + 0.5);
@@ -262,110 +212,107 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 	glm::vec3 p7 = glm::vec3(x - 0.5, y + 0.5, z - 0.5);
 	glm::vec3 p8 = glm::vec3(x + 0.5, y + 0.5, z - 0.5);
 
-	glm::vec4 coords;
+	// #TODO make all list consistent in one place???
+	glm::vec4 uvs;
 
-	//Left
-	if (XNegative) {
+
+	if (left) {
 		vertexPositions.insert(vertexPositions.end(), {
 			p6,p1,p4,
 			p6,p4,p7
 		});
 
-		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Left));
+		uvs = textureCoordinates(Block::getTextureIndex(type, BlockSides::Left));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
-			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0),
+			glm::vec4(uvs.x,uvs.w,0,0), glm::vec4(uvs.z,uvs.w,0,0), glm::vec4(uvs.z,uvs.y,0,0),
+			glm::vec4(uvs.x,uvs.w,0,0), glm::vec4(uvs.z,uvs.y,0,0), glm::vec4(uvs.x,uvs.y,0,0),
 		});
 
-		//Normal for this face
 		normals.insert(normals.end(), {
 			glm::vec3(-1, 0, 0), glm::vec3(-1, 0, 0), glm::vec3(-1, 0, 0),
 			glm::vec3(-1, 0, 0), glm::vec3(-1, 0, 0), glm::vec3(-1, 0, 0)
 		});
 	}
-	//Right
-	if (XPositive) {
-		//Vertex positions for this face
+
+
+	if (right) {
 		vertexPositions.insert(vertexPositions.end(), {
 			p2,p5,p8,
 			p2,p8,p3
 		});
 
-		//Texture coordinates for this face
-		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Right));
+		uvs = textureCoordinates(Block::getTextureIndex(type, BlockSides::Right));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
-			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0),
+			glm::vec4(uvs.x,uvs.w,0,0), glm::vec4(uvs.z,uvs.w,0,0), glm::vec4(uvs.z,uvs.y,0,0),
+			glm::vec4(uvs.x,uvs.w,0,0), glm::vec4(uvs.z,uvs.y,0,0), glm::vec4(uvs.x,uvs.y,0,0),
 		});
 
-		//Normal for this face
 		normals.insert(normals.end(), {
 			glm::vec3(1, 0, 0), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0),
 			glm::vec3(1, 0, 0), glm::vec3(1, 0, 0), glm::vec3(1, 0, 0)
 		});
 	}
 
-	//Bottom
-	if (YNegative) {
+	
+	if (bottom) {
 		vertexPositions.insert(vertexPositions.end(), {
 			p6,p5,p2,
 			p6,p2,p1
 		});
 
-		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Bottom));
+		uvs = textureCoordinates(Block::getTextureIndex(type, BlockSides::Bottom));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+			glm::vec4(uvs.x,uvs.y,0,0), glm::vec4(uvs.z,uvs.y,0,0), glm::vec4(uvs.z,uvs.w,0,0),
+			glm::vec4(uvs.x,uvs.y,0,0), glm::vec4(uvs.z,uvs.w,0,0), glm::vec4(uvs.x,uvs.w,0,0),
 		});
 
-		//Normal for this face
 		normals.insert(normals.end(), {
 			glm::vec3(0, -1, 0), glm::vec3(0, -1, 0), glm::vec3(0, -1, 0),
 			glm::vec3(0, -1, 0), glm::vec3(0, -1, 0), glm::vec3(0, -1, 0)
 		});
 	}
-	//Top
-	if (YPositive) {
+
+
+	if (top) {
 		vertexPositions.insert(vertexPositions.end(), {
 			p4,p3,p8,
 			p4,p8,p7
 		});
 
-		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Top));
+		uvs = textureCoordinates(Block::getTextureIndex(type, BlockSides::Top));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0),
-			glm::vec4(coords.x,coords.y,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.x,coords.w,0,0),
+			glm::vec4(uvs.x,uvs.y,0,0), glm::vec4(uvs.z,uvs.y,0,0), glm::vec4(uvs.z,uvs.w,0,0),
+			glm::vec4(uvs.x,uvs.y,0,0), glm::vec4(uvs.z,uvs.w,0,0), glm::vec4(uvs.x,uvs.w,0,0),
 		});
 
-		//Normal for this face
 		normals.insert(normals.end(), {
 			glm::vec3(0, 1, 0), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0),
 			glm::vec3(0, 1, 0), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)
 		});
 	}
 
-	//Back
-	if (ZNegative) {
+
+	// TODO RENAMED BACK TO FRONT
+	if (front) {
 		vertexPositions.insert(vertexPositions.end(), {
 			p5, p6, p7,
 			p5, p7, p8
 		});
 
-		coords = textureCoordinates(Block::getTextureIndex(type, BlockSides::Back));
+		uvs = textureCoordinates(Block::getTextureIndex(type, BlockSides::Back));
 		texCoords.insert(texCoords.end(), {
-			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0),
-			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0),
+			glm::vec4(uvs.x,uvs.w,0,0), glm::vec4(uvs.z,uvs.w,0,0), glm::vec4(uvs.z,uvs.y,0,0),
+			glm::vec4(uvs.x,uvs.w,0,0), glm::vec4(uvs.z,uvs.y,0,0), glm::vec4(uvs.x,uvs.y,0,0),
 		});
 
-		//Normal for this face
 		normals.insert(normals.end(), {
 			glm::vec3(0, 0, -1), glm::vec3(0, 0, -1), glm::vec3(0, 0, -1), 
 			glm::vec3(0, 0, -1), glm::vec3(0, 0, -1), glm::vec3(0, 0, -1)
 		});
 	}
 
-	//Front
-	if (ZPositive) {
+	
+	if (back) {
 		vertexPositions.insert(vertexPositions.end(), {
 			p1,p2,p3,
 			p1,p3,p4
@@ -377,7 +324,6 @@ void Chunk::addToMesh(bool XNegative, bool XPositive, bool YNegative, bool YPosi
 			glm::vec4(coords.x,coords.w,0,0), glm::vec4(coords.z,coords.y,0,0), glm::vec4(coords.x,coords.y,0,0)
 		});
 
-		//Normal for this face
 		normals.insert(normals.end(), {
 			glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1),
 			glm::vec3(0, 0, 1), glm::vec3(0, 0, 1), glm::vec3(0, 0, 1)
@@ -411,37 +357,23 @@ glm::vec4 Chunk::textureCoordinates(int blockID) {
 }
 
 
+// TODO recalculate on the spot instead of during render thread?
+void Chunk::flagRecalculateMesh() {
+	recalculateMesh = true;
+}
+
+
 glm::vec3 Chunk::getPosition() {
 	return position;
 }
 
 
-bool Chunk::hasBlock(int x, int y, int z) {
-	return !(x < 0 || x > chunkDimensions - 1 || y < 0 || y > chunkDimensions - 1 || z < 0 || z > chunkDimensions - 1);
-}
-
-//Problem: Chunk 
-Block* Chunk::getBlock(int x, int y, int z) {
-	std::cout << position.x << " " << position.z << std::endl;
-	recalculateMesh = true;
-
-	Block* b3 = readBlock(x, y, z);
-
-	// Else return the block
-	if(b3 == nullptr)
-		return nullptr;
-	
-	return b3;
-}
-
-
-Block* Chunk::readBlock(int x, int y, int z) {
-	// If the block is not within bounds of this chunk, return null pointer
-	if (x < 0 || x > chunkDimensions - 1  || y < 0 || y > chunkDimensions - 1 || z < 0 || z > chunkDimensions - 1) {
-		std::cout << "block doesnt exist" << std::endl;
+Block* Chunk::getBlock(int x, int y, int z) {	
+	// If the requested block is without bounds return a nullpointer
+	if (x < 0 || x > chunkDimensions - 1 || y < 0 || y > chunkDimensions - 1 || z < 0 || z > chunkDimensions - 1) {
 		return nullptr;
 	}
-	// Else return the block
+	// Else return the block.
 	else {
 		return &blocksInChunk[x][y][z];
 	}
