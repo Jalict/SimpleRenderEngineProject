@@ -194,7 +194,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 
 
 	// Capture Jump
-	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
+	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
 		if(!flyMode)
 			rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
 	}
@@ -281,7 +281,7 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 	if(event.type == SDL_MOUSEMOTION && !lockRotation) {
 		lookRotation.x += event.motion.xrel * ROTATION_SPEED;
 		lookRotation.y += event.motion.yrel * ROTATION_SPEED;
-		lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_UP_ROTATION, MAX_X_LOOK_DOWN_ROTATION);
+	lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_UP_ROTATION, MAX_X_LOOK_DOWN_ROTATION);
 	}
 	
 	if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -330,8 +330,8 @@ void FirstPersonController::placeBlock() {
 Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 	btVector3 start = rigidBody->getWorldTransform().getOrigin();
 	start.setY(start.getY() + Y_CAMERA_OFFSET);
-	btVector3 direction = btVector3(sin(radians(lookRotation.x)), sin(radians(lookRotation.y)) * -1, cos(radians(lookRotation.x)) * -1);
-	btVector3 end = start + direction * 10.0f;
+	btVector3 direction = btVector3(sin(radians(lookRotation.x)), (lookRotation.y / 45 )* -1, cos(radians(lookRotation.x)) * -1);
+	btVector3 end = start + direction.normalized() * 10.0f;
 
 	btCollisionWorld::ClosestRayResultCallback res(start, end);
 

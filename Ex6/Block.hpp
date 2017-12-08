@@ -25,6 +25,9 @@ public:
 	// Returns the texture coordinates depending on type and side requested
 	static int getTextureIndex(BlockType type, BlockSides side = BlockSides::Top);
 
+	void addColliderToWorld();
+	void removeColliderFromWorld();
+
 	// Sets the type of this block
 	void setType(BlockType type);				
 	void setActive(bool active);
@@ -40,11 +43,9 @@ private:
 	// Current type of block
 	BlockType type = BlockType::Dirt;			
 	
-	// Wether the block exists or not
+	// Whether the block exists or not
 	bool active = true;
 
 	// World position of the block
 	glm::vec3 position;
 };
-
-

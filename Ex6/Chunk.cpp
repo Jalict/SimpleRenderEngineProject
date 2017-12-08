@@ -55,21 +55,14 @@ Chunk::Chunk(glm::vec3 position){
 					else
 						blocksInChunk[x][y][z] = Block(BlockType::Dirt, glm::vec3(position.x + x, position.y + y, position.z + z));
 				}
+
+				// If this is the top chunk, set it to deactive so it can act as air.
 				if (position.y + y >= chunkDimensions) {
 					blocksInChunk[x][y][z].setActive(false);
 				}
 			}
 		}
 	}
-
-	// Particle System
-	particleTexture = sre::Texture::getWhiteTexture();
-	particleSystem = std::make_shared<ParticleSystem>(10, particleTexture);
-	particleSystem->gravity = { 0, -9.82, 0 };
-	particleSystem->material->setColor(glm::vec4(1, 0, 0, 1));
-	
-	updateApperance();
-	updateEmit();
 }
 
 
@@ -86,8 +79,6 @@ Chunk::~Chunk(){
 
 
 void Chunk::update(float dt) {
-	// Update particle systems
-	particleSystem->update(dt);
 }
 
 
@@ -98,9 +89,6 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 
 	// Draw Mesh Chunk
 	renderpass.draw(this->mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
-
-	// Draw Particles
-	particleSystem->draw(renderpass);
 }
 
 
@@ -378,6 +366,45 @@ void Chunk::flagRecalculateMesh() {
 }
 
 
+bool Chunk::isCollidersActive() {
+	return collidersActive;
+}
+
+void Chunk::addCollidersToWorld() {
+	// If colliders are already active, we do not have to do anything
+	if(collidersActive)
+		return;
+
+	for (int x = 0; x < chunkDimensions; x++)	{
+		for (int y = 0; y < chunkDimensions; y++) {
+			for (int z = 0; z < chunkDimensions; z++) {
+				blocksInChunk[x][y][z].addColliderToWorld();
+			}
+		}
+	}
+
+	collidersActive = true;
+}
+
+
+void Chunk::removeCollidersFromWorld() {
+	// If colliders are already active, we do not have to do anything
+	if(!collidersActive)
+		return;
+
+	// If colliders are already not active, we do not have to do anything
+	for (int x = 0; x < chunkDimensions; x++) {
+		for (int y = 0; y < chunkDimensions; y++) {
+			for (int z = 0; z < chunkDimensions; z++) {
+				blocksInChunk[x][y][z].removeColliderFromWorld();
+			}
+		}
+	}
+
+	collidersActive = false;
+}
+
+
 glm::vec3 Chunk::getPosition() {
 	return position;
 }
@@ -389,35 +416,6 @@ Block* Chunk::getBlock(int x, int y, int z) {
 		return nullptr;
 	}
 
-	//(TODO) Find better spot to emit particles
-	placeParticleSystem(glm::vec3(x + position.x, y + position.y, z + position.z));
-
 	// Else return the block
 	return &blocksInChunk[x][y][z];
-}
-
-void Chunk::placeParticleSystem(glm::vec3 pos) {
-	//(TODO) Investigate weird spawning position
-	emitPosition = pos;
-
-	particleSystem->emit();
-
-	printf("created particle system at: %.2f,%.2f,%.2f\n", pos.x, pos.y, pos.z);
-}
-
-
-void Chunk::updateApperance() {
-	particleSystem->updateAppearance = [&](const Particle& p) {
-		p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
-	};
-}
-
-void Chunk::updateEmit() {
-	particleSystem->emitter = [&](Particle& p) {
-		p.position = emitPosition;
-		p.velocity = glm::sphericalRand(emitVelocity);
-		p.rotation = emitRotation;
-		p.angularVelocity = emitAngularVelocity;
-		p.size = sizeFrom;
-	};
 }

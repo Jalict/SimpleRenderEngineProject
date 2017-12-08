@@ -57,18 +57,34 @@ void Block::setActive(bool active) {
 	
 	// If block below is grass turn it into dirt, since now there is something on top
 	b = Wolf3D::getInstance()->locationToBlock(position.x, position.y - 1, position.z, false);
-	if (b != nullptr && b->isActive() && b->getType() == BlockType::Grass)
+	if (b != nullptr && active && b->isActive() && b->getType() == BlockType::Grass)
 		b->setType(BlockType::Dirt);
 
 	this->active = active;
+
 	if(active){
-		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
+//		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
+		addColliderToWorld();
 //		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
 	}
 	else {
-		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
-//		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
+
+		removeColliderFromWorld();
+		//Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
+		Wolf3D::getInstance()->placeParticleSystem(position);
+		//rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 	}
+}
+
+
+void Block::addColliderToWorld() {
+	if(active)
+		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
+}
+
+void Block::removeColliderFromWorld(){
+//	if(!active)
+	Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
 }
 
 
@@ -152,6 +168,6 @@ btRigidBody* Block::createRigidBody(float mass, const btTransform& startTransfor
 
 	//  Dont know what this does. Documentation does not have this listed.
 	//	body->setUserIndex(-1); 
-	Wolf3D::getInstance()->physics.addRigidBody(body);
+	// Wolf3D::getInstance()->physics.addRigidBody(body);
 	return body;
 }

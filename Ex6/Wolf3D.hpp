@@ -3,6 +3,7 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/Material.hpp"
 #include "FirstPersonController.hpp"
+#include "ParticleSystem.hpp"
 #include "Physics.hpp"
 #include "Chunk.hpp"
 #include "Block.hpp"
@@ -13,6 +14,11 @@ public:
 
 	static Wolf3D* getInstance();
 
+	// Particle systemm
+	void placeParticleSystem(glm::vec3 pos);
+	void updateApperance();
+	void updateEmit();
+
 	Block* locationToBlock(int x, int y, int z, bool ghostInspect);
 
 	// Material used for everything
@@ -21,6 +27,7 @@ public:
 	Physics physics; 
 
 	// Returns the material of on complete block
+
 	std::shared_ptr<sre::Mesh> getBlockMesh(BlockType type);
 	std::shared_ptr<Chunk> getChunk(int x, int y, int z);
 private:
@@ -31,10 +38,14 @@ private:
 	void renderChunk(sre::RenderPass & renderPass);
 	void drawGUI();
 	void handleDebugKeys(SDL_Event& e);	
+	void stepChunkPhysicsInit();
 
 	glm::vec4 textureCoordinates(int blockID);
 	std::shared_ptr<sre::Mesh> createBlockMesh(BlockType type);
 
+
+	int chunkPhysicsInitProgress = 0;
+	int totalChunks = 0;
 
 	static bool instanceFlag;
 	static Wolf3D* instance;
@@ -62,14 +73,25 @@ private:
 	std::shared_ptr<sre::Material> floorMat;
 
 	// Array for all chunks
-	//const int chunkArraySize = 2;
-	//std::shared_ptr<Chunk>** chunkArray;
-
-	const int chunkArrayX = 1;
+	const int chunkArrayX = 8;
 	const int chunkArrayY = 2;
-	const int chunkArrayZ = 3;
+	const int chunkArrayZ = 8;
 	std::shared_ptr<Chunk>*** chunkArray;
 
 	// List of all block meshes, these are used to be hold in hand by the player
 	std::shared_ptr<sre::Mesh>* blockMeshes;
+
+	// Particles
+	std::shared_ptr<sre::Texture> particleTexture;
+	std::shared_ptr<ParticleSystem> particleSystem;
+
+	// Particle setting
+	float sizeFrom = 50;
+	float sizeTo = 0;
+	float elapsedTime = 0;
+
+	glm::vec3 emitPosition = { 0,0,0 };
+	float emitVelocity = 1;
+	float emitRotation = 10;
+	float emitAngularVelocity = 10;
 };

@@ -21,7 +21,7 @@ public:
     void emit();                    // explicit emit a particle
 
     float emissionRate = 60;        // particles per second
-    float lifeSpan = 10;            // lifetime for each particle
+    float lifeSpan = 0.7f;            // lifetime for each particle
 
     bool running = true;
     bool visible = true;
