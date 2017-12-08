@@ -194,7 +194,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 
 
 	// Capture Jump
-	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
+	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
 		if(!flyMode)
 			rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
 	}
