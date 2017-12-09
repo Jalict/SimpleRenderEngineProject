@@ -268,7 +268,7 @@ void Wolf3D::init() {
 	sphereMaterial->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
 	//Create the chunks	
-	int chunkDimension = Chunk::getChunkDimensions();
+	int chunkSize = Chunk::chunkSize;
 	
 	// TODO make sure this is Dealloc this!
 	chunkArray = new std::shared_ptr<Chunk>**[chunkArrayX];
@@ -282,7 +282,7 @@ void Wolf3D::init() {
 	for (int x = 0; x < chunkArrayX; x++) {
 		for (int y = 0; y < chunkArrayY; y++) {
 			for (int z = 0; z < chunkArrayZ; z++) {
-				chunkArray[x][y][z] = std::make_shared<Chunk>(glm::vec3(x * chunkDimension, y * chunkDimension, z * chunkDimension));
+				chunkArray[x][y][z] = std::make_shared<Chunk>(glm::vec3(x * chunkSize, y * chunkSize, z * chunkSize));
 			}
 		}
 	}
@@ -303,7 +303,7 @@ void Wolf3D::init() {
 	// Setup FPS Controller
 	fpsController = new  FirstPersonController(&camera);
 	// Spawn the player in the middle of the world.
-    fpsController->setPosition(vec3(chunkArrayX * Chunk::getChunkDimensions() *  0.5f, Chunk::getChunkDimensions() + 3.0f, chunkArrayZ * Chunk::getChunkDimensions() *  0.5f), 0);
+    fpsController->setPosition(vec3(chunkArrayX * Chunk::chunkSize *  0.5f, Chunk::chunkSize + 3.0f, chunkArrayZ * Chunk::chunkSize *  0.5f), 0);
 
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
@@ -330,9 +330,9 @@ void Wolf3D::init() {
 void  Wolf3D::stepChunkPhysicsInit() {
 	vec3 playerPosition = fpsController->getPosition();
 
-	int xPos = (int)(playerPosition.x / Chunk::getChunkDimensions());
-	int yPos = (int)(playerPosition.y / Chunk::getChunkDimensions());
-	int zPos = (int)(playerPosition.z / Chunk::getChunkDimensions());
+	int xPos = (int)(playerPosition.x / Chunk::chunkSize);
+	int yPos = (int)(playerPosition.y / Chunk::chunkSize);
+	int zPos = (int)(playerPosition.z / Chunk::chunkSize);
 
 	// Loop over all chunks
 	for (int x = 0; x < chunkArrayX; x++){
@@ -433,8 +433,8 @@ glm::vec4 Wolf3D::textureCoordinates(int textureId) {
 // This function translate any position to a block pointer (inside the chunk) if any exists.
 Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 	// Determine the chunk coordinates, and local block coordinates.
-	vec3 blockPos = glm::vec3(x % Chunk::getChunkDimensions(), y % Chunk::getChunkDimensions(), z % Chunk::getChunkDimensions());
-	vec3 chunkPos = glm::vec3((x - blockPos.x) / Chunk::getChunkDimensions(), (y - blockPos.y) / Chunk::getChunkDimensions(), (z - blockPos.z) / Chunk::getChunkDimensions());
+	vec3 blockPos = glm::vec3(x % Chunk::chunkSize, y % Chunk::chunkSize, z % Chunk::chunkSize);
+	vec3 chunkPos = glm::vec3((x - blockPos.x) / Chunk::chunkSize, (y - blockPos.y) / Chunk::chunkSize, (z - blockPos.z) / Chunk::chunkSize);
 
 	// Get a pointer to the chunk we want to access.
 	auto chunk = getChunk((int)chunkPos.x, (int)chunkPos.y, (int)chunkPos.z);
@@ -457,8 +457,8 @@ Block* Wolf3D::locationToBlock(int x, int y, int z, bool ghostInspect) {
 
 // TODO recalculate if necessary
 void Wolf3D::flagNeighboursForRecalculateIfNecessary(int x,  int y, int z) {
-	vec3 blockPos = glm::vec3(x % Chunk::getChunkDimensions(), y % Chunk::getChunkDimensions(), z % Chunk::getChunkDimensions());
-	vec3 chunkPos = glm::vec3((x - blockPos.x) / Chunk::getChunkDimensions(), (y - blockPos.y) / Chunk::getChunkDimensions(), (z - blockPos.z) / Chunk::getChunkDimensions());
+	vec3 blockPos = glm::vec3(x % Chunk::chunkSize, y % Chunk::chunkSize, z % Chunk::chunkSize);
+	vec3 chunkPos = glm::vec3((x - blockPos.x) / Chunk::chunkSize, (y - blockPos.y) / Chunk::chunkSize, (z - blockPos.z) / Chunk::chunkSize);
 
 	// Check if we need to update chunk left.
 	if (blockPos.x == 0) {
@@ -469,7 +469,7 @@ void Wolf3D::flagNeighboursForRecalculateIfNecessary(int x,  int y, int z) {
 		}
 	}
 	// Check if we need to update chunk right.
-	else if (blockPos.x >= Chunk::getChunkDimensions() - 1) {
+	else if (blockPos.x >= Chunk::chunkSize - 1) {
 		auto neighbour = getChunk(chunkPos.x + 1, chunkPos.y, chunkPos.z);
 
 		if (neighbour != nullptr) {
@@ -487,7 +487,7 @@ void Wolf3D::flagNeighboursForRecalculateIfNecessary(int x,  int y, int z) {
 		}
 	}
 	// Check if we need to update chunk above.
-	else if (blockPos.y >= Chunk::getChunkDimensions() - 1) {
+	else if (blockPos.y >= Chunk::chunkSize - 1) {
 		auto neighbour = getChunk(chunkPos.x, chunkPos.y + 1, chunkPos.z);
 
 		if (neighbour != nullptr) {
@@ -505,7 +505,7 @@ void Wolf3D::flagNeighboursForRecalculateIfNecessary(int x,  int y, int z) {
 		}
 	}
 	// Check if we need to update chunk in behind.
-	else if (blockPos.z >= Chunk::getChunkDimensions() - 1) {
+	else if (blockPos.z >= Chunk::chunkSize - 1) {
 		auto neighbour = getChunk(chunkPos.x, chunkPos.y, chunkPos.z + 1);
 
 		if (neighbour != nullptr) {

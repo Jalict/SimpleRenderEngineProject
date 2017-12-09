@@ -92,6 +92,9 @@ void Block::setActive(bool active) {
 		b->setType(BlockType::Dirt);
 	}
 
+	// Set the activation state
+	this->active = active;
+
 	// If the block is activated, add its collider back to the world.
 	if(active){
 		addColliderToWorld();
@@ -101,9 +104,6 @@ void Block::setActive(bool active) {
 		removeColliderFromWorld();
 		Wolf3D::getInstance()->placeParticleSystem(position);
 	}
-
-	// Set the activation state
-	this->active = active;
 }
 
 

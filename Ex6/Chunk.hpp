@@ -1,17 +1,17 @@
 #pragma once
-#include "Block.hpp"
-#include "sre/SDLRenderer.hpp"
+
 #include <glm\gtx\rotate_vector.hpp>
 #include "sre/SDLRenderer.hpp"
 #include "sre/Material.hpp"
 #include "ParticleSystem.hpp"
+#include "Block.hpp"
+
+
 
 /*
-Created: 01-12-2017
-Holds a list of blocks that lie in 5x5x5 cube. It can draw these blocks by taking information from the 
-blocks and (some other class that contains the mesh/material of the blocks). It can also update which
-blocks are active and which are not.
-*/
+ * Chunk - Created: 01-12-2017
+ * Holds a three dimensional array of blocks that are contained in this chunk.
+ */
 
 class Chunk {
 public:
@@ -21,33 +21,27 @@ public:
 
 	void update(float dt);
 	void draw(sre::RenderPass& renderpass);
-	
-	// When this function is called the mesh for the chunk will be recalculated.
-	void flagRecalculateMesh();
-	void addCollidersToWorld();
-	void removeCollidersFromWorld();
-	bool isCollidersActive();
 
-	glm::vec3 getPosition();
-	Block* getBlock(int x, int y, int z);
-	static int getChunkDimensions() { return chunkDimensions; } // #TODO just public constant?
+	Block* getBlock(int x, int y, int z);	// Returns a block with the passed in coordinates. These are local chunk coordinates!
+	
+	void flagRecalculateMesh();			// Raises the flag to recalculate the mesh.
+	void addCollidersToWorld();			// Tells all the blocks in this chunk to add their rigidbodies to the world.
+	void removeCollidersFromWorld();	// Tells all the blocks to remove their rigidbodies from the world.
+
+	bool isCollidersActive() { return collidersActive; }
+	glm::vec3 getPosition() { return position; }		
+
+	const static int chunkSize = 8;		// Size of the chunk in all dimensions, e.g. when 8 the chunk is 8x8x8.
 private:
-	void calculateMesh();
-	void createMesh();
-	void addToMesh(float x, float y, float z, BlockType type, bool left, bool right, bool bottom, bool top, bool front, bool back);
+	void generateMesh();
+	void calculateMesh(std::vector<glm::vec3>& vertexPositions, std::vector<glm::vec4>& uvCoords, std::vector<glm::vec3>& normals);
+	void addToMesh(	glm::vec3 position, BlockType type, bool left, bool right, bool bottom, bool top, bool front, bool back, 
+					std::vector<glm::vec3>& vertexPositions, std::vector<glm::vec4>& uvCoords, std::vector<glm::vec3>& normals);
 	glm::vec4 textureCoordinates(int blockID);
 
 
-	const static int chunkDimensions = 8;
-
-	glm::vec3 position;
-	glm::mat4 chunkTransform;
-
-	// List of positions for the Mesh 
-	// # TODO move?
-	std::vector<glm::vec3> vertexPositions;
-	std::vector<glm::vec3> normals;
-	std::vector<glm::vec4> texCoords;
+	glm::vec3 position;			// The position of this chunk
+	glm::mat4 chunkTransform;	// Transform matrix of this chunk
 
 	// Flag to see if we need to recalculate our mesh
 	bool recalculateMesh = true; 
