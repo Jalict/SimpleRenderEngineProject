@@ -128,7 +128,7 @@ void FirstPersonController::update(float deltaTime){
 		if(detectedBlock != nullptr && detectedBlock == lastBlock) {
 			minedAmount += deltaTime;
 
-			if (minedAmount >= 1) {
+			if (minedAmount >= 1 || instantMining) {
 				destroyBlock(lastBlock);
 			}
 		} else {
@@ -228,6 +228,16 @@ void FirstPersonController::onKey(SDL_Event &event) {
 		}
 	} 
 
+	// Toggle instant mining
+		if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_u) {
+			instantMining = !instantMining;
+			if (instantMining) {
+				std::cout << " Instant mining is now activated" << std::endl;
+			}
+			else {
+				std::cout << " instant mining is now deactivated" << std::endl;
+			}
+		}
 
 	// Activate jump
 	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && isGrounded) {

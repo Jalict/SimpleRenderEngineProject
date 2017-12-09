@@ -73,10 +73,10 @@ private:
 	bool up = false;
 	bool down = false;
 
-	// Flags
+	// States
 	bool isGrounded = false;	// Wether the controller is grounded
 	bool isSprinting = false;	// Wether the character is sprinting
-	bool isMining = false;
+	bool isMining = false;		// Whether the controller is mining
 
 	// Toggle modes
 	bool replaceBlock = false;  // When enabled, replaces block instead of placing new blocks
@@ -84,6 +84,7 @@ private:
 	bool flyMode = false;		// When enabled the controller is no longer affected by gravity and can fly	
 	bool lockRotation = false;	// When enabled the character cannot rotate
 	bool drawLookRays = true;	// When enabled the raycasts for detemining the block you are looking at are drawn.
+	bool instantMining = false;	// When enabled blocks will be mined instantly
 
 	// Positional
 	glm::mat4 transformMatrix;	// Transform matrix for the location and rotations of this controller
