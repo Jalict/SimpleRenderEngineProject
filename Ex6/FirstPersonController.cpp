@@ -1,22 +1,22 @@
 //
 // Created by Morten Nobel-Jørgensen on 29/09/2017.
 //
-#include "FirstPersonController.hpp"
 #include <glm/gtx/rotate_vector.hpp>
+#include "FirstPersonController.hpp"
 #include "Wolf3D.hpp"
 
 using namespace sre;
 using namespace glm;
 
 
+
 FirstPersonController::FirstPersonController(sre::Camera * camera)
 :camera(camera) {
 	// Setup  Camera projection
-    camera->setPerspectiveProjection(FIELD_OF_FIELD, NEAR_PLANE, FAR_PLANE);
+    camera->setPerspectiveProjection(FIELD_OF_VIEW, NEAR_PLANE, FAR_PLANE);
 
 	// Create Capsule collider
-	// # TODO PRIORITY fix controller shape size without getting stuck..
-	btCollisionShape* controllerShape = new btCapsuleShape(COLLIDER_RADIUS, COLLIDER_HEIGHT);
+	controllerShape = new btCapsuleShape(COLLIDER_RADIUS, COLLIDER_HEIGHT);
 	btDefaultMotionState* motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 0, 0)));
 
 	btScalar mass = 1;
@@ -25,6 +25,8 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 	btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, motionState, controllerShape, fallInertia);
 	rigidBody = new btRigidBody(fallRigidBodyCI);
+
+	// Disable friction for the character controller
 	rigidBody->setFriction(0.0f);
 
 	// Disable the rigidbody from going to sleep
@@ -45,12 +47,11 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 
 FirstPersonController::~FirstPersonController(){
-	// TODO check if done correctly
-//	delete rigidBody;
-//	delete motionState;
-//	delete controllerShape;
+	Wolf3D::getInstance()->physics.removeRigidBody(rigidBody);
+	delete rigidBody->getMotionState();
+	delete rigidBody;
+	delete controllerShape;
 }
-
 
 
 void FirstPersonController::update(float deltaTime){
@@ -149,14 +150,19 @@ void FirstPersonController::draw(sre::RenderPass& renderpass) {
 	
 	// Draw the block we currently have selected
 	renderpass.draw(Wolf3D::getInstance()->getBlockMesh(blockSelected), matrix, Wolf3D::getInstance()->blockMaterial);
-}
 
+	// Draw the raycasts which are used for looking if enabled
+	if (drawLookRays) {
+		std::vector<vec3> rays;
+		rays.push_back(fromRay);
+		rays.push_back(toRay);
+		renderpass.drawLines(rays);
 
-glm::vec3 FirstPersonController::getPosition() {
-	btTransform transform;
-	rigidBody->getMotionState()->getWorldTransform(transform);
-	btVector3 position = transform.getOrigin();
-	return glm::vec3(position.getX(), position.getY(), position.getZ());
+		std::vector<vec3> rays1;
+		rays1.push_back(fromRayNormal);
+		rays1.push_back(toRayNormal);
+		renderpass.drawLines(rays1, vec4(1, 0, 0, 1));
+	}
 }
 
 
@@ -168,9 +174,8 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 	Wolf3D::getInstance()->physics.raycast(&position, &down, &res);
 
 	// If we hit something, check the distance to the ground
-	// TODO distance check - expansive calculation, change to something more efficient.
 	if (res.hasHit()) {
-		isGrounded = !(position.distance(res.m_hitPointWorld) > COLLIDER_RADIUS + 0.5f * COLLIDER_HEIGHT + 0.1f); 
+		isGrounded = !(position.distance(res.m_hitPointWorld) > COLLIDER_RADIUS + 0.5f * COLLIDER_HEIGHT + 0.1f); // Add 0.1f to make sure we are in air.
 	}
 	else {
 		isGrounded = false;
@@ -179,15 +184,20 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 
 
 void FirstPersonController::onKey(SDL_Event &event) {
-	// Move character position if HOME is pressed
+	// Teleport the controller up if HOME is pressed
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_HOME) {
-		setPosition(glm::vec3(0, 8, 0), 0);
+		translateController(glm::vec3(0, 8, 0), 0);
 	}
 
 
 	// Toggle Replacement mode of placing blocks
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_r) {
 		replaceBlock = !replaceBlock;
+
+		if(replaceBlock)
+			std::cout << " Replace blocks is now activated" << std::endl;
+		else
+			std::cout << " Replace blocks is now deactivated" << std::endl;
 	}
 
 	// Toggle invisible mode
@@ -195,50 +205,59 @@ void FirstPersonController::onKey(SDL_Event &event) {
 		ghostMode = !ghostMode;
 
 		// Ignore contact respones if invisible mode is 
-		if(ghostMode)
+		if (ghostMode) {
 			rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
-		else
+			std::cout << " Ghost mode is now activated" << std::endl;
+		}
+		else {
 			rigidBody->setCollisionFlags(0);
+			std::cout << " Ghost mode is now deactivated" << std::endl;
+		}
 	}
 
 	// Toggle flying
 	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_y) {
 		flyMode = !flyMode;
-		if(flyMode)
+		if (flyMode) {
+			std::cout << " Fly mode is now activated" << std::endl;
 			rigidBody->setGravity(btVector3(0, 0, 0));
-		else
+		}
+		else {
+			std::cout << " Fly mode is now deactivated" << std::endl;
 			rigidBody->setGravity(btVector3(0, -10, 0));
+		}
 	} 
 
 
-	// Capture Jump TODO set back to force
+	// Activate jump
 	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE && isGrounded) {
 		if (!flyMode)
-			rigidBody->setLinearVelocity(btVector3(0, 5, 0)); //applyCentralForce(btVector3(0, JUMP_FORCE, 0));
-			//rigidBody->applyCentralForce(btVector3(0,JUMP_FORCE,0));
-	}
-
-	// Selected block to place
-	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_e) {
-		// Increase block selected
-		blockSelected = (BlockType)(blockSelected + 1);
-
-		// If we have the last block selected, go back to the start
-		if (blockSelected == BlockType::LENGTH)
-			blockSelected = BlockType::Stone;
-	}
-
-	if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_q) {
-		// If we are at the end, go back to the start
-		if (blockSelected == BlockType::Stone)
-			blockSelected = BlockType::LENGTH;
-
-		// Decrease block selected
-		blockSelected = (BlockType)(blockSelected - 1);
+			rigidBody->setLinearVelocity(btVector3(0, 5, 0)); 
 	}
 
 
-	// Capture movement keys down
+	// Change selected block that is in the hand of the controller
+	if (event.type == SDL_KEYUP) {
+		if(event.key.keysym.sym == SDLK_e){
+			// Increase block selected
+			blockSelected = (BlockType)(blockSelected + 1);
+
+			// If we have the last block selected, go back to the start
+			if (blockSelected == BlockType::LENGTH)
+				blockSelected = BlockType::Stone;
+		}
+		else if (event.key.keysym.sym == SDLK_q) {
+			// If we are at the end, go back to the start
+			if (blockSelected == BlockType::Stone)
+				blockSelected = BlockType::LENGTH;
+
+			// Decrease block selected
+			blockSelected = (BlockType)(blockSelected - 1);
+		}
+	}
+
+
+	// Capture movement, flying controls and springing keys down
     if(event.type == SDL_KEYDOWN ){
 		switch (event.key.keysym.sym){
 			case SDLK_w:
@@ -255,7 +274,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 				break;
 			case SDLK_LSHIFT:
 				isSprinting = true;
-				camera->setPerspectiveProjection(FIELD_OF_FIELD * SPRINT_FOV_INCREASE, NEAR_PLANE, FAR_PLANE);
+				camera->setPerspectiveProjection(FIELD_OF_VIEW * SPRINT_FOV_INCREASE, NEAR_PLANE, FAR_PLANE);
 				break;
 			case SDLK_SPACE:
 				up = true;
@@ -265,7 +284,8 @@ void FirstPersonController::onKey(SDL_Event &event) {
 				break;
 		}
 	}
-	// Capture movement keys released
+
+	// Capture movement, flying controls and springing keys released
 	if (event.type == SDL_KEYUP) {
 		switch (event.key.keysym.sym) {
 			case SDLK_w:
@@ -281,7 +301,7 @@ void FirstPersonController::onKey(SDL_Event &event) {
 				right = false;
 				break;
 			case SDLK_LSHIFT:
-				camera->setPerspectiveProjection(FIELD_OF_FIELD, NEAR_PLANE, FAR_PLANE);
+				camera->setPerspectiveProjection(FIELD_OF_VIEW, NEAR_PLANE, FAR_PLANE);
 				isSprinting = false;
 				break;
 			case SDLK_SPACE:
@@ -290,28 +310,32 @@ void FirstPersonController::onKey(SDL_Event &event) {
 			case SDLK_LCTRL:
 				down = false;
 				break;
-			}
+		}
 	}
 }
 
 
-// Handle Mouse Events
 void FirstPersonController::onMouse(SDL_Event &event) {
+	// Apply mouse movement to rotations
 	if(event.type == SDL_MOUSEMOTION && !lockRotation) {
 		lookRotation.x += event.motion.xrel * ROTATION_SPEED;
 		lookRotation.y += event.motion.yrel * ROTATION_SPEED;
-	lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_UP_ROTATION, MAX_X_LOOK_DOWN_ROTATION);
+		lookRotation.y = clamp(lookRotation.y, -MAX_X_LOOK_UP_ROTATION, MAX_X_LOOK_DOWN_ROTATION);
 	}
 	
+	// Handle mouse clicks
 	if (event.type == SDL_MOUSEBUTTONDOWN) {
+		// When left mouse button is pressed start mining
 		if (event.button.button == SDL_BUTTON_LEFT) {
 			isMining = true;
 		}
+		// When right mouse is pressed place a block
 		else if(event.button.button == SDL_BUTTON_RIGHT) {
 			placeBlock();
 		}
 	}
 	if (event.type == SDL_MOUSEBUTTONUP) {
+		// When released reset mining progress
 		if (event.button.button == SDL_BUTTON_LEFT) {
 			isMining = false;
 			minedAmount = 0;
@@ -321,12 +345,17 @@ void FirstPersonController::onMouse(SDL_Event &event) {
 
 
 void FirstPersonController::destroyBlock(Block* block) {
+	// Get the location of the block we are looking at
 	vec3 position = block->getPosition();
-	Wolf3D::getInstance()->flagNeighboursForRecalculateIfNecessary(position.x, position.y, position.z);
-
+	
+	// Deactivate the block we destroyed
 	block->setActive(false);
 
+	// Reset mining progress
 	minedAmount = 0;
+
+	// Flag the necessary chunks for recalculation of mesh
+	Wolf3D::getInstance()->flagNeighboursForRecalculateIfNecessary(position.x, position.y, position.z);
 }
 
 
@@ -373,8 +402,8 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 
 		// TODO TEMP prob remove below -- added for debug purposes
 		toRay = vec3(hit.getX(), hit.getY(), hit.getZ());
-		toRay2 = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()) * .2f; //res.m_hitNormalWorld;
-		fromRay1 = toRay;
+		toRayNormal = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()) * .2f; //res.m_hitNormalWorld;
+		fromRayNormal = toRay;
 		fromRay = vec3(start.getX(), start.getY(), start.getZ());
 
 		// Compensate for origin of block, collider origin is in center, though for the math we want it to be on a corner
@@ -395,18 +424,21 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 }
 
 
-// Set Spawn Position
-void FirstPersonController::setPosition(glm::vec3 position, float rotation) {
+void FirstPersonController::setLockRotation(bool lockRotation) {
+	this->lockRotation = lockRotation;
+}
+
+
+void FirstPersonController::translateController(glm::vec3 position, float rotation) {
     this->lookRotation.x = rotation;
 	this->lookRotation.y = 0;
 	rigidBody->translate(btVector3(position.x, position.y, position.z));
 }
 
 
-bool FirstPersonController::getIsGrounded() {
-	return isGrounded;
-}
-
-float FirstPersonController::getMinedAmount() {
-	return minedAmount;
+glm::vec3 FirstPersonController::getPosition() {
+	btTransform transform;
+	rigidBody->getMotionState()->getWorldTransform(transform);
+	btVector3 position = transform.getOrigin();
+	return glm::vec3(position.getX(), position.getY(), position.getZ());
 }

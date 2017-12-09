@@ -112,17 +112,6 @@ void Wolf3D::render() {
 	renderFloor(renderPass);
 	fpsController->draw(renderPass);
 
-	// TODO TEMP remove
-	std::vector<vec3> rays;
-	rays.push_back(fpsController->fromRay);
-	rays.push_back(fpsController->toRay);
-	renderPass.drawLines(rays);
-
-	std::vector<vec3> rays1;
-	rays1.push_back(fpsController->fromRay1);
-	rays1.push_back(fpsController->toRay2);
-	renderPass.drawLines(rays1, vec4(1, 0, 0, 1));
-
 	renderChunk(renderPass);
 
 	// Draw Particles
@@ -182,7 +171,7 @@ void Wolf3D::drawGUI() {
 	ImGui::ProgressBar(fpsController->getMinedAmount());
 
 	glm::vec3 pos = fpsController->getPosition();
-	glm::vec3 lookPos = fpsController->toRay;
+	glm::vec3 lookPos = fpsController->getLookAt();
 	ImGui::Text("pos: %.1f %.1f %.1f", pos.x, pos.y, pos.z);
 	ImGui::Text("lookAt: %.1f %.1f %.1f", lookPos.x, lookPos.y, lookPos.z);
 
@@ -211,7 +200,7 @@ void Wolf3D::handleDebugKeys(SDL_Event& e) {
 		renderer.setMouseCursorLocked(!mouseLock);
 		SDL_SetWindowGrab(renderer.getSDLWindow(), mouseLock ? SDL_TRUE : SDL_FALSE);
 		SDL_SetRelativeMouseMode(mouseLock ? SDL_TRUE : SDL_FALSE);
-		fpsController->lockRotation = !mouseLock;
+		fpsController->setLockRotation(!mouseLock);
 	}
 }
 
@@ -303,7 +292,7 @@ void Wolf3D::init() {
 	// Setup FPS Controller
 	fpsController = new  FirstPersonController(&camera);
 	// Spawn the player in the middle of the world.
-    fpsController->setPosition(vec3(chunkArrayX * Chunk::chunkSize *  0.5f, Chunk::chunkSize + 3.0f, chunkArrayZ * Chunk::chunkSize *  0.5f), 0);
+    fpsController->translateController(vec3(chunkArrayX * Chunk::chunkSize *  0.5f, Chunk::chunkSize + 3.0f, chunkArrayZ * Chunk::chunkSize *  0.5f), 0);
 
 	// Create floor
 	floor = Mesh::create().withQuad(100).build();
@@ -318,7 +307,7 @@ void Wolf3D::init() {
 	renderer.setMouseCursorLocked(!mouseLock);
 	SDL_SetWindowGrab(renderer.getSDLWindow(), mouseLock ? SDL_TRUE : SDL_FALSE);
 	SDL_SetRelativeMouseMode(mouseLock ? SDL_TRUE : SDL_FALSE);
-	fpsController->lockRotation = !mouseLock;
+	fpsController->setLockRotation(!mouseLock);
 
 	// Setup physics for the first chunk
 	stepChunkPhysicsInit();

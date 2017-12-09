@@ -1,3 +1,7 @@
+/*
+* Chunk - Created: 01-12-2017
+* Holds a three dimensional array of blocks that are contained in this chunk.
+*/
 #pragma once
 
 #include <glm\gtx\rotate_vector.hpp>
@@ -7,11 +11,6 @@
 #include "Block.hpp"
 
 
-
-/*
- * Chunk - Created: 01-12-2017
- * Holds a three dimensional array of blocks that are contained in this chunk.
- */
 
 class Chunk {
 public:

@@ -1,14 +1,13 @@
+/*
+* Physics - Created: 30-11-2017
+* Wrapper for all the bullet physics.
+*/
 #pragma once
 
 #include <btBulletDynamicsCommon.h>
 #include "btDebugDrawer.hpp"
 
 
-
-/*
-* Physics - Created: 30-11-2017
-* Wrapper for all the bullet physics.
-*/
 
 class Physics {
 public:

@@ -1,12 +1,13 @@
+/*
+* Block - Created: 31-11-2017
+* This class represents a block in the world. All edges of a block are one unit.
+*/
 #pragma once
 
 #include "btBulletDynamicsCommon.h"
 #include "sre/SDLRenderer.hpp"
 
-/*
- * Block - Created: 31-11-2017
- * This class represents a block in the world. All edges of a block are one unit.
- */
+
 
 // Types of blocks
 enum BlockType { Stone, Brick, Grass, Dirt, Gravel, Rock, Wood, Planks, Bedrock, Glass, WorkBench, IronOre, CoalOre, DiamondOre, LENGTH }; 
