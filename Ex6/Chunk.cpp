@@ -60,6 +60,9 @@ Chunk::Chunk(glm::vec3 position){
 				if (position.y + y >= chunkDimensions) {
 					blocksInChunk[x][y][z].setActive(false);
 				}
+
+				// Init the collider pointers
+				blocksInChunk[x][y][z].initCollider();
 			}
 		}
 	}

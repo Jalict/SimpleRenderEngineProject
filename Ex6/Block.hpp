@@ -1,19 +1,19 @@
 #pragma once
 
-#include "sre/SDLRenderer.hpp"
 #include "btBulletDynamicsCommon.h"
-
+#include "sre/SDLRenderer.hpp"
 
 /*
-Created: 31-11-2017
-A block in the world 
-(NOTE) Frans calls them Voxels
-*/
+ * Block - Created: 31-11-2017
+ * This class represents a block in the world. All edges of a block are one unit.
+ */
 
 // Types of blocks
 enum BlockType { Stone, Brick, Grass, Dirt, Gravel, Rock, Wood, Planks, Bedrock, Glass, WorkBench, IronOre, CoalOre, DiamondOre, LENGTH }; 
+
 // Faces of a cube
 enum BlockSides {Top, Bottom, Left, Right, Front, Back };
+
 
 class Wolf3D;
 class Block {
@@ -22,30 +22,24 @@ public:
 	Block(BlockType type, glm::vec3 position);
 	~Block();
 
-	// Returns the texture coordinates depending on type and side requested
+	// This returns the correct texture index for a block type and the correct side.
 	static int getTextureIndex(BlockType type, BlockSides side = BlockSides::Top);
 
-	void addColliderToWorld();
-	void removeColliderFromWorld();
+	void addColliderToWorld();			// Adds the rigidbody of this box to the physics world.
+	void removeColliderFromWorld();		// Removes the rigidbody of this box from the physics world.
+	void initCollider();				// Initializes the collider for this box.
 
-	// Sets the type of this block
 	void setType(BlockType type);				
 	void setActive(bool active);
-	bool isActive();
+	bool isActive() { return active; }
 	BlockType getType() { return type; }
-	glm::vec3 getPosition();
+	glm::vec3 getPosition() { return position; }
 private:
-	btRigidBody* createRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape);
-	
-	btRigidBody* rigidbody;
-	btBoxShape* collider;
+	btRigidBody* rigidbody = nullptr;	// Rigidbody of this block
+	btBoxShape* collider =  nullptr;	// The cube collider of this block
 
-	// Current type of block
-	BlockType type = BlockType::Dirt;			
-	
-	// Whether the block exists or not
-	bool active = true;
-
-	// World position of the block
-	glm::vec3 position;
+	bool active = true;					// Whether the block is active (displayed / exists in the world).
+	bool inPhysicsWorld = false;		// Whether the rigidbody has been added to the physics world.
+	BlockType type = BlockType::Dirt;	// Current type of block.
+	glm::vec3 position;					// World position of this block
 };

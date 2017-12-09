@@ -1,33 +1,64 @@
-#include <iostream>
 #include "Block.hpp"
 #include "Physics.hpp"
 #include "Wolf3D.hpp"
 
-Block::Block() { // Default constructor. This doesn't do anything. 
+
+
+Block::Block() { 
 }
+
 
 Block::Block(BlockType type, glm::vec3 position) {
 	// Set the type of the block
 	setType(type);
-
-	// # TODO dealloc
-	// Add physics collider
-	collider = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
-
-	// # TODO are we using position??
 	this->position = position;
-	
-	// Add a physics collider to it
-	btTransform startTransform;
-	startTransform.setIdentity();
-	btScalar mass(0);
-	startTransform.setOrigin(btVector3(btScalar(position.x), btScalar(position.y), btScalar(position.z)));
-	rigidbody = createRigidBody(mass, startTransform, collider);
 }
 
 
 Block::~Block() {
-	// TODO destroy physics
+	removeColliderFromWorld();
+
+	if(rigidbody != nullptr){
+		delete rigidbody->getMotionState();
+		delete rigidbody;
+	}
+	if(collider != nullptr){
+		delete collider;
+	}
+}
+
+
+void Block::initCollider() {
+	// Setup the physics, but do not add it to the world yet. 
+	// Just have it ready for when we need it.
+	collider = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+
+	btScalar mass(0);
+	btTransform transform;
+	transform.setIdentity();
+	transform.setOrigin(btVector3(btScalar(position.x), btScalar(position.y), btScalar(position.z)));
+	btVector3 localInertia(0, 0, 0);
+	btDefaultMotionState* myMotionState = new btDefaultMotionState(transform);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, myMotionState, collider, localInertia);
+	rigidbody = new btRigidBody(cInfo);
+}
+
+
+void Block::addColliderToWorld() {
+	// Only add rigidbodies for blocks that are active and not yet in the physics world.
+	if (active && !inPhysicsWorld){
+		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
+		inPhysicsWorld = true;
+	}
+}
+
+
+void Block::removeColliderFromWorld() {
+	// Only remove rigidbodies for blocks that are in the physics world.
+	if(inPhysicsWorld){
+		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
+		inPhysicsWorld = false;
+	}
 }
 
 
@@ -36,80 +67,79 @@ void Block::setType(BlockType type) {
 }
 
 
-bool Block::isActive() {
-	return this->active;
-}
-
-// # TODO test between the different modes
 void Block::setActive(bool active) {
 	// If the block is already in the correct state, we do not have to do anything.
 	if(this->active == active)
 		return;
 
-	// Bedrock cannot be deactivated
+	// Bedrock cannot be deactivated, therefore stop if this is  bedrock.
 	if (type == BlockType::Bedrock)
 		return;
 
 	// If this is grass see if there is something above, if so turn into dirt since grass needs air
-	Block* b = Wolf3D::getInstance()->locationToBlock(position.x, position.y + 1, position.z, true);
-	if (type == BlockType::Grass && b != nullptr && b->isActive()) 
-			type = BlockType::Dirt;
+	if(type == BlockType::Grass){
+		Block* b = Wolf3D::getInstance()->locationToBlock(position.x, position.y + 1, position.z, true);
+
+		// If there is a block above us and it is active, this grass must turn into dirt.
+		if (b != nullptr && b->isActive()) {
+				type = BlockType::Dirt;
+		}
+	}
 	
-	// If block below is grass turn it into dirt, since now there is something on top
-	b = Wolf3D::getInstance()->locationToBlock(position.x, position.y - 1, position.z, false);
-	if (b != nullptr && active && b->isActive() && b->getType() == BlockType::Grass)
+	// If block below is grass turn it into dirt, since now there is something on top.
+	auto b = Wolf3D::getInstance()->locationToBlock(position.x, position.y - 1, position.z, false);
+	if (b != nullptr && active && b->isActive() && b->getType() == BlockType::Grass){
 		b->setType(BlockType::Dirt);
+	}
 
-	this->active = active;
-
+	// If the block is activated, add its collider back to the world.
 	if(active){
-//		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
 		addColliderToWorld();
-//		rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
 	}
+	// Else if the block is deactivated, remove the collider form the world.
 	else {
-
 		removeColliderFromWorld();
-		//Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
 		Wolf3D::getInstance()->placeParticleSystem(position);
-		//rigidbody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
 	}
+
+	// Set the activation state
+	this->active = active;
 }
 
 
-void Block::addColliderToWorld() {
-	if(active)
-		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
-}
-
-void Block::removeColliderFromWorld(){
-//	if(!active)
-	Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
-}
-
-
-// Function returns the correct texture index for a block type on the correct side
 int Block::getTextureIndex(BlockType type, BlockSides side){
 	switch (type) {
 		case BlockType::Stone:
 			return 0;
 		case BlockType::Brick:
 			return 1;
-		case BlockType::Grass:
-			switch (side){
-				case BlockSides::Top:
-					return 23;
-				case BlockSides::Bottom:
-					return 9;
-				default:
-					return 10;
-			}
 		case BlockType::Dirt:
 			return 9;
 		case BlockType::Gravel:
 			return 25;
 		case BlockType::Rock:
 			return 50;
+		case BlockType::IronOre:
+			return 51;
+		case BlockType::CoalOre:
+			return 53;
+		case BlockType::DiamondOre:
+			return 55;
+		case BlockType::Planks:
+			return 83;
+		case BlockType::Bedrock:
+			return 27;
+		case BlockType::Glass:
+			return 16;
+		case BlockType::Grass:
+			switch (side) {
+			case BlockSides::Top:
+				return 23;
+			case BlockSides::Bottom:
+				return 9;
+			default:
+				return 10;
+			}
 		case BlockType::Wood:
 			switch (side) {
 			case BlockSides::Top:
@@ -128,46 +158,7 @@ int Block::getTextureIndex(BlockType type, BlockSides side){
 			default:
 				return 83;
 			}
-		case BlockType::IronOre:
-			return 51;
-		case BlockType::CoalOre:
-			return 53;
-		case BlockType::DiamondOre:
-			return 55;
-		case BlockType::Planks:
-			return 83;
-		case BlockType::Bedrock:
-			return 27;
-		case BlockType::Glass:
-			return 16;
 		default:
 			return 0;
 	}
-}
-
-
-// #TODO are we using this naywere?
-glm::vec3 Block::getPosition() {
-	return position;
-}
-
-
-// TODO move to proper location / clean up
-// http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Simple_Box
-btRigidBody* Block::createRigidBody(float mass, const btTransform& startTransform, btCollisionShape* shape) {
-	//	btAssert((!shape || shape->getShapeType() != INVALID_SHAPE_PROXYTYPE));
-	bool isDynamic = (mass != 0.f);
-
-	btVector3 localInertia(0, 0, 0);
-	if (isDynamic)
-		shape->calculateLocalInertia(mass, localInertia);
-
-	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, myMotionState, shape, localInertia);
-	btRigidBody* body = new btRigidBody(cInfo);
-
-	//  Dont know what this does. Documentation does not have this listed.
-	//	body->setUserIndex(-1); 
-	// Wolf3D::getInstance()->physics.addRigidBody(body);
-	return body;
 }
