@@ -1,3 +1,6 @@
+// Taken from:
+//	http://sio2interactive.forumotion.net/t599-enabling-bullet-debug-draw-code-included
+// By Francescu in 2009
 #pragma once
 #include <LinearMath/btIDebugDraw.h>
 #include "sre/RenderPass.hpp"
@@ -18,5 +21,5 @@ public:
 	sre::RenderPass* renderPass = nullptr;
 
 private:
-	int m_debugMode;
+	int m_debugMode;	
 };
