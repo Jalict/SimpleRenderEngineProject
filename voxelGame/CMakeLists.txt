@@ -10,15 +10,15 @@ IF (WIN32)
 ENDIF(WIN32)
 
 # Add hpp and cpp files to Snake variable
-file(GLOB Wolf3D
+file(GLOB voxelGame
         "*.hpp"
         "*.h"
         "*.cpp"
         )
 
 # Compile cpp files (from Snake variable)
-add_executable(Exercise6-Wolf3D ${Wolf3D})
-target_link_libraries(Exercise6-Wolf3D ${all_libs})
+add_executable(Voxel-Game ${voxelGame})
+target_link_libraries(Voxel-Game ${all_libs})
 
 # copy files to dest
 file(COPY tileset.png blocks.json DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
@@ -30,5 +30,5 @@ IF (WIN32)
     file(COPY ${DLLFileList} DESTINATION Release)
 
     # Set working directory to ${CMAKE_CURRENT_BINARY_DIR}/Debug
-    set_target_properties(Exercise6-Wolf3D PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+    set_target_properties(Voxel-Game PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 ENDIF(WIN32)

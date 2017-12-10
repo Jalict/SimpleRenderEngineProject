@@ -103,7 +103,7 @@ ENDIF (APPLE)
 #    BULLET_COLLISION_LIBRARY:FILEPATH=/Library/Frameworks/BulletCollision.framework
 #    etc
 #
-option(USE_BULLET "Include bullet example" OFF)
+option(USE_BULLET "Include bullet example" ON)
 IF (USE_BULLET)
 IF (WIN32)
     SET(BULLET_DYNAMICS_LIBRARY  ${CMAKE_SOURCE_DIR}/thirdparty/Win/Bullet/lib/BulletDynamics.lib CACHE PATH "")
@@ -144,4 +144,4 @@ ENDIF(WIN32)
 # build targets using sre
 add_subdirectory(examples)
 add_subdirectory(project)
-add_subdirectory(Ex6)
+add_subdirectory(voxelGame)
