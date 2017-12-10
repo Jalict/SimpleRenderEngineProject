@@ -6,7 +6,7 @@
 */
 #include <glm/gtx/rotate_vector.hpp>
 #include "FirstPersonController.hpp"
-#include "Wolf3D.hpp"
+#include "Game.hpp"
 
 using namespace sre;
 using namespace glm;
@@ -36,7 +36,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 	rigidBody->setActivationState(DISABLE_DEACTIVATION);
 
 	// Add rigidbody to world
-	Wolf3D::getInstance()->getPhysics()->addRigidBody(rigidBody);
+	Game::getInstance()->getPhysics()->addRigidBody(rigidBody);
 
 	// Only allow for rotations around the Y-axis
 	rigidBody->setAngularFactor(btVector3(0, 1, 0));
@@ -50,7 +50,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 
 FirstPersonController::~FirstPersonController(){
-	Wolf3D::getInstance()->getPhysics()->removeRigidBody(rigidBody);
+	Game::getInstance()->getPhysics()->removeRigidBody(rigidBody);
 	delete rigidBody->getMotionState();
 	delete rigidBody;
 	delete controllerShape;
@@ -150,7 +150,7 @@ void FirstPersonController::draw(sre::RenderPass& renderpass) {
 	matrix = rotate(matrix, radians(45.0f), vec3(0, -1, 0));
 	
 	// Draw the block we currently have selected
-	renderpass.draw(Wolf3D::getInstance()->getBlockMesh(blockSelected), matrix, Wolf3D::getInstance()->getBlockMaterial());
+	renderpass.draw(Game::getInstance()->getBlockMesh(blockSelected), matrix, Game::getInstance()->getBlockMaterial());
 
 	// Draw the raycasts which are used for looking if enabled
 	if (drawLookRays) {
@@ -172,7 +172,7 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 	btVector3 down = position + btVector3(0, -100000, 0);
 	btCollisionWorld::ClosestRayResultCallback res(position, down);
 
-	Wolf3D::getInstance()->getPhysics()->raycast(&position, &down, &res);
+	Game::getInstance()->getPhysics()->raycast(&position, &down, &res);
 
 	// If we hit something, check the distance to the ground
 	if (res.hasHit()) {
@@ -366,7 +366,7 @@ void FirstPersonController::destroyBlock(Block* block) {
 	minedAmount = 0;
 
 	// Flag the necessary chunks for recalculation of mesh
-	Wolf3D::getInstance()->flagNeighboursForRecalculateIfNecessary(position.x, position.y, position.z);
+	Game::getInstance()->flagNeighboursForRecalculateIfNecessary(position.x, position.y, position.z);
 }
 
 
@@ -383,7 +383,7 @@ void FirstPersonController::placeBlock() {
 			return;
 
 		vec3 position = detectedBlock->getPosition();
-		Wolf3D::getInstance()->flagNeighboursForRecalculateIfNecessary((int)position.x, (int)position.y, (int)position.z);
+		Game::getInstance()->flagNeighboursForRecalculateIfNecessary((int)position.x, (int)position.y, (int)position.z);
 
 		detectedBlock->setType(blockSelected);
 		detectedBlock->setActive(true);
@@ -404,7 +404,7 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 	btCollisionWorld::ClosestRayResultCallback res(start, end);
 
 	// Cast ray
-	Wolf3D::getInstance()->getPhysics()->raycast(&start, &end, &res);
+	Game::getInstance()->getPhysics()->raycast(&start, &end, &res);
 
 	// If we have an hit handle it, else return null
 	if (res.hasHit()) {
@@ -427,7 +427,7 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 		hit += res.m_hitNormalWorld * normalMultiplier;
 
 		// Grab the block, and set it to not active - all numbers are floored since blocks take up a whole unit
-		return Wolf3D::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ(), true);
+		return Game::getInstance()->locationToBlock((int)hit.getX(), (int)hit.getY(), (int)hit.getZ(), true);
 	} else{
 		return nullptr;
 	}

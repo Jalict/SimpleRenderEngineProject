@@ -1,5 +1,5 @@
 #include "Chunk.hpp"
-#include "Wolf3D.hpp"
+#include "Game.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
@@ -90,7 +90,7 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 	}
 		
 	// Draw mesh of this chunk.
-	renderpass.draw(mesh, chunkTransform, Wolf3D::getInstance()->getBlockMaterial());
+	renderpass.draw(mesh, chunkTransform, Game::getInstance()->getBlockMaterial());
 }
 
 
@@ -146,7 +146,7 @@ void Chunk::calculateMesh(std::vector<glm::vec3>& vertexPositions, std::vector<g
 				if (x > 0) {
 					left = !blocksInChunk[x - 1][y][z].isActive();
 				} else {
-					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x - 1, position.y + y, position.z + z, true);
+					auto b = Game::getInstance()->locationToBlock(position.x + x - 1, position.y + y, position.z + z, true);
 					if (b != nullptr){
 						left = !b->isActive();
 					}
@@ -156,7 +156,7 @@ void Chunk::calculateMesh(std::vector<glm::vec3>& vertexPositions, std::vector<g
 				if (x < chunkSize - 1){
 					right = !blocksInChunk[x + 1][y][z].isActive();
 				} else {
-					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x + 1, position.y + y, position.z + z, true);
+					auto b = Game::getInstance()->locationToBlock(position.x + x + 1, position.y + y, position.z + z, true);
 					if (b != nullptr){
 						right = !b->isActive();
 					}
@@ -166,7 +166,7 @@ void Chunk::calculateMesh(std::vector<glm::vec3>& vertexPositions, std::vector<g
 				if (y > 0) {
 					bottom = !blocksInChunk[x][y - 1][z].isActive();
 				} else {
-					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y - 1, position.z + z, true);
+					auto b = Game::getInstance()->locationToBlock(position.x + x, position.y + y - 1, position.z + z, true);
 					if (b != nullptr){
 						bottom = !b->isActive();
 					}
@@ -176,7 +176,7 @@ void Chunk::calculateMesh(std::vector<glm::vec3>& vertexPositions, std::vector<g
 				if (y < chunkSize - 1) {
 					top = !blocksInChunk[x][y + 1][z].isActive();
 				} else {
-					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y + 1, position.z + z, true);
+					auto b = Game::getInstance()->locationToBlock(position.x + x, position.y + y + 1, position.z + z, true);
 					if (b != nullptr){
 						top = !b->isActive();
 					}
@@ -186,7 +186,7 @@ void Chunk::calculateMesh(std::vector<glm::vec3>& vertexPositions, std::vector<g
 				if (z > 0) {
 					front = !blocksInChunk[x][y][z - 1].isActive();
 				} else {
-					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z - 1, true);
+					auto b = Game::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z - 1, true);
 					if (b != nullptr) {
 						front = !b->isActive();
 					}
@@ -196,7 +196,7 @@ void Chunk::calculateMesh(std::vector<glm::vec3>& vertexPositions, std::vector<g
 				if (z < chunkSize - 1) {
 					back = !blocksInChunk[x][y][z + 1].isActive();
 				} else {
-					auto b = Wolf3D::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z + 1, true);
+					auto b = Game::getInstance()->locationToBlock(position.x + x, position.y + y, position.z + z + 1, true);
 					if(b != nullptr){
 						back = !b->isActive();
 					}

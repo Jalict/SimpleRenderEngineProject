@@ -16,7 +16,7 @@ enum BlockType { Stone, Brick, Grass, Dirt, Gravel, Rock, Wood, Planks, Bedrock,
 enum BlockSides {Top, Bottom, Left, Right, Front, Back };
 
 
-class Wolf3D;
+class Game;
 class Block {
 public:
 	Block();

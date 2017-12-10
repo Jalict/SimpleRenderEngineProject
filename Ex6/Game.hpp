@@ -14,12 +14,12 @@
 #include "Chunk.hpp"
 #include "Block.hpp"
 
-class Wolf3D {
+class Game {
 public:
-    Wolf3D();
-	~Wolf3D();
+    Game();
+	~Game();
 
-	static Wolf3D* getInstance(); 
+	static Game* getInstance(); 
 
 	// Pass in a world block location and it flags the chunk for recalculation.
 	// Furthermore, it flags neighbouring chunks to recalculate if the said block is on a chunk edge.
@@ -56,7 +56,7 @@ private:
 
 	// Singleton pattern
 	static bool instanceFlag;
-	static Wolf3D* instance;
+	static Game* instance;
 
 	// World elements and controllers we need
 	FirstPersonController* fpsController;
@@ -71,9 +71,9 @@ private:
 	bool mouseLock = true;			// Whether the mouse is locked in the window
 
 	// Array for all chunks, and how many chunks we have in each axis.
-	const int chunkArrayX = 34;
+	const int chunkArrayX = 16;
 	const int chunkArrayY = 2; 
-	const int chunkArrayZ = 34;
+	const int chunkArrayZ = 16;
 	std::shared_ptr<Chunk>*** chunkArray;
 
 	// List of all block meshes, these are used to be hold in hand by the player.

@@ -1,6 +1,6 @@
 #include "Block.hpp"
 #include "Physics.hpp"
-#include "Wolf3D.hpp"
+#include "Game.hpp"
 
 
 
@@ -47,7 +47,7 @@ void Block::initCollider() {
 void Block::addColliderToWorld() {
 	// Only add rigidbodies for blocks that are active and not yet in the physics world.
 	if (active && !inPhysicsWorld){
-		Wolf3D::getInstance()->getPhysics()->addRigidBody(rigidbody);
+		Game::getInstance()->getPhysics()->addRigidBody(rigidbody);
 		inPhysicsWorld = true;
 	}
 }
@@ -56,7 +56,7 @@ void Block::addColliderToWorld() {
 void Block::removeColliderFromWorld() {
 	// Only remove rigidbodies for blocks that are in the physics world.
 	if(inPhysicsWorld){
-		Wolf3D::getInstance()->getPhysics()->removeRigidBody(rigidbody);
+		Game::getInstance()->getPhysics()->removeRigidBody(rigidbody);
 		inPhysicsWorld = false;
 	}
 }
@@ -78,7 +78,7 @@ void Block::setActive(bool active) {
 
 	// If this is grass see if there is something above, if so turn into dirt since grass needs air
 	if(type == BlockType::Grass){
-		Block* b = Wolf3D::getInstance()->locationToBlock(position.x, position.y + 1, position.z, true);
+		Block* b = Game::getInstance()->locationToBlock(position.x, position.y + 1, position.z, true);
 
 		// If there is a block above us and it is active, this grass must turn into dirt.
 		if (b != nullptr && b->isActive()) {
@@ -87,7 +87,7 @@ void Block::setActive(bool active) {
 	}
 	
 	// If block below is grass turn it into dirt, since now there is something on top.
-	auto b = Wolf3D::getInstance()->locationToBlock(position.x, position.y - 1, position.z, false);
+	auto b = Game::getInstance()->locationToBlock(position.x, position.y - 1, position.z, false);
 	if (b != nullptr && active && b->isActive() && b->getType() == BlockType::Grass){
 		b->setType(BlockType::Dirt);
 	}
@@ -102,7 +102,7 @@ void Block::setActive(bool active) {
 	// Else if the block is deactivated, remove the collider form the world.
 	else {
 		removeColliderFromWorld();
-		Wolf3D::getInstance()->placeParticleSystem(position);
+		Game::getInstance()->placeParticleSystem(position);
 	}
 }
 

@@ -13,7 +13,7 @@
 
 
 
-class Wolf3D;
+class Game;
 class FirstPersonController {
 public:
     FirstPersonController(sre::Camera * camera);
