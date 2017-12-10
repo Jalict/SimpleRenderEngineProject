@@ -90,7 +90,7 @@ void Chunk::draw(sre::RenderPass& renderpass) {
 	}
 		
 	// Draw mesh of this chunk.
-	renderpass.draw(mesh, chunkTransform, Wolf3D::getInstance()->blockMaterial);
+	renderpass.draw(mesh, chunkTransform, Wolf3D::getInstance()->getBlockMaterial());
 }
 
 

@@ -1,3 +1,9 @@
+/*
+* Initially Created by Morten Nobel-Jørgensen on 29/09/2017.
+*
+* FirstPersonController - included in project from: 30-11-2017
+* Wrapper for all the bullet physics.
+*/
 #pragma once
 
 #include "sre/SDLRenderer.hpp"
@@ -11,76 +17,70 @@
 class Wolf3D {
 public:
     Wolf3D();
+	~Wolf3D();
 
-	static Wolf3D* getInstance();
+	static Wolf3D* getInstance(); 
+
+	// Pass in a world block location and it flags the chunk for recalculation.
+	// Furthermore, it flags neighbouring chunks to recalculate if the said block is on a chunk edge.
+	void flagNeighboursForRecalculateIfNecessary(int x, int y, int z);	
+
+	// Pass in a world position and the function returns a pointer to the block on that location.
+	// When ghostInspect is set to true no mesh recalculation flag will be raised. 
+	// Set it to false and chunks and possible neighbours will be recalculated when necessary.
+	Block* locationToBlock(int x, int y, int z, bool ghostInspect);
 
 	// Particle systemm
 	void placeParticleSystem(glm::vec3 pos);
 	void updateApperance();
 	void updateEmit();
 
-	void flagNeighboursForRecalculateIfNecessary(int x, int y, int z);
-	Block* locationToBlock(int x, int y, int z, bool ghostInspect);
+	std::shared_ptr<sre::Material> getBlockMaterial() { return blockMaterial; }					// Returns the material shared between all blocks
+	std::shared_ptr<sre::Mesh> getBlockMesh(BlockType type) { return blockMeshes[(int)type]; }	// Returns a cube mesh for a block type
+	std::shared_ptr<Chunk> getChunk(int x, int y, int z);										// Returns a chunk at chunk coordinates x, y, z
 
-	// Material used for everything
-	std::shared_ptr<sre::Material> blockMaterial; 
-	// Physics of this world
-	Physics physics; 
-
-	// Returns the material of on complete block
-
-	std::shared_ptr<sre::Mesh> getBlockMesh(BlockType type);
-	std::shared_ptr<Chunk> getChunk(int x, int y, int z);
+	Physics* getPhysics() { return &physics; }	// Returns the physics wrapper for the game
 private:
     void init();
     void update(float deltaTime);
     void render();
-	void renderFloor(sre::RenderPass & renderPass);
-	void renderChunk(sre::RenderPass & renderPass);
-	void drawGUI();
-	void handleDebugKeys(SDL_Event& e);	
-	void stepChunkPhysicsInit();
+	void onKey(SDL_Event& e);
 
-	glm::vec4 textureCoordinates(int blockID);
-	std::shared_ptr<sre::Mesh> createBlockMesh(BlockType type);
+	void drawChunks(sre::RenderPass & renderPass);	// Loops through all chunks and tells them to draw
+	void drawGUI();									// Draws the GUI
 
+	void loadColliders(int xPos, int yPos, int zPos);	// Add colliders to the world of the chunk xPos, yPos, zPos and its neighbours. Unloads all others.
 
-	int chunkPhysicsInitProgress = 0;
-	int totalChunks = 0;
+	std::shared_ptr<sre::Mesh> createBlockMesh(BlockType type);	// Creates a block mesh for the blockType. These are used to display blocks in hand
+	glm::vec4 textureCoordinates(int textureId);				// Translates a texture index to UV coordinates
 
+	// Singleton pattern
 	static bool instanceFlag;
 	static Wolf3D* instance;
 
+	// World elements and controllers we need
+	FirstPersonController* fpsController;
+	sre::WorldLights worldLights;
     sre::SDLRenderer renderer;
     sre::Camera camera;
-	sre::WorldLights worldLights;
-	FirstPersonController* fpsController;
+	Physics physics;
 
-	bool physicsDebugDraw = false;
-	bool mouseLock = false;
-	bool debugProfiler = false;
-	
-	// The red falling ball
-	btRigidBody* fallRigidBody;
-	glm::mat4 sphereTransform;
-	std::shared_ptr<sre::Mesh> sphere;
-	std::shared_ptr<sre::Material> sphereMaterial;
-	btTransform sphereTrans;
+	// Togglles for various debug modes
+	bool physicsDebugDraw = false;	// Whether we should allow the physics debug drawer to draw
+	bool debugProfiler = false;		// Whether we should show the profiler
+	bool mouseLock = true;			// Whether the mouse is locked in the window
 
-	// Floor for the whole world
-	glm::mat4 floorTransform;
-	glm::vec4 floorColor;
-	std::shared_ptr<sre::Mesh> floor;
-	std::shared_ptr<sre::Material> floorMat;
-
-	// Array for all chunks
-	const int chunkArrayX = 8;
+	// Array for all chunks, and how many chunks we have in each axis.
+	const int chunkArrayX = 34;
 	const int chunkArrayY = 2; 
-	const int chunkArrayZ = 8;
+	const int chunkArrayZ = 34;
 	std::shared_ptr<Chunk>*** chunkArray;
 
-	// List of all block meshes, these are used to be hold in hand by the player
+	// List of all block meshes, these are used to be hold in hand by the player.
 	std::shared_ptr<sre::Mesh>* blockMeshes;
+
+	// Material used to draw blocks, used by both block meshes and chunk meshes
+	std::shared_ptr<sre::Material> blockMaterial;
 
 	// Particles
 	std::shared_ptr<sre::Texture> particleTexture;

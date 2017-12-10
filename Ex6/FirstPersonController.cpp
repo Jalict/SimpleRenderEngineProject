@@ -1,6 +1,9 @@
-//
-// Created by Morten Nobel-Jørgensen on 29/09/2017.
-//
+/*
+* Initially Created by Morten Nobel-Jørgensen on 29/09/2017.
+*
+* FirstPersonController - included in project from: 30-11-2017
+* Wrapper for all the bullet physics.
+*/
 #include <glm/gtx/rotate_vector.hpp>
 #include "FirstPersonController.hpp"
 #include "Wolf3D.hpp"
@@ -33,7 +36,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 	rigidBody->setActivationState(DISABLE_DEACTIVATION);
 
 	// Add rigidbody to world
-	Wolf3D::getInstance()->physics.addRigidBody(rigidBody);
+	Wolf3D::getInstance()->getPhysics()->addRigidBody(rigidBody);
 
 	// Only allow for rotations around the Y-axis
 	rigidBody->setAngularFactor(btVector3(0, 1, 0));
@@ -47,7 +50,7 @@ FirstPersonController::FirstPersonController(sre::Camera * camera)
 
 
 FirstPersonController::~FirstPersonController(){
-	Wolf3D::getInstance()->physics.removeRigidBody(rigidBody);
+	Wolf3D::getInstance()->getPhysics()->removeRigidBody(rigidBody);
 	delete rigidBody->getMotionState();
 	delete rigidBody;
 	delete controllerShape;
@@ -91,8 +94,6 @@ void FirstPersonController::update(float deltaTime){
 		// Multiply by time that has passed to compensate for FPS
 		movement *= deltaTime;
 
-
-		// TODO use collider rotations? Is this necessary?
 		// Translate local movement to relative world movement 
 		float x = cos(radians(lookRotation.x)) * movement.x - sin(radians(lookRotation.x)) * movement.z;
 		float z = cos(radians(lookRotation.x)) * movement.z + sin(radians(lookRotation.x)) * movement.x;
@@ -149,7 +150,7 @@ void FirstPersonController::draw(sre::RenderPass& renderpass) {
 	matrix = rotate(matrix, radians(45.0f), vec3(0, -1, 0));
 	
 	// Draw the block we currently have selected
-	renderpass.draw(Wolf3D::getInstance()->getBlockMesh(blockSelected), matrix, Wolf3D::getInstance()->blockMaterial);
+	renderpass.draw(Wolf3D::getInstance()->getBlockMesh(blockSelected), matrix, Wolf3D::getInstance()->getBlockMaterial());
 
 	// Draw the raycasts which are used for looking if enabled
 	if (drawLookRays) {
@@ -171,7 +172,7 @@ void FirstPersonController::checkGrounded(btVector3 position) {
 	btVector3 down = position + btVector3(0, -100000, 0);
 	btCollisionWorld::ClosestRayResultCallback res(position, down);
 
-	Wolf3D::getInstance()->physics.raycast(&position, &down, &res);
+	Wolf3D::getInstance()->getPhysics()->raycast(&position, &down, &res);
 
 	// If we hit something, check the distance to the ground
 	if (res.hasHit()) {
@@ -403,14 +404,13 @@ Block* FirstPersonController::castRayForBlock(float normalMultiplier) {
 	btCollisionWorld::ClosestRayResultCallback res(start, end);
 
 	// Cast ray
-	Wolf3D::getInstance()->physics.raycast(&start, &end, &res);
+	Wolf3D::getInstance()->getPhysics()->raycast(&start, &end, &res);
 
 	// If we have an hit handle it, else return null
 	if (res.hasHit()) {
 		// Store hit location
 		btVector3 hit = res.m_hitPointWorld;
 
-		// TODO TEMP prob remove below -- added for debug purposes
 		toRay = vec3(hit.getX(), hit.getY(), hit.getZ());
 		toRayNormal = toRay + vec3(res.m_hitNormalWorld.getX(), res.m_hitNormalWorld.getY(), res.m_hitNormalWorld.getZ()) * .2f; //res.m_hitNormalWorld;
 		fromRayNormal = toRay;

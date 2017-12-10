@@ -47,7 +47,7 @@ void Block::initCollider() {
 void Block::addColliderToWorld() {
 	// Only add rigidbodies for blocks that are active and not yet in the physics world.
 	if (active && !inPhysicsWorld){
-		Wolf3D::getInstance()->physics.addRigidBody(rigidbody);
+		Wolf3D::getInstance()->getPhysics()->addRigidBody(rigidbody);
 		inPhysicsWorld = true;
 	}
 }
@@ -56,7 +56,7 @@ void Block::addColliderToWorld() {
 void Block::removeColliderFromWorld() {
 	// Only remove rigidbodies for blocks that are in the physics world.
 	if(inPhysicsWorld){
-		Wolf3D::getInstance()->physics.removeRigidBody(rigidbody);
+		Wolf3D::getInstance()->getPhysics()->removeRigidBody(rigidbody);
 		inPhysicsWorld = false;
 	}
 }
